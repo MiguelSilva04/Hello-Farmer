@@ -58,6 +58,7 @@ dependencies:
   shared_preferences: ^2.5.3
   google_sign_in: ^6.3.0
   flutter_facebook_auth: ^7.1.2
+  reorderable_grid_view: ^2.2.8
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:

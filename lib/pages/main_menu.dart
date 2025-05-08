@@ -1,10 +1,7 @@
-import 'package:harvestly/pages/new_chat_page.dart';
-import 'package:harvestly/pages/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../pages/settings_page.dart';
-import '../core/services/auth/auth_service.dart';
 import '../utils/app_routes.dart';
 import 'home_page.dart';
 import 'sell_page.dart';
@@ -107,11 +104,8 @@ class _MainMenuState extends State<MainMenu>
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        //Image.asset(
-        //   "assets/images/logo_android2.png",
-        //   height: 80,
-        // )
-        title: Text("Harvestly", style: TextStyle(fontFamily: "Barriecito")),
+        // title: Text("Harvestly", style: TextStyle(fontFamily: "Barriecito")),
+        title: Image.asset("assets/images/logo_android2.png", height: 45),
         actions: [
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),

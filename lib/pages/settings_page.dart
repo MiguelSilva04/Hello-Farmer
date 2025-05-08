@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
-
-import '../components/user_info_card.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
-import '../utils/app_routes.dart';
-import '../utils/theme_notifier.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -17,46 +9,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final user = AuthService().currentUser;
-  bool _isGenderExpanded = false;
-  String _selectedGender = "Não definido";
-  String? _email;
-  String? _phoneNumber;
-  String? _recoveryEmail;
-  bool _isOrdersExpanded = false;
-  bool _isProductsExpanded = false;
-  bool _isAnalyticsExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedGender = user!.gender.isNotEmpty ? user!.gender : "Não definido";
-    _email = user!.email;
-    _phoneNumber = user!.phone;
-    _recoveryEmail = user!.recoveryEmail;
-  }
-
-  void _toggleGenderDropdown() {
-    setState(() {
-      _isGenderExpanded = !_isGenderExpanded;
-    });
-  }
-
-  void _updateGender(String gender) async {
-    try {
-      await AuthService().updateSingleUserField(gender: gender);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Género atualizado com sucesso!")));
-      setState(() {
-        _selectedGender = gender;
-        _isGenderExpanded = false;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Erro ao atualizar o género.")));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

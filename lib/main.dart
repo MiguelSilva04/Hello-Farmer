@@ -77,10 +77,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           primary: const Color.fromRGBO(66, 139, 109, 1),
           surface: const Color.fromRGBO(42, 129, 94, 1),
+          surfaceContainerLow: const Color.fromRGBO(221, 247, 237, 1),
           secondary: Colors.white,
           secondaryFixed: const Color.fromARGB(255, 82, 82, 82),
           tertiary: const Color.fromRGBO(155, 202, 184, 1),
           tertiaryFixed: Colors.black,
+          onTertiaryFixedVariant: Colors.grey,
           inverseSurface: const Color.fromRGBO(91, 152, 134, 1),
           inversePrimary: const Color.fromRGBO(40, 87, 70, 1),
           onInverseSurface: const Color.fromRGBO(232, 247, 238, 1),

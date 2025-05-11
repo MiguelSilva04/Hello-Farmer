@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/services/chat/chat_list_notifier.dart';
-import '../pages/settings_page.dart';
+import '../components/producer/settings_page.dart';
 import '../utils/app_routes.dart';
-import 'home_page.dart';
-import 'sell_page.dart';
-import 'sells_page.dart';
-import 'store_page.dart';
+import '../components/producer/home_page.dart';
+import '../components/producer/sell_page.dart';
+import '../components/producer/sells_page.dart';
+import '../components/producer/store_page.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MainMenu extends StatefulWidget {

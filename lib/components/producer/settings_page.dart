@@ -12,208 +12,216 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: MediaQuery.of(context).size.height * 0.1,
-        title: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text("Gestão", style: TextStyle(fontSize: 40)),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Visão geral da sua loja!",
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w400),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            width: double.infinity,
+            color: Theme.of(context).colorScheme.surface,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Gestão",
+                  style: TextStyle(
+                    fontSize: 50,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
-              ),
-              SizedBox(height: 10),
-            ],
+                Text(
+                  "Visão geral da sua loja!",
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              elevation: 0,
-              color: Theme.of(context).colorScheme.onInverseSurface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      "assets/images/next_steps.png",
-                      height: 80,
-                    ).animate().fade(duration: 800.ms).scale(),
-                    SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 10),
-                          Text(
-                            "Próximos passos",
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 10),
+                Card(
+                  elevation: 0,
+                  color: Theme.of(context).colorScheme.onInverseSurface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          "assets/images/next_steps.png",
+                          height: 80,
+                        ).animate().fade(duration: 800.ms).scale(),
+                        SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 10),
+                              Text(
+                                "Próximos passos",
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              Text(
+                                "Siga estas etapas para começar a vender: \n• Adicionar um produto\n• Configurar os canais de venda\n• Destacar o seu anúncio",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            "Siga estas etapas para começar a vender: \n• Adicionar um produto\n• Configurar os canais de venda\n• Destacar o seu anúncio",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ).animate().slide(duration: 500.ms),
+                SizedBox(height: 10),
+                SettingsTileGroup(
+                  icon: Icons.home,
+                  title: "Página Principal",
+                  onTap: () {
+                    // Navegar para página principal
+                  },
+                ),
+                SettingsTileGroup(
+                  icon: Icons.shopping_cart,
+                  title: "Encomendas",
+                  subOptions: [
+                    SettingsSubOption(
+                      title: "Faturação",
+                      onTap: () {
+                        // Navegar para Faturação
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Compras abandonadas",
+                      onTap: () {
+                        // Navegar para Compras Abandonadas
+                      },
                     ),
                   ],
                 ),
-              ),
-            ).animate().slide(duration: 500.ms),
-            SizedBox(height: 10),
-            SettingsTileGroup(
-              icon: Icons.home,
-              title: "Página Principal",
-              onTap: () {
-                // Navegar para página principal
-              },
-            ),
-            SettingsTileGroup(
-              icon: Icons.shopping_cart,
-              title: "Encomendas",
-              subOptions: [
-                SettingsSubOption(
-                  title: "Faturação",
+                SettingsTileGroup(
+                  icon: Icons.inventory,
+                  title: "Produtos",
+                  subOptions: [
+                    SettingsSubOption(
+                      title: "Gestão de Stock",
+                      onTap: () {
+                        // Navegar para Gestão de Stock
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Gestão de Preços",
+                      onTap: () {
+                        // Navegar para Gestão de Preços
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Cabazes",
+                      onTap: () {
+                        // Navegar para Cabazes
+                      },
+                    ),
+                  ],
+                ),
+                SettingsTileGroup(
+                  icon: Icons.people,
+                  title: "Clientes",
                   onTap: () {
-                    // Navegar para Faturação
+                    // Navegar para página principal
                   },
                 ),
-                SettingsSubOption(
-                  title: "Compras abandonadas",
+                SettingsTileGroup(
+                  icon: Icons.analytics,
+                  title: "Análise de Dados",
+                  subOptions: [
+                    SettingsSubOption(
+                      title: "Gestão de Stock",
+                      onTap: () {
+                        // Navegar para Gestão de Stock
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Relatórios",
+                      onTap: () {
+                        // Navegar para Gestão de Preços
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Por canal de venda",
+                      onTap: () {
+                        // Navegar para Cabazes
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Principais produtores",
+                      onTap: () {
+                        // Navegar para Cabazes
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Visitas à banca",
+                      onTap: () {
+                        // Navegar para Cabazes
+                      },
+                    ),
+                    SettingsSubOption(
+                      title: "Finanças",
+                      onTap: () {
+                        // Navegar para Cabazes
+                      },
+                    ),
+                  ],
+                ),
+                SettingsTileGroup(
+                  icon: Icons.storefront,
+                  title: "Canais de Venda",
                   onTap: () {
-                    // Navegar para Compras Abandonadas
+                    // Navegar para página principal
                   },
                 ),
-              ],
-            ),
-            SettingsTileGroup(
-              icon: Icons.inventory,
-              title: "Produtos",
-              subOptions: [
-                SettingsSubOption(
-                  title: "Gestão de Stock",
+                SettingsTileGroup(
+                  icon: Icons.campaign,
+                  title: "Anúncios",
                   onTap: () {
-                    // Navegar para Gestão de Stock
+                    // Navegar para página principal
                   },
                 ),
-                SettingsSubOption(
-                  title: "Gestão de Preços",
+                SettingsTileGroup(
+                  icon: Icons.star,
+                  title: "Destaques de Anúncios",
                   onTap: () {
-                    // Navegar para Gestão de Preços
+                    // Navegar para página principal
                   },
                 ),
-                SettingsSubOption(
-                  title: "Cabazes",
-                  onTap: () {
-                    // Navegar para Cabazes
-                  },
-                ),
-              ],
-            ),
-            SettingsTileGroup(
-              icon: Icons.people,
-              title: "Clientes",
-              onTap: () {
-                // Navegar para página principal
-              },
-            ),
-            SettingsTileGroup(
-              icon: Icons.analytics,
-              title: "Análise de Dados",
-              subOptions: [
-                SettingsSubOption(
-                  title: "Gestão de Stock",
-                  onTap: () {
-                    // Navegar para Gestão de Stock
-                  },
-                ),
-                SettingsSubOption(
-                  title: "Relatórios",
-                  onTap: () {
-                    // Navegar para Gestão de Preços
-                  },
-                ),
-                SettingsSubOption(
-                  title: "Por canal de venda",
-                  onTap: () {
-                    // Navegar para Cabazes
-                  },
-                ),
-                SettingsSubOption(
-                  title: "Principais produtores",
-                  onTap: () {
-                    // Navegar para Cabazes
-                  },
-                ),
-                SettingsSubOption(
-                  title: "Visitas à banca",
-                  onTap: () {
-                    // Navegar para Cabazes
-                  },
-                ),
-                SettingsSubOption(
+                SettingsTileGroup(
+                  icon: Icons.attach_money,
                   title: "Finanças",
                   onTap: () {
-                    // Navegar para Cabazes
+                    // Navegar para página principal
                   },
                 ),
               ],
             ),
-            SettingsTileGroup(
-              icon: Icons.storefront,
-              title: "Canais de Venda",
-              onTap: () {
-                // Navegar para página principal
-              },
-            ),
-            SettingsTileGroup(
-              icon: Icons.campaign,
-              title: "Anúncios",
-              onTap: () {
-                // Navegar para página principal
-              },
-            ),
-            SettingsTileGroup(
-              icon: Icons.star,
-              title: "Destaques de Anúncios",
-              onTap: () {
-                // Navegar para página principal
-              },
-            ),
-            SettingsTileGroup(
-              icon: Icons.attach_money,
-              title: "Finanças",
-              onTap: () {
-                // Navegar para página principal
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

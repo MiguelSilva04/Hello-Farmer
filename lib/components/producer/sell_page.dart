@@ -73,9 +73,9 @@ class SellPageState extends State<SellPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SingleChildScrollView(
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: SingleChildScrollView(
         padding: EdgeInsets.all(8),
         child: Container(
           padding: EdgeInsets.all(14),
@@ -296,7 +296,7 @@ class SellPageState extends State<SellPage> {
 
                 SizedBox(height: 10),
                 Text(
-                  "Os teus detalhes:",
+                  "Os seus detalhes:",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
 

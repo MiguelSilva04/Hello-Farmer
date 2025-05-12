@@ -26,6 +26,7 @@ class SellPageState extends State<SellPage> {
     (index) => null,
     growable: true,
   );
+  bool _isSubmitted = false;
 
   void toggleDelivery(String option, bool selected) {
     setState(() {
@@ -73,294 +74,366 @@ class SellPageState extends State<SellPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).colorScheme.surface,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(8),
-        child: Container(
-          padding: EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  "Públicar anúncio...",
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.tertiaryFixed,
-                  ),
-                ),
-                Text(
-                  "Quanto mais detalhado melhor!",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).colorScheme.tertiaryFixed,
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  "Todos os campos são obrigatórios*",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onTertiaryFixedVariant,
-                  ),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Título do anúncio"),
-                  onSaved: (val) => title = val,
-                ),
-
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Descrição"),
-                  maxLines: 4,
-                  maxLength: 10000,
-                  onSaved: (val) => description = val,
-                ),
-
-                SizedBox(height: 16),
-                Text(
-                  "Selecione:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "A primeira imagem é a principal do anúncio, arrasta e larga as imagens para mudar as posições das mesmas",
-                ),
-                ReorderableGridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  physics: NeverScrollableScrollPhysics(),
-                  onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      print('Reordering from $oldIndex to $newIndex');
-                      if (newIndex > oldIndex) newIndex--;
-                      final image = images.removeAt(oldIndex);
-                      images.insert(newIndex, image);
-                      print('Updated images list: $images');
-                    });
-                  },
-                  children: List.generate(
-                    6,
-                    (index) => KeyedSubtree(
-                      key: ValueKey(index),
-                      child: imageBox(index),
+    return _isSubmitted
+        ? Container(
+          color: Theme.of(context).colorScheme.surfaceContainerLowest,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("assets/images/success_icon.png", width: 120),
+                  Text(
+                    "Anúncio publicado com sucesso!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: Theme.of(context).colorScheme.surface,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  "Categoria:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-
-                DropdownButtonFormField<String>(
-                  value: title,
-                  items: [
-                    DropdownMenuItem(value: "Fruta", child: Text("Fruta")),
-                    DropdownMenuItem(value: "Legumes", child: Text("Legumes")),
-                    DropdownMenuItem(value: "Ervas", child: Text("Ervas")),
-                    DropdownMenuItem(value: "Flores", child: Text("Flores")),
-                  ],
-                  onChanged: (val) => setState(() => title = val),
-                  decoration: InputDecoration(
-                    labelText: "Selecione uma categoria",
+                  const SizedBox(height: 15),
+                  Text(
+                    "Clique em \"Ok\""
+                    " para voltar à página principal!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
                   ),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.tertiaryFixed,
-                  ),
-                  dropdownColor: Theme.of(context).colorScheme.secondary,
-                ),
-
-                SizedBox(height: 16),
-                Text(
-                  "Localização:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Freguesia ou código postal",
-                  ),
-                  onSaved: (val) => location = val,
-                ),
-
-                SizedBox(height: 16),
-                Text(
-                  "Opções de entrega:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                CheckboxListTile(
-                  title: Text("Entrega ao domicílio"),
-                  value: deliveryOptions.contains("domicilio"),
-                  onChanged: (val) => toggleDelivery("domicilio", val!),
-                ),
-                CheckboxListTile(
-                  title: Text("Recolha num local à escolha"),
-                  value: deliveryOptions.contains("recolha"),
-                  onChanged: (val) => toggleDelivery("recolha", val!),
-                ),
-                CheckboxListTile(
-                  title: Text("Entrega por transportadora"),
-                  value: deliveryOptions.contains("transportadora"),
-                  onChanged: (val) => toggleDelivery("transportadora", val!),
-                ),
-
-                SizedBox(height: 16),
-                Text(
-                  "Detalhes da venda:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        children: [
-                          Text("Quantidade mínima:"),
-                          SizedBox(height: 5),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            keyboardType: TextInputType.number,
-                            onSaved: (val) => qty = val,
-                          ),
-                        ],
+                  const SizedBox(height: 55),
+                  InkWell(
+                    onTap:
+                        () => setState(() {
+                          _isSubmitted = false;
+                          unit = "Kg";
+                          title = null;
+                        }),
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        "Ok",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
-                    Divider(height: 10),
-                    SizedBox(width: 10),
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Unidade de medida:"),
-                          Row(
+                  ),
+                ],
+              ),
+            ),
+          ),
+        )
+        : Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(8),
+            child: Container(
+              padding: EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      "Públicar anúncio...",
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.tertiaryFixed,
+                      ),
+                    ),
+                    Text(
+                      "Quanto mais detalhado melhor!",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.tertiaryFixed,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Todos os campos são obrigatórios*",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color:
+                            Theme.of(
+                              context,
+                            ).colorScheme.onTertiaryFixedVariant,
+                      ),
+                    ),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: "Título do anúncio",
+                      ),
+                      onSaved: (val) => title = val,
+                    ),
+
+                    TextFormField(
+                      decoration: InputDecoration(labelText: "Descrição"),
+                      maxLines: 4,
+                      maxLength: 10000,
+                      onSaved: (val) => description = val,
+                    ),
+
+                    SizedBox(height: 16),
+                    Text(
+                      "Selecione:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "A primeira imagem é a principal do anúncio, arrasta e larga as imagens para mudar as posições das mesmas",
+                    ),
+                    ReorderableGridView.count(
+                      shrinkWrap: true,
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      physics: NeverScrollableScrollPhysics(),
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          print('Reordering from $oldIndex to $newIndex');
+                          if (newIndex > oldIndex) newIndex--;
+                          final image = images.removeAt(oldIndex);
+                          images.insert(newIndex, image);
+                          print('Updated images list: $images');
+                        });
+                      },
+                      children: List.generate(
+                        6,
+                        (index) => KeyedSubtree(
+                          key: ValueKey(index),
+                          child: imageBox(index),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      "Categoria:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+                    DropdownButtonFormField<String>(
+                      value: title,
+                      items: [
+                        DropdownMenuItem(value: "Fruta", child: Text("Fruta")),
+                        DropdownMenuItem(
+                          value: "Legumes",
+                          child: Text("Legumes"),
+                        ),
+                        DropdownMenuItem(value: "Ervas", child: Text("Ervas")),
+                        DropdownMenuItem(
+                          value: "Flores",
+                          child: Text("Flores"),
+                        ),
+                      ],
+                      onChanged: (val) => setState(() => title = val),
+                      decoration: InputDecoration(
+                        labelText: "Selecione uma categoria",
+                      ),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.tertiaryFixed,
+                      ),
+                      dropdownColor: Theme.of(context).colorScheme.secondary,
+                    ),
+
+                    SizedBox(height: 16),
+                    Text(
+                      "Localização:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: "Freguesia ou código postal",
+                      ),
+                      onSaved: (val) => location = val,
+                    ),
+
+                    SizedBox(height: 16),
+                    Text(
+                      "Opções de entrega:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    CheckboxListTile(
+                      title: Text("Entrega ao domicílio"),
+                      value: deliveryOptions.contains("domicilio"),
+                      onChanged: (val) => toggleDelivery("domicilio", val!),
+                    ),
+                    CheckboxListTile(
+                      title: Text("Recolha num local à escolha"),
+                      value: deliveryOptions.contains("recolha"),
+                      onChanged: (val) => toggleDelivery("recolha", val!),
+                    ),
+                    CheckboxListTile(
+                      title: Text("Entrega por transportadora"),
+                      value: deliveryOptions.contains("transportadora"),
+                      onChanged:
+                          (val) => toggleDelivery("transportadora", val!),
+                    ),
+
+                    SizedBox(height: 16),
+                    Text(
+                      "Detalhes da venda:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Column(
                             children: [
-                              Expanded(
-                                child: RadioListTile<String>(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(
-                                    "Kg",
-                                    style: TextStyle(fontSize: 12),
+                              Text("Quantidade mínima:"),
+                              SizedBox(height: 5),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  value: "Kg",
-                                  groupValue: unit,
-                                  onChanged:
-                                      (val) => setState(() => unit = val),
-                                  dense: true,
-                                  visualDensity: VisualDensity.compact,
                                 ),
-                              ),
-                              Expanded(
-                                child: RadioListTile<String>(
-                                  contentPadding: EdgeInsets.zero,
-                                  title: Text(
-                                    "Unidade",
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  value: "Unidade",
-                                  groupValue: unit,
-                                  onChanged:
-                                      (val) => setState(() => unit = val),
-                                  dense: true,
-                                  visualDensity: VisualDensity.compact,
-                                ),
+                                keyboardType: TextInputType.number,
+                                onSaved: (val) => qty = val,
                               ),
                             ],
                           ),
-                        ],
+                        ),
+                        Divider(height: 10),
+                        SizedBox(width: 10),
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Unidade de medida:"),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: RadioListTile<String>(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(
+                                        "Kg",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      value: "Kg",
+                                      groupValue: unit,
+                                      onChanged:
+                                          (val) => setState(() => unit = val),
+                                      dense: true,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: RadioListTile<String>(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(
+                                        "Unidade",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      value: "Unidade",
+                                      groupValue: unit,
+                                      onChanged:
+                                          (val) => setState(() => unit = val),
+                                      dense: true,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    TextFormField(
+                      decoration: InputDecoration(labelText: "Preço"),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
+                      onSaved: (val) => price = val,
+                    ),
+
+                    SizedBox(height: 10),
+                    Text(
+                      "Os seus detalhes:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+                    TextFormField(
+                      decoration: InputDecoration(labelText: "Nome"),
+                      onSaved: (val) => name = val,
+                    ),
+
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: "Número de telefone",
+                      ),
+                      keyboardType: TextInputType.phone,
+                      onSaved: (val) => phone = val,
+                    ),
+
+                    SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          onPressed: () {
+                            _formKey.currentState!.save();
+                            print("Cancelar anúncio...");
+                          },
+                          child: Text(
+                            "Cancelar",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            _formKey.currentState!.save();
+                          },
+                          child: Text("Pré-visualizar"),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
+                          ),
+                          onPressed: () {
+                            _formKey.currentState!.save();
+                            setState(() {
+                              _isSubmitted = true;
+                            });
+                          },
+                          child: Text(
+                            "Publicar",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Preço"),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  onSaved: (val) => price = val,
-                ),
-
-                SizedBox(height: 10),
-                Text(
-                  "Os seus detalhes:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Nome"),
-                  onSaved: (val) => name = val,
-                ),
-
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Número de telefone"),
-                  keyboardType: TextInputType.phone,
-                  onSaved: (val) => phone = val,
-                ),
-
-                SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                      onPressed: () {
-                        _formKey.currentState!.save();
-                        print("Cancelar anúncio...");
-                        // Publicar
-                      },
-                      child: Text(
-                        "Cancelar",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        _formKey.currentState!.save();
-                        //Pre visualizar
-                      },
-                      child: Text("Pré-visualizar"),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                      ),
-                      onPressed: () {
-                        _formKey.currentState!.save();
-                        print("Publicar anúncio...");
-                        // Publicar
-                      },
-                      child: Text(
-                        "Publicar",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 }

@@ -88,6 +88,7 @@ class MyApp extends StatelessWidget {
           inversePrimary: const Color.fromRGBO(40, 87, 70, 1),
           onInverseSurface: const Color.fromRGBO(232, 247, 238, 1),
           seedColor: Colors.purple,
+          surfaceContainerLowest: const Color.fromRGBO(168, 218, 184, 1),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromRGBO(42, 129, 94, 1),

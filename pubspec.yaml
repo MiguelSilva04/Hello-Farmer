@@ -126,6 +126,7 @@ flutter:
     - assets/images/addProfileImage.png
     - assets/images/addGroupImage.png
     - assets/images/next_steps.png
+    - assets/images/success_icon.png
     - assets/images/producer/irrigation.jpg
     - assets/images/producer/soil_analysis.jpg
     - assets/images/producer/yara_fertilizantes.jpg

@@ -21,10 +21,10 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
   final _formKey = GlobalKey<FormState>();
   final _chatData = Chat();
   late Chat currentChat;
-  late List<ChatUser> users;
-  List<ChatUser> usersInTheChat = [];
-  List<ChatUser> usersNotInTheChat = [];
-  List<ChatUser> usersAdmins = [];
+  late List<ClientUser> users;
+  List<ClientUser> usersInTheChat = [];
+  List<ClientUser> usersNotInTheChat = [];
+  List<ClientUser> usersAdmins = [];
 
   bool _showInviteUsers = false;
   bool _isLoading = false;
@@ -67,25 +67,25 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
     Navigator.of(context).pop();
   }
 
-  void inviteFriend(ChatUser user) {
+  void inviteFriend(ClientUser user) {
     provider!.addMemberToChat(user.id);
     setState(() {
       usersInTheChat.add(user);
       usersNotInTheChat.remove(user);
     });
-    provider!.updateCurrentChatUsers(usersInTheChat);
+    provider!.updateCurrentUsers(usersInTheChat);
   }
 
-  void removeUser(ChatUser user) {
+  void removeUser(ClientUser user) {
     provider!.removeMemberFromChat(user.id, currentChat.id);
     setState(() {
       usersInTheChat.remove(user);
       usersNotInTheChat.add(user);
     });
-    provider!.updateCurrentChatUsers(usersInTheChat);
+    provider!.updateCurrentUsers(usersInTheChat);
   }
 
-  void makeUserAdmin(ChatUser user) async {
+  void makeUserAdmin(ClientUser user) async {
     await provider!.makeUserAdmin(user.id);
     setState(() {
       usersAdmins.add(user);

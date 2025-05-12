@@ -19,7 +19,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
   ChatFirebaseService._internal();
 
   Chat? _currentChat;
-  List<ChatUser> _currentChatUsers = [];
+  List<ClientUser> _currentUsers = [];
 
   @override
   Chat? get currentChat => _currentChat;
@@ -74,14 +74,14 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
         .update({'text': encryptedText});
   }
 
-  Stream<List<ChatUser>> membersStream(String chatId) {
+  Stream<List<ClientUser>> membersStream(String chatId) {
     return FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('members')
         .snapshots()
         .asyncMap((snapshot) async {
-          List<ChatUser> members = [];
+          List<ClientUser> members = [];
           for (var doc in snapshot.docs) {
             final userDoc =
                 await FirebaseFirestore.instance
@@ -89,7 +89,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
                     .doc(doc.id)
                     .get();
             if (userDoc.exists) {
-              members.add(ChatUser.fromMap(userDoc.data()!));
+              members.add(ClientUser.fromMap(userDoc.data()!));
             }
           }
           return members;
@@ -100,7 +100,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
     await removeMemberFromChat(userId, chatId);
     if (_currentChat?.id == chatId) {
       _currentChat = null;
-      _currentChatUsers = [];
+      _currentUsers = [];
       notifyListeners();
     }
   }
@@ -145,11 +145,11 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
   }
 
   @override
-  List<ChatUser>? get currentChatUsers => _currentChatUsers;
+  List<ClientUser>? get currentUsers => _currentUsers;
 
   @override
-  void updateCurrentChatUsers(List<ChatUser> newChatUsers) {
-    _currentChatUsers = newChatUsers;
+  void updateCurrentUsers(List<ClientUser> newUsers) {
+    _currentUsers = newUsers;
     notifyListeners();
   }
 
@@ -288,7 +288,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
 
     await chatRef.update({'members': membersMap});
 
-    _currentChatUsers.removeWhere((u) => u.id == userId);
+    _currentUsers.removeWhere((u) => u.id == userId);
     if (_currentChat != null) {
       _currentChat!.membersIds.remove(userId);
       notifyListeners();
@@ -507,7 +507,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
   }
 
   @override
-  Future<ChatMessage?> save(String text, ChatUser user, String chatId) async {
+  Future<ChatMessage?> save(String text, ClientUser user, String chatId) async {
     final store = FirebaseFirestore.instance;
 
     String encryptedText = EncryptionService.encryptMessage(text);

@@ -82,7 +82,7 @@ class _MessagesState extends State<Messages> {
   Widget build(BuildContext context) {
     final chatService = Provider.of<ChatService>(context);
     final currentUser = AuthService().currentUser;
-    final chatUsers = chatService.currentChatUsers ?? [];
+    final chatUsers = chatService.currentUsers ?? [];
 
     return StreamBuilder<List<ChatMessage>>(
       stream: chatService.messagesStream(widget.chatId),

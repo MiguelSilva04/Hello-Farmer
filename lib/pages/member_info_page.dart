@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../core/models/chat_user.dart';
 
 class MemberInfoPage extends StatefulWidget {
-  final ChatUser user;
+  final ClientUser user;
 
   const MemberInfoPage(this.user, {super.key});
 

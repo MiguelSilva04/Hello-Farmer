@@ -2,10 +2,11 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:math';
 import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
 class AuthMockService implements AuthService {
-  static var _defaultUser = ChatUser(
+  static var _defaultUser = ClientUser(
     id: '456',
     firstName: 'Ana',
     lastName: 'Santos',
@@ -18,23 +19,23 @@ class AuthMockService implements AuthService {
     isProducer: false,
   );
 
-  static final Map<String, ChatUser> _users = {
+  static final Map<String, ClientUser> _users = {
     _defaultUser.email: _defaultUser,
   };
-  static ChatUser? _currentUser;
-  static MultiStreamController<ChatUser?>? _controller;
-  static final _userStream = Stream<ChatUser?>.multi((controller) {
+  static ClientUser? _currentUser;
+  static MultiStreamController<ClientUser?>? _controller;
+  static final _userStream = Stream<ClientUser?>.multi((controller) {
     _controller = controller;
     _updateUser(_defaultUser);
   });
 
   @override
-  ChatUser? get currentUser {
+  ClientUser? get currentUser {
     return _currentUser;
   }
 
   @override
-  Stream<ChatUser?> get userChanges {
+  Stream<ClientUser?> get userChanges {
     return _userStream;
   }
 
@@ -50,7 +51,7 @@ class AuthMockService implements AuthService {
     String recoverEmail,
     String dateOfBirth,
   ) async {
-    final newUser = ChatUser(
+    final newUser = ClientUser(
       id: Random().nextDouble().toString(),
       firstName: firstName,
       lastName: lastName,
@@ -77,14 +78,14 @@ class AuthMockService implements AuthService {
     _updateUser(null);
   }
 
-  static void _updateUser(ChatUser? user) {
+  static void _updateUser(ClientUser? user) {
     _currentUser = user;
     _controller?.add(_currentUser);
   }
 
   @override
   // TODO: implement users
-  List<ChatUser> get users => throw UnimplementedError();
+  List<ClientUser> get users => throw UnimplementedError();
 
   @override
   Future<void> recoverPassword(String email) {
@@ -129,34 +130,40 @@ class AuthMockService implements AuthService {
     // TODO: implement syncEmailWithFirestore
     throw UnimplementedError();
   }
-  
+
   @override
   Future<void> addFriend(String userId) {
     // TODO: implement addFriend
     throw UnimplementedError();
   }
-  
+
   @override
   Future<void> removeFriend(String userId) {
     // TODO: implement removeFriend
     throw UnimplementedError();
   }
-  
+
   @override
   // TODO: implement isLoggingIn
   bool get isLoggingIn => throw UnimplementedError();
-  
+
   @override
   void setLoggingInState(bool state) {
     // TODO: implement setLoggingInState
   }
-  
+
   @override
   // TODO: implement isProducer
   bool get isProducer => throw UnimplementedError();
-  
+
   @override
   void setProducerState(bool state) {
     // TODO: implement setProducerState
+  }
+
+  @override
+  Store getMyStore() {
+    // TODO: implement getMyStore
+    throw UnimplementedError();
   }
 }

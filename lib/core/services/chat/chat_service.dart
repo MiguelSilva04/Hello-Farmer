@@ -8,9 +8,9 @@ import 'chat_firebase_service.dart';
 
 abstract class ChatService extends ChangeNotifier {
   Chat? get currentChat;
-  List<ChatUser>? get currentChatUsers;
+  List<ClientUser>? get currentUsers;
   Stream<List<ChatMessage>> messagesStream(String chatId);
-  Future<ChatMessage?> save(String texto, ChatUser user, String chatId);
+  Future<ChatMessage?> save(String texto, ClientUser user, String chatId);
   Future<Chat> createChat(
     String name,
     String description,
@@ -23,7 +23,7 @@ abstract class ChatService extends ChangeNotifier {
 
   void updateCurrentChat(Chat newChat);
 
-  void updateCurrentChatUsers(List<ChatUser> newChatUsers);
+  void updateCurrentUsers(List<ClientUser> newUsers);
 
   Future<void> addMemberToChat(String userId);
 

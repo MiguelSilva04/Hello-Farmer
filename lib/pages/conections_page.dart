@@ -11,8 +11,8 @@ class ConectionsPage extends StatefulWidget {
 
 class _ConectionsPageState extends State<ConectionsPage> {
   final currentUser = AuthService().currentUser!;
-  List<ChatUser> allUsers = [];
-  List<ChatUser> friends = [];
+  List<ClientUser> allUsers = [];
+  List<ClientUser> friends = [];
   String searchQuery = '';
   bool _isSearching = false;
   final searchBoxController = TextEditingController();

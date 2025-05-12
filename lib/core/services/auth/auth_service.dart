@@ -2,22 +2,25 @@ import 'dart:io';
 import 'package:harvestly/core/models/chat_user.dart';
 // import 'package:chat/core/services/auth/auth_mock_service.dart';
 
+import '../../models/store.dart';
 import 'auth_firebase_service.dart';
 
 abstract class AuthService {
-  ChatUser? get currentUser;
+  ClientUser? get currentUser;
 
-  List<ChatUser> get users;
+  List<ClientUser> get users;
 
   bool get isLoggingIn;
 
   bool get isProducer;
 
+  Store getMyStore();
+
   void setProducerState(bool state);
 
   void setLoggingInState(bool state);
-  
-  Stream<ChatUser?> get userChanges;
+
+  Stream<ClientUser?> get userChanges;
 
   Future<void> signup(
     String firstName,

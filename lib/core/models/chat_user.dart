@@ -1,4 +1,4 @@
-class ChatUser {
+class ClientUser {
   final String id;
   String firstName;
   String lastName;
@@ -18,7 +18,7 @@ class ChatUser {
   List<String>? friendsIds;
   bool? isProducer;
 
-  ChatUser({
+  ClientUser({
     required this.gender,
     required this.phone,
     required this.recoveryEmail,
@@ -39,8 +39,8 @@ class ChatUser {
     this.friendsIds,
   });
 
-  factory ChatUser.fromMap(Map<String, dynamic> map) {
-    return ChatUser(
+  factory ClientUser.fromMap(Map<String, dynamic> map) {
+    return ClientUser(
       id: map['id'] ?? '',
       firstName: map['firstName'] ?? '',
       lastName: map['lastName'] ?? '',

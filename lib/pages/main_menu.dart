@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/settings_page.dart';
 import '../utils/app_routes.dart';
@@ -173,6 +174,20 @@ class _MainMenuState extends State<MainMenu>
           //             : Container(),
           //   ),
           // ),
+          IconButton(
+            onPressed: () async {
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                final chatNotifier = context.read<ChatListNotifier>();
+                chatNotifier.clearChats();
+                await AuthService().logout();
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  AppRoutes.AUTH_OR_APP_PAGE,
+                  (route) => false,
+                );
+              });
+            },
+            icon: Icon(Icons.exit_to_app),
+          ),
         ],
       ),
       // floatingActionButton:

@@ -25,7 +25,7 @@ class AuthOrAppPage extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const LoadingPage();
         } else {
-          return StreamBuilder<ChatUser?>(
+          return StreamBuilder<ClientUser?>(
             stream: AuthService().userChanges,
             builder: (ctx, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {

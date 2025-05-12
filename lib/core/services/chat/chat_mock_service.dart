@@ -22,7 +22,7 @@ class ChatMockService implements ChatService {
   }
 
   @override
-  Future<ChatMessage> save(String text, ChatUser user, String chatId) async {
+  Future<ChatMessage> save(String text, ClientUser user, String chatId) async {
     final newMessage = ChatMessage(
       id: Random().nextDouble().toString(),
       text: text,
@@ -53,67 +53,67 @@ class ChatMockService implements ChatService {
     // TODO: implement getMembersChats
     throw UnimplementedError();
   }
-  
+
   @override
   // TODO: implement currentChat
   Chat? get currentChat => throw UnimplementedError();
-  
+
   @override
   void updateCurrentChat(Chat newChat) {
     // TODO: implement updateCurrentChat
   }
-  
+
   @override
   Future<void> addMemberToChat(String userId) {
     // TODO: implement addMemberToChat
     throw UnimplementedError();
   }
-  
+
   @override
-  // TODO: implement currentChatUsers
-  List<ChatUser> get currentChatUsers => throw UnimplementedError();
-  
+  // TODO: implement currentUsers
+  List<ClientUser> get currentUsers => throw UnimplementedError();
+
   @override
-  void updateCurrentChatUsers(List<ChatUser> newChatUsers) {
-    // TODO: implement updateCurrentChatUsers
+  void updateCurrentUsers(List<ClientUser> newUsers) {
+    // TODO: implement updateCurrentUsers
   }
-  
+
   @override
   Future<void> updateChatInfo(Chat updatedChat) {
     // TODO: implement updateChatInfo
     throw UnimplementedError();
   }
-  
+
   @override
   Future<void> removeChat() {
     // TODO: implement removeChat
     throw UnimplementedError();
   }
-  
+
   @override
   Future<void> removeMemberFromChat(String userId, String? chatId) {
     // TODO: implement removeMemberFromChat
     throw UnimplementedError();
   }
-  
+
   @override
   Future<void> makeUserAdmin(String userId) {
     // TODO: implement makeUserAdmin
     throw UnimplementedError();
   }
-  
+
   @override
   Future<void> removeUserAdmin(String userId) {
     // TODO: implement removeUserAdmin
     throw UnimplementedError();
   }
-  
+
   @override
   Future<void> loadCurrentChatMembersAndAdmins() {
     // TODO: implement loadCurrentChatMembersAndAdmins
     throw UnimplementedError();
   }
-  
+
   @override
   Future<DateTime?> getUserJoinDate(String userId, String chatId) {
     // TODO: implement getUserJoinDate
@@ -143,9 +143,11 @@ class ChatMockService implements ChatService {
   void removeListener(VoidCallback listener) {
     // TODO: implement removeListener
   }
-  
+
   @override
-  void listenToCurrentChatMessages(void Function(List<ChatMessage> p1) onNewMessages) {
+  void listenToCurrentChatMessages(
+    void Function(List<ChatMessage> p1) onNewMessages,
+  ) {
     // TODO: implement listenToCurrentChatMessages
   }
 }

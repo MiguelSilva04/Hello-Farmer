@@ -59,6 +59,7 @@ dependencies:
   google_sign_in: ^6.3.0
   flutter_facebook_auth: ^7.1.2
   reorderable_grid_view: ^2.2.8
+  flutter_rating_bar: ^4.0.0
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:
@@ -84,7 +85,7 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   # image_path: "assets/images/icon.jpg"
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/logo_android2.png"
   min_sdk_android: 21
   remove_alpha_ios: true
 

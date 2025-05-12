@@ -9,21 +9,23 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
+import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
 
 class AuthFirebaseService implements AuthService {
   static bool? _isLoggingIn;
   static bool? _isProducer;
-  static ChatUser? _currentUser;
-  static final List<ChatUser> _users = [];
+  static ClientUser? _currentUser;
+  static final List<ClientUser> _users = [];
   static StreamSubscription? _userChangesSubscription;
-  static final _userStream = Stream<ChatUser?>.multi((controller) async {
+  static final _userStream = Stream<ClientUser?>.multi((controller) async {
     final authChanges = FirebaseAuth.instance.authStateChanges();
     await for (final user in authChanges) {
-      _currentUser = user == null ? null : _toChatUser(user);
+      _currentUser = user == null ? null : _toClientUser(user);
       controller.add(_currentUser);
     }
   });
+  static Store? _myStore;
 
   AuthFirebaseService() {
     _listenToUserChanges();
@@ -37,7 +39,7 @@ class AuthFirebaseService implements AuthService {
           _users.clear();
           for (var doc in snapshot.docs) {
             _users.add(
-              ChatUser(
+              ClientUser(
                 id: doc.id,
                 firstName: doc['firstName'],
                 lastName: doc['lastName'],
@@ -112,7 +114,7 @@ class AuthFirebaseService implements AuthService {
   }
 
   @override
-  List<ChatUser> get users => _users;
+  List<ClientUser> get users => _users;
 
   @override
   bool get isLoggingIn => _isLoggingIn!;
@@ -121,18 +123,21 @@ class AuthFirebaseService implements AuthService {
   bool get isProducer => _isProducer!;
 
   @override
+  Store getMyStore() => _myStore!;
+
+  @override
   void setProducerState(bool state) => _isProducer = state;
 
   @override
   void setLoggingInState(bool state) => _isLoggingIn = state;
 
   @override
-  ChatUser? get currentUser {
+  ClientUser? get currentUser {
     return _currentUser;
   }
 
   @override
-  Stream<ChatUser?> get userChanges {
+  Stream<ClientUser?> get userChanges {
     return _userStream;
   }
 
@@ -174,7 +179,7 @@ class AuthFirebaseService implements AuthService {
       await login(email, password, "Normal");
 
       // 3. Salvar usuário na base de dados (opcional)
-      _currentUser = _toChatUser(
+      _currentUser = _toClientUser(
         credential.user!,
         firstName,
         lastName,
@@ -185,7 +190,7 @@ class AuthFirebaseService implements AuthService {
         dateOfBirth,
         isProducer,
       );
-      await _saveChatUser(_currentUser!);
+      await _saveClientUser(_currentUser!);
 
       // 4. Salvar primeiro e último nome no Firestore
       final store = FirebaseFirestore.instance;
@@ -406,7 +411,7 @@ class AuthFirebaseService implements AuthService {
     }
   }
 
-  Future<void> _saveChatUser(ChatUser user) async {
+  Future<void> _saveClientUser(ClientUser user) async {
     final store = FirebaseFirestore.instance;
     final docRef = store.collection('users').doc(user.id);
 
@@ -423,7 +428,7 @@ class AuthFirebaseService implements AuthService {
     });
   }
 
-  static ChatUser _toChatUser(
+  static ClientUser _toClientUser(
     User user, [
     String? firstName,
     String? lastName,
@@ -434,7 +439,7 @@ class AuthFirebaseService implements AuthService {
     String? dateOfBirth,
     bool? isProducer,
   ]) {
-    return ChatUser(
+    return ClientUser(
       id: user.uid,
       firstName:
           firstName ??

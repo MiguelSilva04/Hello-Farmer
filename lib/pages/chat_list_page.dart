@@ -123,7 +123,7 @@ class _ChatListPageState extends State<ChatListPage> {
             Provider.of<ChatService>(
               context,
               listen: false,
-            ).updateCurrentChatUsers(_getListChatUsers(chat));
+            ).updateCurrentUsers(_getListClientUsers(chat));
             await Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
           },
           leading: CircleAvatar(
@@ -183,7 +183,7 @@ class _ChatListPageState extends State<ChatListPage> {
     return DateFormat("d MMM y", "pt_PT").format(time);
   }
 
-  List<ChatUser> _getListChatUsers(Chat chat) {
+  List<ClientUser> _getListClientUsers(Chat chat) {
     return AuthService().users
         .where((u) => chat.membersIds.contains(u.id))
         .toList();

@@ -83,6 +83,7 @@ class MyApp extends StatelessWidget {
           tertiary: const Color.fromRGBO(155, 202, 184, 1),
           tertiaryFixed: Colors.black,
           onTertiaryFixedVariant: Colors.grey,
+          onTertiaryContainer: Colors.grey[200],
           inverseSurface: const Color.fromRGBO(91, 152, 134, 1),
           inversePrimary: const Color.fromRGBO(40, 87, 70, 1),
           onInverseSurface: const Color.fromRGBO(232, 247, 238, 1),

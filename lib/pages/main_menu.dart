@@ -176,15 +176,38 @@ class _MainMenuState extends State<MainMenu>
           // ),
           IconButton(
             onPressed: () async {
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                final chatNotifier = context.read<ChatListNotifier>();
-                chatNotifier.clearChats();
-                await AuthService().logout();
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.AUTH_OR_APP_PAGE,
-                  (route) => false,
-                );
-              });
+              final shouldLogout = await showDialog<bool>(
+                context: context,
+                builder:
+                    (ctx) => AlertDialog(
+                      title: const Text("Confirmar"),
+                      content: const Text(
+                        "Tem a certeza que pretende terminar a sessão?",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text("Não"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text("Sim"),
+                        ),
+                      ],
+                    ),
+              );
+
+              if (shouldLogout == true) {
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  final chatNotifier = context.read<ChatListNotifier>();
+                  chatNotifier.clearChats();
+                  await AuthService().logout();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.AUTH_OR_APP_PAGE,
+                    (route) => false,
+                  );
+                });
+              }
             },
             icon: Icon(Icons.exit_to_app),
           ),

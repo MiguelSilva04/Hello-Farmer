@@ -134,6 +134,10 @@ flutter:
     - assets/images/producer/bayer_crop_protection.jpg
     - assets/images/producer/fertileasy_logo.jpg
     - assets/images/producer/agro_insurance.jpg
+    - assets/images/mock_images/alface_romana.jpg
+    - assets/images/mock_images/baby_carrots.jpg
+    - assets/images/mock_images/cherry_tomatoes.jpg
+    - assets/images/mock_images/eggs.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

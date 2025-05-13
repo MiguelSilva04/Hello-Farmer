@@ -3,7 +3,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:harvestly/core/models/store_review.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/pages/member_info_page.dart';
-import 'package:harvestly/pages/profile_page.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/models/product_ad.dart';
@@ -470,7 +469,10 @@ class _StorePageState extends State<StorePage> {
                                     child: Row(
                                       children: [
                                         CircleAvatar(
-                                          backgroundColor: Colors.grey,
+                                          backgroundColor:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.tertiary,
                                           backgroundImage: NetworkImage(
                                             users
                                                 .where(
@@ -587,8 +589,8 @@ class _StorePageState extends State<StorePage> {
                           ),
                         ),
                         Container(
+                          height: 5,
                           color: Theme.of(context).colorScheme.secondary,
-                          height: 10,
                         ),
                       ],
                     ),

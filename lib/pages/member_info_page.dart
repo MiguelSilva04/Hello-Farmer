@@ -34,7 +34,7 @@ class _MemberInfoPageState extends State<MemberInfoPage> {
         quantity: 35.5,
         unit: 'kg',
         price: 20.5,
-        productImage: 'assets/images/producer/soil_analysis.jpg',
+        productImage: 'assets/images/mock_images/cherry_tomatoes.jpg',
         producerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
       ),
       Purchase(
@@ -42,7 +42,7 @@ class _MemberInfoPageState extends State<MemberInfoPage> {
         quantity: 1,
         unit: 'unidade',
         price: 12.2,
-        productImage: 'assets/images/producer/soil_analysis.jpg',
+        productImage: 'assets/images/mock_images/alface_romana.jpg',
         producerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
       ),
       Purchase(
@@ -50,7 +50,7 @@ class _MemberInfoPageState extends State<MemberInfoPage> {
         quantity: 50,
         unit: 'unidades',
         price: 15,
-        productImage: 'assets/images/producer/soil_analysis.jpg',
+        productImage: 'assets/images/mock_images/eggs.jpg',
         producerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
       ),
       Purchase(
@@ -58,7 +58,7 @@ class _MemberInfoPageState extends State<MemberInfoPage> {
         quantity: 30,
         unit: 'kg',
         price: 25.8,
-        productImage: 'assets/images/producer/soil_analysis.jpg',
+        productImage: 'assets/images/mock_images/baby_carrots.jpg',
         producerId: "vjjzySrSiIYy1c3QcduZhlKglNh2",
       ),
     ];

@@ -245,7 +245,7 @@ class SellPageState extends State<SellPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  location ?? 'FREGUESIA',
+                  location ?? 'Sem Localização',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onTertiaryFixed,
                     fontWeight: FontWeight.w600,
@@ -255,7 +255,7 @@ class SellPageState extends State<SellPage> {
 
               const SizedBox(height: 12),
               Text(
-                description ?? 'DESCRIÇÃO_DO_PRODUTO',
+                description ?? 'SEM DESCRIÇÃO',
                 style: TextStyle(fontSize: 14),
               ),
 
@@ -270,17 +270,7 @@ class SellPageState extends State<SellPage> {
               ),
               const SizedBox(height: 4),
               deliveryOptions.isEmpty
-                  ? Row(
-                    children: [
-                      Icon(
-                        Icons.check,
-                        color: Theme.of(context).colorScheme.onTertiaryFixed,
-                        size: 18,
-                      ),
-                      SizedBox(width: 4),
-                      Text('Entrega domiciliária'),
-                    ],
-                  )
+                  ? Text("Sem opções de entrega selecionadas")
                   : Column(
                     children:
                         deliveryOptions
@@ -346,8 +336,8 @@ class SellPageState extends State<SellPage> {
             InkWell(
               onTap:
                   () => setState(() {
+                    _submit();
                     _isPreviewing = false;
-                    _isSubmitted = true;
                   }),
               child: Container(
                 decoration: BoxDecoration(
@@ -667,7 +657,11 @@ class SellPageState extends State<SellPage> {
 
                 TextFormField(
                   decoration: InputDecoration(labelText: "Nome"),
-                  initialValue: name,
+                  enabled: false,
+                  initialValue:
+                      AuthService().currentUser!.firstName +
+                      " " +
+                      AuthService().currentUser!.lastName,
                   onChanged: (val) => name = val,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
@@ -682,7 +676,8 @@ class SellPageState extends State<SellPage> {
 
                 TextFormField(
                   decoration: InputDecoration(labelText: "Número de telefone"),
-                  initialValue: phone,
+                  enabled: false,
+                  initialValue: AuthService().currentUser!.phone,
                   keyboardType: TextInputType.phone,
                   onChanged: (val) => phone = val,
                   validator: (val) {

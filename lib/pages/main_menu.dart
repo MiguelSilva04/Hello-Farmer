@@ -119,7 +119,7 @@ class _MainMenuState extends State<MainMenu>
                       key: const ValueKey(1),
                       padding: const EdgeInsets.all(8),
                       child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
+                        width: MediaQuery.of(context).size.width * 0.7,
                         child: SearchBar(
                           autoFocus: true,
                           hintText: "Procurar...",

@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
@@ -13,6 +16,7 @@ class SellPage extends StatefulWidget {
 class SellPageState extends State<SellPage> {
   final _formKey = GlobalKey<FormState>();
   String? title;
+  String? category;
   String? description;
   String? location;
   List<String> deliveryOptions = [];
@@ -27,6 +31,7 @@ class SellPageState extends State<SellPage> {
     growable: true,
   );
   bool _isSubmitted = false;
+  bool _isPreviewing = false;
 
   void toggleDelivery(String option, bool selected) {
     setState(() {
@@ -38,10 +43,43 @@ class SellPageState extends State<SellPage> {
     });
   }
 
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Por favor, preencha todos os campos obrigatórios.'),
+        ),
+      );
+    } else if (images.every((image) => image == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, adicione pelo menos uma imagem.')),
+      );
+      return;
+    } else if (category == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, selecione uma categoria.')),
+      );
+      return;
+    } else if (deliveryOptions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Por favor, selecione pelo menos uma opção de entrega.',
+          ),
+        ),
+      );
+      return;
+    } else {
+      _formKey.currentState!.save();
+      setState(() {
+        _isSubmitted = true;
+      });
+    }
+  }
+
   Widget imageBox(int index) {
     return GestureDetector(
       onTap: () {
-        //Selecionar imagem da galeria
         ImagePicker()
             .pickImage(source: ImageSource.gallery)
             .then((pickedFile) {
@@ -57,13 +95,8 @@ class SellPageState extends State<SellPage> {
               );
             });
       },
-      child: Container(
+      child: DashedBorderContainer(
         key: ValueKey(index),
-        height: 80,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          color: Colors.grey[200],
-        ),
         child:
             images[index] != null
                 ? Image(image: images[index]!, fit: BoxFit.cover)
@@ -75,365 +108,780 @@ class SellPageState extends State<SellPage> {
   @override
   Widget build(BuildContext context) {
     return _isSubmitted
-        ? Container(
-          color: Theme.of(context).colorScheme.surfaceContainerLowest,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset("assets/images/success_icon.png", width: 120),
-                  Text(
-                    "Anúncio publicado com sucesso!",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 30,
-                      color: Theme.of(context).colorScheme.surface,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Text(
-                    "Clique em \"Ok\""
-                    " para voltar à página principal!",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 55),
-                  InkWell(
-                    onTap:
-                        () => setState(() {
-                          _isSubmitted = false;
-                          unit = "Kg";
-                          title = null;
-                        }),
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        "Ok",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        )
-        : Container(
-          color: Theme.of(context).colorScheme.surface,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(8),
-            child: Container(
-              padding: EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      "Públicar anúncio...",
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiaryFixed,
-                      ),
-                    ),
-                    Text(
-                      "Quanto mais detalhado melhor!",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Theme.of(context).colorScheme.tertiaryFixed,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      "Todos os campos são obrigatórios*",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color:
-                            Theme.of(
-                              context,
-                            ).colorScheme.onTertiaryFixedVariant,
-                      ),
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Título do anúncio",
-                      ),
-                      onSaved: (val) => title = val,
-                    ),
+        ? getSubmittedScreen(context)
+        : _isPreviewing
+        ? getPreviewingScreen(context)
+        : getMainScreen(context);
+  }
 
-                    TextFormField(
-                      decoration: InputDecoration(labelText: "Descrição"),
-                      maxLines: 4,
-                      maxLength: 10000,
-                      onSaved: (val) => description = val,
-                    ),
-
-                    SizedBox(height: 16),
-                    Text(
-                      "Selecione:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      "A primeira imagem é a principal do anúncio, arrasta e larga as imagens para mudar as posições das mesmas",
-                    ),
-                    ReorderableGridView.count(
-                      shrinkWrap: true,
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                      physics: NeverScrollableScrollPhysics(),
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          print('Reordering from $oldIndex to $newIndex');
-                          if (newIndex > oldIndex) newIndex--;
-                          final image = images.removeAt(oldIndex);
-                          images.insert(newIndex, image);
-                          print('Updated images list: $images');
-                        });
-                      },
-                      children: List.generate(
-                        6,
-                        (index) => KeyedSubtree(
-                          key: ValueKey(index),
-                          child: imageBox(index),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      "Categoria:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-
-                    DropdownButtonFormField<String>(
-                      value: title,
-                      items: [
-                        DropdownMenuItem(value: "Fruta", child: Text("Fruta")),
-                        DropdownMenuItem(
-                          value: "Legumes",
-                          child: Text("Legumes"),
-                        ),
-                        DropdownMenuItem(value: "Ervas", child: Text("Ervas")),
-                        DropdownMenuItem(
-                          value: "Flores",
-                          child: Text("Flores"),
-                        ),
-                      ],
-                      onChanged: (val) => setState(() => title = val),
-                      decoration: InputDecoration(
-                        labelText: "Selecione uma categoria",
-                      ),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiaryFixed,
-                      ),
-                      dropdownColor: Theme.of(context).colorScheme.secondary,
-                    ),
-
-                    SizedBox(height: 16),
-                    Text(
-                      "Localização:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Freguesia ou código postal",
-                      ),
-                      onSaved: (val) => location = val,
-                    ),
-
-                    SizedBox(height: 16),
-                    Text(
-                      "Opções de entrega:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    CheckboxListTile(
-                      title: Text("Entrega ao domicílio"),
-                      value: deliveryOptions.contains("domicilio"),
-                      onChanged: (val) => toggleDelivery("domicilio", val!),
-                    ),
-                    CheckboxListTile(
-                      title: Text("Recolha num local à escolha"),
-                      value: deliveryOptions.contains("recolha"),
-                      onChanged: (val) => toggleDelivery("recolha", val!),
-                    ),
-                    CheckboxListTile(
-                      title: Text("Entrega por transportadora"),
-                      value: deliveryOptions.contains("transportadora"),
-                      onChanged:
-                          (val) => toggleDelivery("transportadora", val!),
-                    ),
-
-                    SizedBox(height: 16),
-                    Text(
-                      "Detalhes da venda:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+  Widget getPreviewingScreen(BuildContext context) {
+    final pageController = PageController();
+    return Column(
+      children: [
+        StatefulBuilder(
+          builder: (context, setState) {
+            int currentPage =
+                pageController.hasClients
+                    ? pageController.page?.round() ?? 0
+                    : 0;
+            final activeImages =
+                images.where((image) => image != null).toList();
+            return Container(
+              child: Center(
+                child: SizedBox(
+                  height: 300,
+                  child: Container(
+                    width: double.infinity,
+                    color: Theme.of(context).colorScheme.onInverseSurface,
+                    child: Column(
                       children: [
                         Expanded(
-                          flex: 2,
-                          child: Column(
-                            children: [
-                              Text("Quantidade mínima:"),
-                              SizedBox(height: 5),
-                              TextFormField(
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                          child: PageView.builder(
+                            controller: pageController,
+                            itemCount: activeImages.length,
+                            onPageChanged: (index) {
+                              setState(() {
+                                currentPage = index;
+                              });
+                            },
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 30,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(30),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: activeImages[index]!,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                keyboardType: TextInputType.number,
-                                onSaved: (val) => qty = val,
-                              ),
-                            ],
+                              );
+                            },
                           ),
                         ),
-                        Divider(height: 10),
-                        SizedBox(width: 10),
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Unidade de medida:"),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: RadioListTile<String>(
-                                      contentPadding: EdgeInsets.zero,
-                                      title: Text(
-                                        "Kg",
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: "Kg",
-                                      groupValue: unit,
-                                      onChanged:
-                                          (val) => setState(() => unit = val),
-                                      dense: true,
-                                      visualDensity: VisualDensity.compact,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: RadioListTile<String>(
-                                      contentPadding: EdgeInsets.zero,
-                                      title: Text(
-                                        "Unidade",
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      value: "Unidade",
-                                      groupValue: unit,
-                                      onChanged:
-                                          (val) => setState(() => unit = val),
-                                      dense: true,
-                                      visualDensity: VisualDensity.compact,
-                                    ),
-                                  ),
-                                ],
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            activeImages.length,
+                            (index) => Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withAlpha(
+                                  index == currentPage ? 255 : 102,
+                                ),
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    TextFormField(
-                      decoration: InputDecoration(labelText: "Preço"),
-                      keyboardType: TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      onSaved: (val) => price = val,
-                    ),
-
-                    SizedBox(height: 10),
-                    Text(
-                      "Os seus detalhes:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-
-                    TextFormField(
-                      decoration: InputDecoration(labelText: "Nome"),
-                      onSaved: (val) => name = val,
-                    ),
-
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: "Número de telefone",
-                      ),
-                      keyboardType: TextInputType.phone,
-                      onSaved: (val) => phone = val,
-                    ),
-
-                    SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          onPressed: () {
-                            _formKey.currentState!.save();
-                            print("Cancelar anúncio...");
-                          },
-                          child: Text(
-                            "Cancelar",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
                             ),
                           ),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            _formKey.currentState!.save();
-                          },
-                          child: Text("Pré-visualizar"),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.all(30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundImage: NetworkImage(
+                      AuthService().currentUser!.imageUrl,
+                    ), // ou AssetImage
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    name ??
+                        AuthService().currentUser!.firstName +
+                            " " +
+                            AuthService().currentUser!.lastName,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Título do produto
+              Text(
+                title ?? "Sem titulo",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+              ),
+
+              // Preço por unidade
+              Text(
+                '${price ?? "PREÇO"}€/${unit ?? "unidade"}',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.inverseSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.onTertiary,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  location ?? 'FREGUESIA',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onTertiaryFixed,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+              Text(
+                description ?? 'DESCRIÇÃO_DO_PRODUTO',
+                style: TextStyle(fontSize: 14),
+              ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                'Opções de entrega:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onTertiaryFixed,
+                ),
+              ),
+              const SizedBox(height: 4),
+              deliveryOptions.isEmpty
+                  ? Row(
+                    children: [
+                      Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.onTertiaryFixed,
+                        size: 18,
+                      ),
+                      SizedBox(width: 4),
+                      Text('Entrega domiciliária'),
+                    ],
+                  )
+                  : Column(
+                    children:
+                        deliveryOptions
+                            .map(
+                              (deliveryOption) => Row(
+                                children: [
+                                  Icon(
+                                    Icons.check,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.onTertiaryFixed,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(deliveryOption),
+                                ],
+                              ),
+                            )
+                            .toList(),
+                  ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                'Quantidade mínima: ${qty ?? "XX"} unidades',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onTertiaryFixed,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            InkWell(
+              onTap:
+                  () => setState(() {
+                    _isPreviewing = false;
+                  }),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Voltar",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            InkWell(
+              onTap:
+                  () => setState(() {
+                    _isPreviewing = false;
+                    _isSubmitted = true;
+                  }),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Publicar",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Container getMainScreen(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(8),
+        child: Container(
+          padding: EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Públicar anúncio...",
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.tertiaryFixed,
+                  ),
+                ),
+                Text(
+                  "Quanto mais detalhado melhor!",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.tertiaryFixed,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Todos os campos são obrigatórios*",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onTertiaryFixedVariant,
+                  ),
+                ),
+                TextFormField(
+                  decoration: InputDecoration(labelText: "Título do anúncio"),
+                  initialValue: title,
+                  onChanged: (val) => title = val,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return "O título não pode estar vazio.";
+                    }
+                    if (val.length < 5) {
+                      return "O título deve ter pelo menos 5 caracteres.";
+                    }
+                    return null;
+                  },
+                ),
+
+                TextFormField(
+                  decoration: InputDecoration(labelText: "Descrição"),
+                  initialValue: description,
+                  maxLines: 4,
+                  maxLength: 10000,
+                  onChanged: (val) => description = val,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return "A descrição não pode estar vazia.";
+                    }
+                    if (val.length < 20) {
+                      return "A descrição deve ter pelo menos 20 caracteres.";
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: 16),
+                Text(
+                  "Selecione:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "A primeira imagem é a principal do anúncio, arrasta e larga as imagens para mudar as posições das mesmas",
+                ),
+                const SizedBox(height: 5),
+                ReorderableGridView.count(
+                  shrinkWrap: true,
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  physics: NeverScrollableScrollPhysics(),
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      print('Reordering from $oldIndex to $newIndex');
+                      if (newIndex > oldIndex) newIndex--;
+                      final image = images.removeAt(oldIndex);
+                      images.insert(newIndex, image);
+                      print('Updated images list: $images');
+                    });
+                  },
+                  children: List.generate(
+                    6,
+                    (index) => KeyedSubtree(
+                      key: ValueKey(index),
+                      child: imageBox(index),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Categoria:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                DropdownButtonFormField<String>(
+                  value: category,
+                  items: [
+                    DropdownMenuItem(value: "Fruta", child: Text("Fruta")),
+                    DropdownMenuItem(value: "Legumes", child: Text("Legumes")),
+                    DropdownMenuItem(value: "Ervas", child: Text("Ervas")),
+                    DropdownMenuItem(value: "Flores", child: Text("Flores")),
+                  ],
+                  onChanged: (val) => setState(() => category = val),
+                  decoration: InputDecoration(
+                    labelText: "Selecione uma categoria",
+                  ),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.tertiaryFixed,
+                  ),
+                  dropdownColor: Theme.of(context).colorScheme.secondary,
+                ),
+
+                SizedBox(height: 16),
+                Text(
+                  "Localização:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: "Freguesia ou código postal",
+                  ),
+                  onChanged: (val) => location = val,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return "A localização não pode estar vazia.";
+                    }
+                    if (val.length < 3) {
+                      return "A localização deve ter pelo menos 3 caracteres.";
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: 16),
+                Text(
+                  "Opções de entrega:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                CheckboxListTile(
+                  title: Text("Entrega ao domicílio"),
+                  value: deliveryOptions.contains("Entrega ao domicílio"),
+                  onChanged:
+                      (val) => toggleDelivery("Entrega ao domicílio", val!),
+                ),
+                CheckboxListTile(
+                  title: Text("Recolha num local à escolha"),
+                  value: deliveryOptions.contains(
+                    "Recolha num local à escolha",
+                  ),
+                  onChanged:
+                      (val) =>
+                          toggleDelivery("Recolha num local à escolha", val!),
+                ),
+                CheckboxListTile(
+                  title: Text("Entrega por transportadora"),
+                  value: deliveryOptions.contains("Entrega por transportadora"),
+                  onChanged:
+                      (val) =>
+                          toggleDelivery("Entrega por transportadora", val!),
+                ),
+
+                SizedBox(height: 16),
+                Text(
+                  "Detalhes da venda:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        children: [
+                          Text(
+                            "Quantidade mínima:",
+                            style: TextStyle(fontSize: 13),
+                          ),
+                          SizedBox(height: 5),
+                          TextFormField(
+                            initialValue: qty,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (val) => qty = val,
+                            validator: (val) {
+                              if (val == null || val.trim().isEmpty) {
+                                return "A quantidade mínima não pode estar vazia.";
+                              }
+                              if (int.tryParse(val) == null ||
+                                  int.parse(val) <= 0) {
+                                return "Insira um número válido maior que zero.";
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    Divider(height: 10),
+                    SizedBox(width: 10),
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Unidade de medida:"),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    "Kg",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  value: "Kg",
+                                  groupValue: unit,
+                                  onChanged:
+                                      (val) => setState(() => unit = val),
+                                  dense: true,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ),
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    "Unidade",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  value: "Unidade",
+                                  groupValue: unit,
+                                  onChanged:
+                                      (val) => setState(() => unit = val),
+                                  dense: true,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                TextFormField(
+                  decoration: InputDecoration(labelText: "Preço"),
+                  initialValue: price,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (val) => price = val,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return "O preço não pode estar vazio.";
+                    }
+                    if (double.tryParse(val) == null ||
+                        double.parse(val) <= 0) {
+                      return "Insira um preço válido maior que zero.";
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: 10),
+                Text(
+                  "Os seus detalhes:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                TextFormField(
+                  decoration: InputDecoration(labelText: "Nome"),
+                  initialValue: name,
+                  onChanged: (val) => name = val,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return "O nome não pode estar vazio.";
+                    }
+                    if (val.length < 3) {
+                      return "O nome deve ter pelo menos 3 caracteres.";
+                    }
+                    return null;
+                  },
+                ),
+
+                TextFormField(
+                  decoration: InputDecoration(labelText: "Número de telefone"),
+                  initialValue: phone,
+                  keyboardType: TextInputType.phone,
+                  onChanged: (val) => phone = val,
+                  validator: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return "O número de telefone não pode estar vazio.";
+                    }
+                    if (val.length < 9) {
+                      return "O número de telefone deve ter pelo menos 9 dígitos.";
+                    }
+                    return null;
+                  },
+                ),
+
+                SizedBox(height: 24),
+                SizedBox(
+                  height: 50,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => setState(() => _isPreviewing = true),
+                          child: Text(
+                            "pré-visualizar",
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).colorScheme.inverseSurface,
+                            ),
+                          ),
                         ),
-                        ElevatedButton(
+                      ),
+                      Expanded(
+                        child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 Theme.of(context).colorScheme.surface,
                           ),
                           onPressed: () {
-                            _formKey.currentState!.save();
-                            setState(() {
-                              _isSubmitted = true;
-                            });
+                            _submit();
                           },
                           child: Text(
                             "Publicar",
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.secondary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-        );
+        ),
+      ),
+    );
   }
+
+  Container getSubmittedScreen(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset("assets/images/success_icon.png", width: 120),
+              Text(
+                "Anúncio publicado com sucesso!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 30,
+                  color: Theme.of(context).colorScheme.surface,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                "Clique em \"Ok\""
+                " para voltar à página principal!",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 55),
+              InkWell(
+                onTap:
+                    () => setState(() {
+                      _isSubmitted = false;
+                      unit = "Kg";
+                      title = null;
+                    }),
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    "Ok",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DashedBorderContainer extends StatelessWidget {
+  final Widget child;
+  final double borderRadius;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashSpace;
+  final Color color;
+
+  const DashedBorderContainer({
+    super.key,
+    required this.child,
+    this.borderRadius = 8.0,
+    this.strokeWidth = 1.0,
+    this.dashWidth = 5.0,
+    this.dashSpace = 3.0,
+    this.color = Colors.grey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: DashedBorderPainter(
+        color: color,
+        strokeWidth: strokeWidth,
+        dashWidth: dashWidth,
+        dashSpace: dashSpace,
+        borderRadius: borderRadius,
+      ),
+      child: child,
+    );
+  }
+}
+
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashSpace;
+  final double borderRadius;
+
+  DashedBorderPainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.dashWidth,
+    required this.dashSpace,
+    required this.borderRadius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..color = color
+          ..strokeWidth = strokeWidth
+          ..style = PaintingStyle.stroke;
+
+    final path =
+        Path()..addRRect(
+          RRect.fromRectAndRadius(
+            Offset.zero & size,
+            Radius.circular(borderRadius),
+          ),
+        );
+
+    _drawDashedPath(canvas, path, paint);
+  }
+
+  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
+    final PathMetrics metrics = path.computeMetrics();
+    for (final metric in metrics) {
+      double distance = 0.0;
+      while (distance < metric.length) {
+        final next = distance + dashWidth;
+        canvas.drawPath(metric.extractPath(distance, next), paint);
+        distance = next + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

@@ -456,6 +456,7 @@ class _AuthFormState extends State<AuthForm> {
                                               context,
                                             ).colorScheme.tertiary,
                                       ),
+                                      maxLength: 9,
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
                                         hintText: 'Número de telefone',
@@ -746,7 +747,7 @@ class _AuthFormState extends State<AuthForm> {
                                 ),
                                 SizedBox(width: 10),
                                 Flexible(
-                                  flex: 8,
+                                  flex: 10,
                                   child: Text(
                                     'Continuar com o Google',
                                     style: TextStyle(
@@ -793,9 +794,8 @@ class _AuthFormState extends State<AuthForm> {
                                     fit: BoxFit.contain,
                                   ),
                                 ),
-                                SizedBox(width: 10),
                                 Flexible(
-                                  flex: 8,
+                                  flex: 10,
                                   child: Text(
                                     'Continuar com o Facebook',
                                     style: TextStyle(
@@ -842,9 +842,8 @@ class _AuthFormState extends State<AuthForm> {
                                     fit: BoxFit.contain,
                                   ),
                                 ),
-                                SizedBox(width: 10),
                                 Flexible(
-                                  flex: 8,
+                                  flex: 10,
                                   child: Text(
                                     'Iniciar sessão com a Apple',
                                     style: TextStyle(

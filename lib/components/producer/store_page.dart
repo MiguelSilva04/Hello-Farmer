@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:harvestly/core/models/store_review.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/pages/member_info_page.dart';
+import 'package:harvestly/pages/profile_page.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/models/product_ad.dart';
@@ -445,67 +447,86 @@ class _StorePageState extends State<StorePage> {
                                     ),
                                   ],
                                 ),
-                                title: SizedBox(
-                                  width: double.infinity,
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor: Colors.grey,
-                                        backgroundImage: NetworkImage(
-                                          users
-                                              .where(
-                                                (el) =>
-                                                    el.id ==
-                                                    myStore
-                                                        .storeReviews![i]
-                                                        .reviewerId,
-                                              )
-                                              .first
-                                              .imageUrl,
-                                        ),
-                                        radius: 10,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          users
-                                                  .where(
-                                                    (el) =>
-                                                        el.id ==
-                                                        myStore
-                                                            .storeReviews![i]
-                                                            .reviewerId,
-                                                  )
-                                                  .first
-                                                  .firstName +
-                                              " " +
-                                              users
-                                                  .where(
-                                                    (el) =>
-                                                        el.id ==
-                                                        myStore
-                                                            .storeReviews![i]
-                                                            .reviewerId,
-                                                  )
-                                                  .first
-                                                  .lastName,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 14),
+                                title: InkWell(
+                                  onTap:
+                                      () => Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => MemberInfoPage(
+                                                users
+                                                    .where(
+                                                      (el) =>
+                                                          el.id ==
+                                                          myStore
+                                                              .storeReviews![i]
+                                                              .reviewerId,
+                                                    )
+                                                    .first,
+                                              ),
                                         ),
                                       ),
-                                      RatingBarIndicator(
-                                        rating:
-                                            myStore.storeReviews![i].rating!,
-                                        itemBuilder:
-                                            (context, index) => Icon(
-                                              Icons.star,
-                                              color: Colors.amber,
-                                            ),
-                                        itemCount: 5,
-                                        itemSize: 18,
-                                        direction: Axis.horizontal,
-                                      ),
-                                    ],
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundColor: Colors.grey,
+                                          backgroundImage: NetworkImage(
+                                            users
+                                                .where(
+                                                  (el) =>
+                                                      el.id ==
+                                                      myStore
+                                                          .storeReviews![i]
+                                                          .reviewerId,
+                                                )
+                                                .first
+                                                .imageUrl,
+                                          ),
+                                          radius: 10,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            users
+                                                    .where(
+                                                      (el) =>
+                                                          el.id ==
+                                                          myStore
+                                                              .storeReviews![i]
+                                                              .reviewerId,
+                                                    )
+                                                    .first
+                                                    .firstName +
+                                                " " +
+                                                users
+                                                    .where(
+                                                      (el) =>
+                                                          el.id ==
+                                                          myStore
+                                                              .storeReviews![i]
+                                                              .reviewerId,
+                                                    )
+                                                    .first
+                                                    .lastName,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        ),
+                                        RatingBarIndicator(
+                                          rating:
+                                              myStore.storeReviews![i].rating!,
+                                          itemBuilder:
+                                              (context, index) => Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                          itemCount: 5,
+                                          itemSize: 18,
+                                          direction: Axis.horizontal,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 trailing: Column(

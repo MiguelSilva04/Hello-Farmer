@@ -81,6 +81,8 @@ class MyApp extends StatelessWidget {
           secondary: Colors.white,
           secondaryFixed: const Color.fromARGB(255, 82, 82, 82),
           tertiary: const Color.fromRGBO(155, 202, 184, 1),
+          onTertiary: Colors.green[100],
+          onTertiaryFixed: Colors.green[800],
           tertiaryFixed: Colors.black,
           onTertiaryFixedVariant: Colors.grey,
           onTertiaryContainer: Colors.grey[200],

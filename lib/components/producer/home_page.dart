@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/services/auth/auth_service.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -298,7 +300,7 @@ class Greetings extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
-              "Olá, Miguel!",
+              "Olá, ${AuthService().currentUser!.firstName}!",
               style: TextStyle(
                 fontSize: 34,
                 fontFamily: 'Poppins',

@@ -80,20 +80,16 @@ class SellPageState extends State<SellPage> {
   Widget imageBox(int index) {
     return GestureDetector(
       onTap: () {
-        ImagePicker()
-            .pickImage(source: ImageSource.gallery)
-            .then((pickedFile) {
-              if (pickedFile != null) {
-                setState(() {
-                  images[index] = FileImage(File(pickedFile.path));
-                });
-              }
-            })
-            .then((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${index + 1}ª imagem selecionada')),
-              );
+        ImagePicker().pickImage(source: ImageSource.gallery).then((pickedFile) {
+          if (pickedFile != null) {
+            setState(() {
+              images[index] = FileImage(File(pickedFile.path));
             });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${index + 1}ª imagem selecionada')),
+            );
+          }
+        });
       },
       child: DashedBorderContainer(
         key: ValueKey(index),
@@ -204,7 +200,7 @@ class SellPageState extends State<SellPage> {
                     radius: 14,
                     backgroundImage: NetworkImage(
                       AuthService().currentUser!.imageUrl,
-                    ), // ou AssetImage
+                    ),
                   ),
                   const SizedBox(width: 5),
                   Text(
@@ -218,7 +214,6 @@ class SellPageState extends State<SellPage> {
               ),
               const SizedBox(height: 8),
 
-              // Título do produto
               Text(
                 title ?? "Sem titulo",
                 style: TextStyle(
@@ -228,7 +223,6 @@ class SellPageState extends State<SellPage> {
                 ),
               ),
 
-              // Preço por unidade
               Text(
                 '${price ?? "PREÇO"}€/${unit ?? "unidade"}',
                 style: TextStyle(

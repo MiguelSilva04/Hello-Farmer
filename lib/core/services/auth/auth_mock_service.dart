@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:math';
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 

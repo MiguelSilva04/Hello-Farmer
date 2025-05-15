@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_list_notifier.dart';
-import '../components/producer/settings_page.dart';
+import '../components/producer/manage_page.dart';
 import '../utils/app_routes.dart';
 import '../components/producer/home_page.dart';
 import '../components/producer/sell_page.dart';
 import '../components/producer/sells_page.dart';
 import '../components/producer/store_page.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'new_chat_page.dart';
+import 'profile_page.dart';
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -21,8 +24,8 @@ class _MainMenuState extends State<MainMenu>
     with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
   bool _isSearching = false;
-  // String _profileImageUrl = "";
-  // bool _isProducer = AuthService().isProducer;
+  String _profileImageUrl = "";
+  bool _isProducer = AuthService().currentUser!.isProducer!;
 
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
@@ -37,7 +40,7 @@ class _MainMenuState extends State<MainMenu>
   @override
   void initState() {
     super.initState();
-    // _profileImageUrl = AuthService().currentUser?.imageUrl ?? "";
+    _profileImageUrl = AuthService().currentUser?.imageUrl ?? "";
     _selectedIndex = 0;
 
     _animationController = AnimationController(
@@ -70,27 +73,27 @@ class _MainMenuState extends State<MainMenu>
     });
   }
 
-  // void _navigateToPage(String route) {
-  //   Navigator.of(context).push(
-  //     PageRouteBuilder(
-  //       pageBuilder: (_, __, ___) => _getPage(route),
-  //       transitionsBuilder: (_, animation, __, child) {
-  //         return FadeTransition(opacity: animation, child: child);
-  //       },
-  //     ),
-  //   );
-  // }
+  void _navigateToPage(String route) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => _getPage(route),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
+  }
 
-  // Widget _getPage(String route) {
-  //   switch (route) {
-  //     case AppRoutes.PROFILE_PAGE:
-  //       return ProfilePage();
-  //     case AppRoutes.NEW_CHAT_PAGE:
-  //       return NewChatPage();
-  //     default:
-  //       return Container();
-  //   }
-  // }
+  Widget _getPage(String route) {
+    switch (route) {
+      case AppRoutes.PROFILE_PAGE:
+        return ProfilePage();
+      case AppRoutes.NEW_CHAT_PAGE:
+        return NewChatPage();
+      default:
+        return Container();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +102,7 @@ class _MainMenuState extends State<MainMenu>
       SellsPage(),
       SellPage(),
       StorePage(),
-      SettingsPage(),
+      ManagePage(),
     ];
 
     return Scaffold(
@@ -162,54 +165,17 @@ class _MainMenuState extends State<MainMenu>
               child: Icon(Icons.notifications_none_rounded),
             ),
           ),
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          //   child: InkWell(
-          //     onTap: () => _navigateToPage(AppRoutes.PROFILE_PAGE),
-          //     child:
-          //         AuthService().currentUser != null
-          //             ? CircleAvatar(
-          //               backgroundImage: NetworkImage(_profileImageUrl),
-          //             )
-          //             : Container(),
-          //   ),
-          // ),
-          IconButton(
-            onPressed: () async {
-              final shouldLogout = await showDialog<bool>(
-                context: context,
-                builder:
-                    (ctx) => AlertDialog(
-                      title: const Text("Confirmar"),
-                      content: const Text(
-                        "Tem a certeza que pretende terminar a sessão?",
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(false),
-                          child: const Text("Não"),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(true),
-                          child: const Text("Sim"),
-                        ),
-                      ],
-                    ),
-              );
-
-              if (shouldLogout == true) {
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  final chatNotifier = context.read<ChatListNotifier>();
-                  chatNotifier.clearChats();
-                  await AuthService().logout();
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.AUTH_OR_APP_PAGE,
-                    (route) => false,
-                  );
-                });
-              }
-            },
-            icon: Icon(Icons.exit_to_app),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: InkWell(
+              onTap: () => _navigateToPage(AppRoutes.PROFILE_PAGE),
+              child:
+                  AuthService().currentUser != null
+                      ? CircleAvatar(
+                        backgroundImage: NetworkImage(_profileImageUrl),
+                      )
+                      : Container(),
+            ),
           ),
         ],
       ),

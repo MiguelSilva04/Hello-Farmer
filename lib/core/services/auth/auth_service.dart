@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart';
 // import 'package:chat/core/services/auth/auth_mock_service.dart';
 
 import '../../models/store.dart';
@@ -11,8 +11,6 @@ abstract class AuthService {
   List<ClientUser> get users;
 
   bool get isLoggingIn;
-
-  bool get isProducer;
 
   Store getMyStore();
 

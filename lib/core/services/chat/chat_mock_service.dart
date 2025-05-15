@@ -4,7 +4,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:harvestly/core/models/chat.dart';
 import 'package:harvestly/core/models/chat_message.dart';
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
 
 class ChatMockService implements ChatService {

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-class SettingsPage extends StatefulWidget {
+import '../../utils/app_routes.dart';
+
+class ManagePage extends StatefulWidget {
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<ManagePage> createState() => _ManagePageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _ManagePageState extends State<ManagePage> {
   final user = AuthService().currentUser;
 
   @override
@@ -23,13 +25,29 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Gestão",
-                  style: TextStyle(
-                    fontSize: 50,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Gestão",
+                      style: TextStyle(
+                        fontSize: 50,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed:
+                          () => Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.SETTINGS_PAGE),
+                      icon: Icon(
+                        Icons.settings,
+                        color: Theme.of(context).colorScheme.secondary,
+                        size: 30,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   "Visão geral da sua loja!",

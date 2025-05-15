@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:harvestly/core/models/chat_message.dart';
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart';
 import 'package:flutter/material.dart';
 import '../../models/chat.dart';
 import 'chat_firebase_service.dart';

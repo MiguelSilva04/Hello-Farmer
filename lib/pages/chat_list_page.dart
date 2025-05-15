@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import '../core/models/chat.dart';
-import '../core/models/chat_user.dart';
+import '../core/models/client_user.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../utils/app_routes.dart';
 import 'package:intl/intl.dart';

@@ -1,8 +1,9 @@
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/pages/member_info_page.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'profile_page.dart';
 
 class ConectionsPage extends StatefulWidget {
   @override
@@ -133,7 +134,7 @@ class _ConectionsPageState extends State<ConectionsPage> {
                   onTap:
                       () => Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => MemberInfoPage(friends[index]),
+                          builder: (ctx) => ProfilePage(friends[index]),
                         ),
                       ),
                   leading: CircleAvatar(

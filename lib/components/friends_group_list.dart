@@ -1,7 +1,7 @@
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/pages/member_info_page.dart';
 import 'package:flutter/material.dart';
+import 'package:harvestly/pages/profile_page.dart';
 
 class FriendsGroupList extends StatefulWidget {
   final List<ClientUser> users;
@@ -58,7 +58,7 @@ class _FriendsGroupListState extends State<FriendsGroupList> {
                       (AuthService().currentUser!.id != usersList[i].id)
                           ? () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (ctx) => MemberInfoPage(usersList[i]),
+                              builder: (ctx) => ProfilePage(usersList[i]),
                             ),
                           )
                           : null,

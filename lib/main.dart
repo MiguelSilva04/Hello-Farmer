@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/services/chat/chat_service.dart';
+import 'pages/settings_page.dart';
 import 'utils/app_routes.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -156,6 +157,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.AUTH_PAGE: (ctx) => AuthPage(),
         AppRoutes.MAIN_MENU: (ctx) => MainMenu(),
         AppRoutes.CHAT_PAGE: (ctx) => ChatPage(),
+        AppRoutes.SETTINGS_PAGE: (ctx) => SettingsPage(),
         AppRoutes.CHAT_SETTINGS_PAGE: (ctx) => ChatSettingsPage(),
         AppRoutes.NEW_CHAT_PAGE: (ctx) => NewChatPage(),
         AppRoutes.NOTIFICATION_PAGE: (ctx) => NotificationPage(),

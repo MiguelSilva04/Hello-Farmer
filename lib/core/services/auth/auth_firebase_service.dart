@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart' as client_user;
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,14 +9,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
+import '../../models/client_user.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
 
 class AuthFirebaseService implements AuthService {
   static bool? _isLoggingIn;
-  static bool? _isProducer;
   static ClientUser? _currentUser;
-  static final List<ClientUser> _users = [];
+  static final List<client_user.ClientUser> _users = [];
   static StreamSubscription? _userChangesSubscription;
   static final _userStream = Stream<ClientUser?>.multi((controller) async {
     final authChanges = FirebaseAuth.instance.authStateChanges();
@@ -39,7 +39,7 @@ class AuthFirebaseService implements AuthService {
           _users.clear();
           for (var doc in snapshot.docs) {
             _users.add(
-              ClientUser(
+              client_user.ClientUser(
                 id: doc.id,
                 firstName: doc['firstName'],
                 lastName: doc['lastName'],
@@ -77,6 +77,7 @@ class AuthFirebaseService implements AuthService {
             );
             if (_currentUser != null) {
               if (_currentUser!.id == doc.id) {
+                _currentUser!.isProducer = doc['isProducer'];
                 _currentUser!.gender = doc['gender'];
                 _currentUser!.phone = doc['phone'];
                 _currentUser!.recoveryEmail = doc['recoveryEmail'];
@@ -120,13 +121,10 @@ class AuthFirebaseService implements AuthService {
   bool get isLoggingIn => _isLoggingIn!;
 
   @override
-  bool get isProducer => _isProducer!;
-
-  @override
   Store getMyStore() => _myStore!;
 
   @override
-  void setProducerState(bool state) => _isProducer = state;
+  void setProducerState(bool state) => _currentUser!.isProducer = state;
 
   @override
   void setLoggingInState(bool state) => _isLoggingIn = state;
@@ -178,7 +176,7 @@ class AuthFirebaseService implements AuthService {
       // 2.5 Fazer o login do usuário
       await login(email, password, "Normal");
 
-      // 3. Salvar usuário na base de dados (opcional)
+      // 3. Guardar o utilizador na base de dados (opcional)
       _currentUser = _toClientUser(
         credential.user!,
         firstName,
@@ -188,7 +186,7 @@ class AuthFirebaseService implements AuthService {
         recoveryEmail,
         imageUrl,
         dateOfBirth,
-        isProducer,
+        _currentUser!.isProducer,
       );
       await _saveClientUser(_currentUser!);
 

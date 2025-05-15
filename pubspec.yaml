@@ -60,6 +60,9 @@ dependencies:
   flutter_facebook_auth: ^7.1.2
   reorderable_grid_view: ^2.2.8
   flutter_rating_bar: ^4.0.0
+  eva_icons_flutter: ^3.1.0
+  intl_phone_field: ^3.2.0
+  country_state_city_picker: ^1.2.8
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:
@@ -138,6 +141,9 @@ flutter:
     - assets/images/mock_images/baby_carrots.jpg
     - assets/images/mock_images/cherry_tomatoes.jpg
     - assets/images/mock_images/eggs.jpg
+    - assets/images/mock_images/trigo.jpg
+    - assets/images/mock_images/centeio.jpg
+    - assets/images/mock_images/quinta.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

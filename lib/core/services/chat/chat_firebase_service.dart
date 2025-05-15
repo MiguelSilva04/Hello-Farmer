@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:harvestly/core/models/chat.dart';
 import 'package:harvestly/core/models/chat_message.dart';
-import 'package:harvestly/core/models/chat_user.dart';
+import 'package:harvestly/core/models/client_user.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
 import 'package:harvestly/encryption/encryption_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

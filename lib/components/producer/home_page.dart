@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/services/auth/auth_service.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class ProducerHomePage extends StatefulWidget {
+  const ProducerHomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<ProducerHomePage> createState() => _ProducerHomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _ProducerHomePageState extends State<ProducerHomePage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 

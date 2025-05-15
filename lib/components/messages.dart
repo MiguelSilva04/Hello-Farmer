@@ -125,7 +125,7 @@ class _MessagesState extends State<Messages> {
 
         for (var entry in userEntryDates.entries) {
           final user = chatUsers.firstWhereOrNull((u) => u.id == entry.key);
-          if (user != null) {
+          if (user != null && user.id != currentUser!.id) {
             timelineEntries.add(
               MapEntry(
                 entry.value,

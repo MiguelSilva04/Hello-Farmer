@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../components/consumer/explore_page.dart';
+import '../components/consumer/home_page.dart';
+import '../components/consumer/map_page.dart';
+import '../components/consumer/orders_page.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/manage_page.dart';
@@ -10,6 +14,7 @@ import '../components/producer/sells_page.dart';
 import '../components/producer/store_page.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'chat_list_page.dart';
 import 'new_chat_page.dart';
 import 'profile_page.dart';
 
@@ -73,36 +78,22 @@ class _MainMenuState extends State<MainMenu>
     });
   }
 
-  void _navigateToPage(String route) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => _getPage(route),
-        transitionsBuilder: (_, animation, __, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-      ),
-    );
-  }
-
-  Widget _getPage(String route) {
-    switch (route) {
-      case AppRoutes.PROFILE_PAGE:
-        return ProfilePage();
-      case AppRoutes.NEW_CHAT_PAGE:
-        return NewChatPage();
-      default:
-        return Container();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _pages = [
-      HomePage(),
+    final List<Widget> _producerPages = [
+      ProducerHomePage(),
       SellsPage(),
       SellPage(),
       StorePage(),
       ManagePage(),
+    ];
+
+    final List<Widget> _consumerPages = [
+      ConsumerHomePage(),
+      ExplorePage(),
+      MapPage(),
+      OrdersPage(),
+      ChatListPage(),
     ];
 
     return Scaffold(
@@ -168,7 +159,8 @@ class _MainMenuState extends State<MainMenu>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: InkWell(
-              onTap: () => _navigateToPage(AppRoutes.PROFILE_PAGE),
+              onTap:
+                  () => Navigator.of(context).pushNamed(AppRoutes.PROFILE_PAGE),
               child:
                   AuthService().currentUser != null
                       ? CircleAvatar(
@@ -191,7 +183,10 @@ class _MainMenuState extends State<MainMenu>
       //         : null,
       body: FadeTransition(
         opacity: _opacityAnimation,
-        child: _pages[_selectedIndex],
+        child:
+            _isProducer
+                ? _producerPages[_selectedIndex]
+                : _consumerPages[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Theme.of(context).bottomAppBarTheme.color,
@@ -201,20 +196,14 @@ class _MainMenuState extends State<MainMenu>
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Inicio"),
           BottomNavigationBarItem(
-            icon: Icon(FontAwesomeIcons.fileInvoiceDollar),
-            label: "Vendas",
+            icon: Icon(FontAwesomeIcons.boxOpen),
+            label: "Encomendas",
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Explorar"),
+          BottomNavigationBarItem(icon: Icon(Icons.map_rounded), label: "Mapa"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle),
-            label: "Vender",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(FontAwesomeIcons.buildingUser),
-            label: "Banca",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.manage_accounts),
-            label: "Gestão",
+            icon: Icon(Icons.message_rounded),
+            label: "Mensagens",
           ),
         ],
       ),

@@ -15,6 +15,7 @@ import '../chat/chat_list_notifier.dart';
 
 class AuthFirebaseService implements AuthService {
   static bool? _isLoggingIn;
+  static bool? _isProducer;
   static ClientUser? _currentUser;
   static final List<client_user.ClientUser> _users = [];
   static StreamSubscription? _userChangesSubscription;
@@ -29,6 +30,18 @@ class AuthFirebaseService implements AuthService {
 
   AuthFirebaseService() {
     _listenToUserChanges();
+  }
+
+  @override
+  Future<ClientUser?> getCurrentUser() async {
+    if (_currentUser != null) {
+      return _currentUser;
+    }
+
+    // Aguarda o primeiro valor emitido pela stream de autenticação
+    return await _userStream.firstWhere(
+      (user) => user != null || FirebaseAuth.instance.currentUser == null,
+    );
   }
 
   void _listenToUserChanges() {
@@ -124,7 +137,7 @@ class AuthFirebaseService implements AuthService {
   Store getMyStore() => _myStore!;
 
   @override
-  void setProducerState(bool state) => _currentUser!.isProducer = state;
+  void setProducerState(bool state) => _isProducer = state;
 
   @override
   void setLoggingInState(bool state) => _isLoggingIn = state;
@@ -186,7 +199,7 @@ class AuthFirebaseService implements AuthService {
         recoveryEmail,
         imageUrl,
         dateOfBirth,
-        _currentUser!.isProducer,
+        _isProducer,
       );
       await _saveClientUser(_currentUser!);
 

@@ -8,6 +8,8 @@ import 'auth_firebase_service.dart';
 abstract class AuthService {
   ClientUser? get currentUser;
 
+  Future<ClientUser?> getCurrentUser();
+
   List<ClientUser> get users;
 
   bool get isLoggingIn;

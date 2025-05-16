@@ -166,4 +166,10 @@ class AuthMockService implements AuthService {
     // TODO: implement getMyStore
     throw UnimplementedError();
   }
+  
+  @override
+  Future<ClientUser?> getCurrentUser() {
+    // TODO: implement getCurrentUser
+    throw UnimplementedError();
+  }
 }

@@ -54,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
       unit: 'kg',
       price: 20.5,
       productImage: 'assets/images/mock_images/cherry_tomatoes.jpg',
-      producerId: "rmcilPMCHGUDHXA1NmyZKZsWCVE3",
+      producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
     ),
     Purchase(
       productName: 'Alface Romana',
@@ -62,7 +62,7 @@ class _ProfilePageState extends State<ProfilePage> {
       unit: 'unidade',
       price: 12.2,
       productImage: 'assets/images/mock_images/alface_romana.jpg',
-      producerId: "rmcilPMCHGUDHXA1NmyZKZsWCVE3",
+      producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
     ),
     Purchase(
       productName: 'Ovos Biológicos',
@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
       unit: 'unidades',
       price: 15,
       productImage: 'assets/images/mock_images/eggs.jpg',
-      producerId: "rmcilPMCHGUDHXA1NmyZKZsWCVE3",
+      producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
     ),
     Purchase(
       productName: 'Cenouras Baby',
@@ -78,14 +78,20 @@ class _ProfilePageState extends State<ProfilePage> {
       unit: 'kg',
       price: 25.8,
       productImage: 'assets/images/mock_images/baby_carrots.jpg',
-      producerId: "rmcilPMCHGUDHXA1NmyZKZsWCVE3",
+      producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
     ),
   ];
 
-  void _initStatus() {
-    user = widget.user != null ? widget.user! : AuthService().currentUser!;
-    userName = user!.firstName + " " + user!.lastName;
-    user!.phone = user!.phone.trim().split(" ").last;
+  void _initStatus() async {
+    final loadedUser = widget.user ?? await AuthService().getCurrentUser();
+    if (loadedUser == null) return;
+
+    setState(() {
+      user = loadedUser;
+      userName = "${user!.firstName} ${user!.lastName}";
+      final phoneParts = user!.phone.trim().split(" ") ?? [];
+      user!.phone = phoneParts.isNotEmpty ? phoneParts.last : "";
+    });
   }
 
   @override
@@ -152,7 +158,7 @@ class _ProfilePageState extends State<ProfilePage> {
           initialValue: value,
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.grey[100],
+            fillColor: Theme.of(context).colorScheme.secondary,
             border: OutlineInputBorder(borderSide: BorderSide.none),
           ),
         ),
@@ -270,7 +276,10 @@ class _ProfilePageState extends State<ProfilePage> {
           widget.user == null
               ? AppBar(
                 centerTitle: false,
-                title: Text(userName!, style: TextStyle(fontSize: 25)),
+                title: Text(
+                  userName ?? "Nome de perfil",
+                  style: TextStyle(fontSize: 25),
+                ),
                 actions: [
                   Stack(
                     children: [
@@ -291,134 +300,161 @@ class _ProfilePageState extends State<ProfilePage> {
               : AppBar(
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                iconTheme: const IconThemeData(color: Colors.white),
+                iconTheme: IconThemeData(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
+      body:
+          user == null
+              ? const Center(child: CircularProgressIndicator())
+              : Stack(
                 children: [
-                  if (AuthService().currentUser != null) ...[
-                    Stack(
-                      children: [
-                        Container(
-                          height: MediaQuery.of(context).size.height * 0.25,
-                          decoration: BoxDecoration(
-                            image:
-                                _backgroundImage != null
-                                    ? DecorationImage(
-                                      image: FileImage(_backgroundImage!),
-                                      fit: BoxFit.cover,
-                                    )
-                                    : (user != null &&
-                                        (user!.backgroundUrl != "" &&
-                                            user!.backgroundUrl != null))
-                                    ? DecorationImage(
-                                      image: NetworkImage(user!.backgroundUrl!),
-                                      fit: BoxFit.cover,
-                                    )
-                                    : DecorationImage(
-                                      image: AssetImage(
-                                        'assets/images/background_logo.png',
-                                      ),
-                                      fit: BoxFit.cover,
-                                    ),
-                          ),
-                          width: double.infinity,
-                        ),
-                        if (_isEditing)
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: TextButton(
-                              child: Text(
-                                (_backgroundImage == null)
-                                    ? "Definir imagem"
-                                    : "Mudar imagem",
-                              ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.grey,
-                                textStyle: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                  SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.25,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  image:
+                                      _backgroundImage != null
+                                          ? DecorationImage(
+                                            image: FileImage(_backgroundImage!),
+                                            fit: BoxFit.cover,
+                                          )
+                                          : (user!.backgroundUrl?.isNotEmpty ??
+                                              false)
+                                          ? DecorationImage(
+                                            image: NetworkImage(
+                                              user!.backgroundUrl!,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                          : const DecorationImage(
+                                            image: AssetImage(
+                                              'assets/images/background_logo.png',
+                                            ),
+                                            fit: BoxFit.cover,
+                                          ),
                                 ),
                               ),
-                              // icon: Icon(Icons.edit, color: Colors.white),
-                              onPressed: () {
-                                _isEditingBackgroundImage = true;
-                                _pickImage();
-                              },
-                            ),
-                          ),
-                        Visibility(
-                          visible: _isButtonVisible,
-                          child: Positioned(
-                            bottom: 0,
-                            right: 10,
-                            child:
-                                (_isLoading && _isEditing)
-                                    ? CircularProgressIndicator()
-                                    : TextButton(
-                                      child: Text("Guardar alterações"),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
+                              if (_isEditing)
+                                Positioned(
+                                  top: 10,
+                                  right: 10,
+                                  child: TextButton(
+                                    onPressed: () {
+                                      _isEditingBackgroundImage = true;
+                                      _pickImage();
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                      backgroundColor:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                      textStyle: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _backgroundImage == null
+                                          ? "Definir imagem"
+                                          : "Mudar imagem",
+                                    ),
+                                  ),
+                                ),
+                              if (_isButtonVisible)
+                                Positioned(
+                                  bottom: 0,
+                                  right: 10,
+                                  child:
+                                      (_isLoading && _isEditing)
+                                          ? const CircularProgressIndicator()
+                                          : TextButton(
+                                            onPressed: _submit,
+                                            style: TextButton.styleFrom(
+                                              foregroundColor:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.secondary,
+                                              backgroundColor:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.surface,
+                                              textStyle: const TextStyle(
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              "Guardar alterações",
+                                            ),
+                                          ),
+                                ),
+                              Stack(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      top:
+                                          MediaQuery.of(context).size.height *
+                                          0.18,
+                                    ),
+                                    child: Center(
+                                      child: CircleAvatar(
+                                        radius: 80,
+                                        backgroundImage:
+                                            _profileImage != null
+                                                ? FileImage(_profileImage!)
+                                                : (user!.imageUrl?.isNotEmpty ??
+                                                    false)
+                                                ? NetworkImage(user!.imageUrl!)
+                                                    as ImageProvider
+                                                : const AssetImage(
+                                                  'assets/images/default_user.png',
+                                                ),
+                                      ),
+                                    ),
+                                  ),
+                                  if (_isEditing)
+                                    Positioned(
+                                      bottom: 5,
+                                      left:
+                                          MediaQuery.of(context).size.width *
+                                          0.30,
+                                      child: CircleAvatar(
                                         backgroundColor:
                                             Theme.of(
                                               context,
                                             ).colorScheme.surface,
-                                        textStyle: TextStyle(fontSize: 12),
+                                        child: IconButton(
+                                          onPressed: _pickImage,
+                                          icon: const Icon(Icons.photo_camera),
+                                        ),
                                       ),
-                                      // icon: Icon(Icons.edit, color: Colors.white),
-                                      onPressed: _submit,
                                     ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                        Stack(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(
-                                top: MediaQuery.of(context).size.height * 0.18,
-                              ),
-                              child: Center(
-                                child: CircleAvatar(
-                                  radius: 80,
-                                  backgroundImage:
-                                      _profileImage != null && user != null
-                                          ? FileImage(_profileImage!)
-                                          : NetworkImage(user?.imageUrl ?? ""),
-                                ),
-                              ),
-                            ),
-                            if (_isEditing)
-                              Positioned(
-                                bottom: 5,
-                                left: MediaQuery.of(context).size.width * 0.30,
-                                child: CircleAvatar(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.surface,
-                                  child: IconButton(
-                                    onPressed: _pickImage,
-                                    icon: Icon(Icons.photo_camera),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          _isEditing
+                              ? getEditingProfile()
+                              : getOnlyViewingProfile(context),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    if (!_isEditing) getOnlyViewingProfile(context),
-                    if (_isEditing) ...[getEditingProfile()],
-                  ],
+                  ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -439,10 +475,13 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.secondary,
             child: SelectState(
-              dropdownColor: Colors.white,
-              style: const TextStyle(fontSize: 15, color: Colors.black),
+              dropdownColor: Theme.of(context).colorScheme.secondary,
+              style: TextStyle(
+                fontSize: 15,
+                color: Theme.of(context).colorScheme.tertiaryFixed,
+              ),
 
               onCountryChanged: (value) {
                 setState(() {
@@ -475,7 +514,10 @@ class _ProfilePageState extends State<ProfilePage> {
           IntlPhoneField(
             initialCountryCode: _countryCode,
             initialValue: phone,
-            decoration: InputDecoration(filled: true, fillColor: Colors.white),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Theme.of(context).colorScheme.secondary,
+            ),
             onChanged: (phone) {
               _countryCode = phone.countryCode;
               _phone = phone.completeNumber;
@@ -513,7 +555,10 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         Text(
           '📍Lisboa',
-          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          style: TextStyle(
+            fontSize: 16,
+            color: Theme.of(context).colorScheme.secondaryFixed,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
@@ -532,9 +577,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     (match) => '${match.group(0)} ',
                   )
                   .trim(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
-            color: Colors.black54,
+            color: Theme.of(context).colorScheme.secondaryFixed,
             fontStyle: FontStyle.italic,
           ),
         ),
@@ -553,10 +598,13 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             ElevatedButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.message, color: Colors.white),
+              icon: Icon(
+                Icons.message,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
               label: const Text('Enviar mensagem'),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.secondary,
                 backgroundColor: Theme.of(context).colorScheme.surface,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -584,9 +632,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     user!.aboutMe == null || user!.aboutMe!.isEmpty
                         ? 'Ainda sem descrição...'
                         : user!.aboutMe!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.secondaryFixed,
                       height: 1.4,
                     ),
                   ),
@@ -609,13 +657,18 @@ class _ProfilePageState extends State<ProfilePage> {
               Column(
                 children:
                     purchases.map((purchase) {
-                      final user =
+                      AuthService().users.forEach((u) => print(u.id));
+                      print(purchase.producerId);
+                      final ClientUser? producerUser =
                           AuthService().users
                               .where((u) => u.id == purchase.producerId)
                               .first;
+                      print(producerUser!.id.isEmpty);
 
-                      final producerName = '${user.firstName} ${user.lastName}';
-                      final producerImage = user.imageUrl;
+                      final producerName =
+                          '${producerUser.firstName} ${producerUser.lastName}';
+                      final producerImage = producerUser.imageUrl;
+
                       return Card(
                         color: Theme.of(context).colorScheme.onTertiary,
                         child: Padding(
@@ -675,17 +728,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ),
 
-                              if (!user.isProducer!)
+                              // Se o utilizador logado (user) não for produtor, mostra o produtor da compra
+                              if (user != null && !user!.isProducer!)
                                 Flexible(
                                   flex: 3,
                                   child: InkWell(
-                                    onTap:
-                                        () => Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) => ProfilePage(user),
-                                          ),
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  ProfilePage(producerUser),
                                         ),
+                                      );
+                                    },
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -704,6 +760,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                             width: 35,
                                             height: 35,
                                             fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (_, __, ___) =>
+                                                    const Icon(Icons.person),
                                           ),
                                         ),
                                         const SizedBox(height: 6),

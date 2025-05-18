@@ -190,6 +190,8 @@ class _MainMenuState extends State<MainMenu>
                     });
                   } else if (value == "Profile") {
                     _navigateToPage(AppRoutes.PROFILE_PAGE);
+                  } else if (value == "Favorites") {
+                    Navigator.of(context).pushNamed(AppRoutes.FAVORITES_PAGE);
                   } else if (value == "Settings") {
                     Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
                   }
@@ -243,6 +245,23 @@ class _MainMenuState extends State<MainMenu>
                           ],
                         ),
                       ),
+                      if (!AuthService().currentUser!.isProducer!)
+                        PopupMenuItem(
+                          value: "Favorites",
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Icon(
+                                FontAwesomeIcons.heart,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.secondaryFixed,
+                              ),
+                              Text("Favoritos"),
+                            ],
+                          ),
+                        ),
                       PopupMenuItem(
                         value: "Settings",
                         child: Row(

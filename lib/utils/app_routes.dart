@@ -8,4 +8,5 @@ class AppRoutes {
   static const NEW_CHAT_PAGE = '/new-chat-page';
   static const NOTIFICATION_PAGE = '/notification-page';
   static const PROFILE_PAGE = '/profile-page';
+  static const FAVORITES_PAGE = '/favorites-page';
 }

@@ -8,6 +8,7 @@ import '../pages/main_menu.dart';
 import '../pages/new_chat_page.dart';
 import '../pages/notification_page.dart';
 
+import 'components/consumer/favorites_page.dart';
 import 'core/notification/chat_notification_service.dart';
 import '../pages/auth_or_app_page.dart';
 import 'package:flutter/material.dart';
@@ -162,6 +163,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.NEW_CHAT_PAGE: (ctx) => NewChatPage(),
         AppRoutes.NOTIFICATION_PAGE: (ctx) => NotificationPage(),
         AppRoutes.PROFILE_PAGE: (ctx) => ProfilePage(),
+        AppRoutes.FAVORITES_PAGE: (ctx) => FavoritesPage(),
       },
     );
   }

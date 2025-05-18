@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class BreadcrumbNavigation extends StatelessWidget {
   final List<BreadcrumbItem> items;
@@ -22,17 +23,21 @@ class BreadcrumbNavigation extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: isLast ? null : item.onTap,
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: Text(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.8,
+                      ),
+                      child: AutoSizeText(
                         item.label,
+                        maxLines: 1,
+                        minFontSize: 14,
+                        overflow: TextOverflow.ellipsis,
+                        maxFontSize: isLast ? 22 : 20,
                         style: TextStyle(
-                          fontSize: isLast ? 16.5 : 14.5,
                           fontWeight:
                               isLast ? FontWeight.bold : FontWeight.normal,
                           color: Theme.of(context).colorScheme.secondary,
                         ),
-                        maxLines: 1,
                       ),
                     ),
                   ),

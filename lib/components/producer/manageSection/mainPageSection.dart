@@ -1,8 +1,8 @@
 
 import 'package:flutter/material.dart';
 
-class MainpageSection extends StatelessWidget {
-  const MainpageSection({super.key});
+class MainPageSection extends StatelessWidget {
+  const MainPageSection({super.key});
 
   @override
   Widget build(BuildContext context) {

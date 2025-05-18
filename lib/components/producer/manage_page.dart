@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/producer/manageSection/addsSection.dart';
+import 'package:harvestly/components/producer/manageSection/analysisFinancesSection.dart';
+import 'package:harvestly/components/producer/manageSection/analysisMainProducersSection.dart';
+import 'package:harvestly/components/producer/manageSection/analysisManageStockSection.dart.dart';
+import 'package:harvestly/components/producer/manageSection/analysisReportsSection.dart';
+import 'package:harvestly/components/producer/manageSection/analysisSaleChannelSection.dart';
+import 'package:harvestly/components/producer/manageSection/analysisStoreViewsSection.dart';
+import 'package:harvestly/components/producer/manageSection/billingSection.dart';
 import 'package:harvestly/components/producer/manageSection/breadCrumbNavigator.dart';
+import 'package:harvestly/components/producer/manageSection/clientsSection.dart';
+import 'package:harvestly/components/producer/manageSection/financesSection.dart';
+import 'package:harvestly/components/producer/manageSection/giftsSection.dart';
+import 'package:harvestly/components/producer/manageSection/highlightedAddsSection.dart';
+import 'package:harvestly/components/producer/manageSection/managePricesSection.dart';
+import 'package:harvestly/components/producer/manageSection/manageStockSection.dart';
+import 'package:harvestly/components/producer/manageSection/ordersAbandonnedSection.dart';
+import 'package:harvestly/components/producer/manageSection/saleChannelSection.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'manageSection/mainPageSection.dart';
 import 'manageSection/mainSectionManage.dart';
-import 'manageSection/ordersSection.dart';
 
 class ManagePage extends StatefulWidget {
   @override
@@ -17,7 +32,7 @@ class _ManagePageState extends State<ManagePage> {
   @override
   Widget build(BuildContext context) {
     final List<String> sectionNames = [
-      "Gestão", // índice 0
+      "Gestão",
       "Página Principal",
       "Faturação",
       "Compras abandonadas",
@@ -59,23 +74,23 @@ class _ManagePageState extends State<ManagePage> {
           "finances": () => setState(() => sectionIndex = 17),
         },
       ),
-      const Center(child: Text("Página Principal")),
-      const Center(child: Text("Faturação")),
-      const Center(child: Text("Compras abandonadas")),
-      const Center(child: Text("Gestão de Stock")),
-      const Center(child: Text("Gestão de Preços")),
-      const Center(child: Text("Cabazes")),
-      const Center(child: Text("Clientes")),
-      const Center(child: Text("Análise de dados > Gestão de Stock")),
-      const Center(child: Text("Análise de dados > Relatórios")),
-      const Center(child: Text("Análise de dados > Por Canal de Venda")),
-      const Center(child: Text("Análise de dados > Principais Produtores")),
-      const Center(child: Text("Análise de dados > Visitas à Banca")),
-      const Center(child: Text("Análise de dados > Finanças")),
-      const Center(child: Text("Canais de Venda")),
-      const Center(child: Text("Anúncios")),
-      const Center(child: Text("Destaques de Anúncios")),
-      const Center(child: Text("Finanças")),
+      MainPageSection(),
+      BillingSection(),
+      OrdersAbandonedSection(),
+      ManageStockSection(),
+      ManagePricesSection(),
+      GiftsSection(),
+      ClientsSection(),
+      AnalysisManageStockSection(),
+      AnalysisReportsSection(),
+      AnalysisSaleChannelSection(),
+      AnalysisMainProducersSection(),
+      AnalysisStoreViewsSection(),
+      AnalysisFinancesSection(),
+      SaleChannelSection(),
+      AddsSection(),
+      HighlightedAddsSection(),
+      FinancesSection(),
     ];
 
     return SingleChildScrollView(

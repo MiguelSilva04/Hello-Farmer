@@ -95,10 +95,7 @@ class MainSectionPage extends StatelessWidget {
                 title: "Gestão de Preços",
                 onTap: onClicks["managePrices"]!,
               ),
-              SettingsSubOption(
-                title: "Cabazes",
-                onTap: onClicks["gifts"]!,
-              ),
+              SettingsSubOption(title: "Cabazes", onTap: onClicks["gifts"]!),
             ],
           ),
 
@@ -167,7 +164,6 @@ class MainSectionPage extends StatelessWidget {
     );
   }
 }
-
 
 class SettingsTileGroup extends StatefulWidget {
   final IconData icon;

@@ -98,7 +98,7 @@ class _ManagePageState extends State<ManagePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             width: double.infinity,
             color: Theme.of(context).colorScheme.surface,
             child: BreadcrumbNavigation(
@@ -122,10 +122,7 @@ class _ManagePageState extends State<ManagePage> {
                       ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: sections[sectionIndex],
-          ),
+          sections[sectionIndex],
         ],
       ),
     );

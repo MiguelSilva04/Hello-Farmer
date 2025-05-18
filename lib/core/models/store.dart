@@ -4,6 +4,7 @@ import 'store_review.dart';
 class Store {
   static int _idCounter = 0;
   final String id;
+  String? backgroundImageUrl;
   String? imageUrl;
   String? name;
   String? subName;
@@ -15,6 +16,7 @@ class Store {
   List<StoreReview>? storeReviews;
 
   Store({
+    this.backgroundImageUrl,
     this.imageUrl,
     this.name,
     this.subName,

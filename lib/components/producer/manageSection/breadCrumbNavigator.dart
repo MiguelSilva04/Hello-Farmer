@@ -34,6 +34,9 @@ class BreadcrumbNavigation extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         maxFontSize: isLast ? 22 : 20,
                         style: TextStyle(
+                          decoration: isLast ? TextDecoration.underline : null,
+                          decorationColor:
+                              Theme.of(context).colorScheme.secondary,
                           fontWeight:
                               isLast ? FontWeight.bold : FontWeight.normal,
                           color: Theme.of(context).colorScheme.secondary,

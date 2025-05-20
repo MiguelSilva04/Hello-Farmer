@@ -17,6 +17,8 @@ import 'package:harvestly/components/producer/manageSection/manageStockSection.d
 import 'package:harvestly/components/producer/manageSection/ordersAbandonnedSection.dart';
 import 'package:harvestly/components/producer/manageSection/saleChannelSection.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../../core/services/other/manage_section_notifier.dart';
 import 'manageSection/mainPageSection.dart';
 import 'manageSection/mainSectionManage.dart';
 
@@ -27,7 +29,6 @@ class ManagePage extends StatefulWidget {
 
 class _ManagePageState extends State<ManagePage> {
   final user = AuthService().currentUser;
-  int sectionIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,23 +56,23 @@ class _ManagePageState extends State<ManagePage> {
     final List<Widget> sections = [
       MainSectionPage(
         onClicks: {
-          "mainPage": () => setState(() => sectionIndex = 1),
-          "billingPage": () => setState(() => sectionIndex = 2),
-          "ordersAbandoned": () => setState(() => sectionIndex = 3),
-          "manageStock": () => setState(() => sectionIndex = 4),
-          "managePrices": () => setState(() => sectionIndex = 5),
-          "gifts": () => setState(() => sectionIndex = 6),
-          "clients": () => setState(() => sectionIndex = 7),
-          "analysisManageStock": () => setState(() => sectionIndex = 8),
-          "analysisReports": () => setState(() => sectionIndex = 9),
-          "analysisSaleChannel": () => setState(() => sectionIndex = 10),
-          "analysisMainProducers": () => setState(() => sectionIndex = 11),
-          "analysisStoreViews": () => setState(() => sectionIndex = 12),
-          "analysisFinances": () => setState(() => sectionIndex = 13),
-          "saleChannel": () => setState(() => sectionIndex = 14),
-          "adds": () => setState(() => sectionIndex = 15),
-          "highlightedAdds": () => setState(() => sectionIndex = 16),
-          "finances": () => setState(() => sectionIndex = 17),
+          "mainPage": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(1)),
+          "billingPage": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(2)),
+          "ordersAbandoned": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(3)),
+          "manageStock": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(4)),
+          "managePrices": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(5)),
+          "gifts": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(6)),
+          "clients": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(7)),
+          "analysisManageStock": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(8)),
+          "analysisReports": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(9)),
+          "analysisSaleChannel": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(10)),
+          "analysisMainProducers": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(11)),
+          "analysisStoreViews": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(12)),
+          "analysisFinances": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(13)),
+          "saleChannel": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(14)),
+          "adds": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(15)),
+          "highlightedAdds": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(16)),
+          "finances": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(17)),
         },
       ),
       MainPageSection(),
@@ -103,26 +104,26 @@ class _ManagePageState extends State<ManagePage> {
             color: Theme.of(context).colorScheme.surface,
             child: BreadcrumbNavigation(
               items:
-                  sectionIndex == 0
+                  Provider.of<ManageSectionNotifier>(context, listen:false ).currentIndex == 0
                       ? [
                         BreadcrumbItem(
                           label: sectionNames[0],
-                          onTap: () => setState(() => sectionIndex = 0),
+                          onTap: () => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(0),
                         ),
                       ]
                       : [
                         BreadcrumbItem(
                           label: sectionNames[0],
-                          onTap: () => setState(() => sectionIndex = 0),
+                          onTap: () => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(0),
                         ),
                         BreadcrumbItem(
-                          label: sectionNames[sectionIndex],
+                          label: sectionNames[Provider.of<ManageSectionNotifier>(context, listen:false ).currentIndex],
                           onTap: () {}, // Página atual
                         ),
                       ],
             ),
           ),
-          sections[sectionIndex],
+          sections[Provider.of<ManageSectionNotifier>(context, listen:false ).currentIndex],
         ],
       ),
     );

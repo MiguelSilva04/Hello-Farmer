@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../core/models/product_ad.dart';
 import '../../../core/models/store.dart';
+import '../../../core/services/other/bottom_navigation_notifier.dart';
 
 class MainPageSection extends StatelessWidget {
   MainPageSection({super.key});
@@ -15,15 +18,36 @@ class MainPageSection extends StatelessWidget {
     location: "Braga",
     address: "Rua da Agricultura, 123",
     preferredMarkets: ["Feira de Guimarães", "Mercado de Braga"],
-    productsAds: [], // Podes adicionar depois
-    storeReviews: [], // Podes adicionar depois
+    productsAds: [
+      ProductAd(
+        name: "Ovos Biológico",
+        imageUrl: "assets/images/mock_images/eggs.jpg",
+        price: "2,50€/unidade",
+        category: "Ovos",
+        highlight: "Colheita biológica!",
+      ),
+      ProductAd(
+        name: "Centeio",
+        imageUrl: "assets/images/mock_images/centeio.jpg",
+        price: "3,00€/kg",
+        category: "Ervas",
+        highlight: "Colheita fresca!",
+      ),
+      ProductAd(
+        name: "Cenouras baby",
+        imageUrl: "assets/images/mock_images/baby_carrots.jpg",
+        price: "1,20€/unidade",
+        category: "Legumes",
+        highlight: "Promoção da semana",
+      ),
+    ],
+    storeReviews: [],
   );
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Stack com imagem de fundo e imagem de perfil
         Stack(
           clipBehavior: Clip.none,
           children: [
@@ -60,7 +84,6 @@ class MainPageSection extends StatelessWidget {
 
         const SizedBox(height: 60),
 
-        // Nome da quinta
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Center(
@@ -80,7 +103,6 @@ class MainPageSection extends StatelessWidget {
           ),
         ),
 
-        // Descrição
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -99,7 +121,6 @@ class MainPageSection extends StatelessWidget {
           ),
         ),
 
-        // Canais de venda (mock fixo por agora)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -155,14 +176,112 @@ class MainPageSection extends StatelessWidget {
 
         const SizedBox(height: 20),
 
-        // Botão adicionar produto
-        Center(
-          child: ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.add),
-            label: const Text("Adicionar um produto"),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    "Anúncios publicados",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () {
+                      Provider.of<BottomNavigationNotifier>(
+                        context,
+                        listen: false,
+                      ).setIndex(2);
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text("Novo anúncio"),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              store.productsAds!.isEmpty
+                  ? const Text("Ainda não há anúncios publicados.")
+                  : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: store.productsAds!.length,
+                    itemBuilder: (context, index) {
+                      final ad = store.productsAds![index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          tileColor:
+                              Theme.of(context).colorScheme.tertiaryFixedDim,
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              ad.imageUrl,
+                              width: 75,
+                              height: 75,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          title: Text(ad.name),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Preço: ${ad.price}"),
+                              Text("Categoria: ${ad.category}"),
+                              if (ad.highlight.isNotEmpty)
+                                Text(
+                                  ad.highlight,
+                                  style: const TextStyle(
+                                    color: Colors.orange,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              // Implementar ações: editar, remover, tornar público/privado
+                            },
+                            itemBuilder:
+                                (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: ListTile(
+                                      leading: Icon(Icons.edit),
+                                      title: Text('Editar'),
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'remove',
+                                    child: ListTile(
+                                      leading: Icon(Icons.delete),
+                                      title: Text('Remover'),
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'toggle_visibility',
+                                    child: ListTile(
+                                      leading: Icon(Icons.visibility),
+                                      title: Text('Tornar público/privado'),
+                                    ),
+                                  ),
+                                ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+            ],
           ),
         ),
+        // Center(
+        //   child: ElevatedButton.icon(
+        //     onPressed: () {},
+        //     icon: const Icon(Icons.add),
+        //     label: const Text("Adicionar um produto"),
+        //   ),
+        // ),
       ],
     );
   }

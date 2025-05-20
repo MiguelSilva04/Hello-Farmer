@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
 import '../components/consumer/home_page.dart';
@@ -27,7 +28,6 @@ class MainMenu extends StatefulWidget {
 
 class _MainMenuState extends State<MainMenu>
     with SingleTickerProviderStateMixin {
-  int _selectedIndex = 0;
   bool _isSearching = false;
   String _profileImageUrl = "";
 
@@ -36,7 +36,10 @@ class _MainMenuState extends State<MainMenu>
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      Provider.of<BottomNavigationNotifier>(
+        context,
+        listen: false,
+      ).setIndex(index);
       _isSearching = false;
     });
   }
@@ -45,8 +48,6 @@ class _MainMenuState extends State<MainMenu>
   void initState() {
     super.initState();
     _profileImageUrl = AuthService().currentUser?.imageUrl ?? "";
-    _selectedIndex = 0;
-
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -185,9 +186,10 @@ class _MainMenuState extends State<MainMenu>
                       context,
                     ).pushNamed(AppRoutes.NOTIFICATION_PAGE);
                   } else if (value == "Store") {
-                    setState(() {
-                      _selectedIndex = 3;
-                    });
+                    Provider.of<BottomNavigationNotifier>(
+                      context,
+                      listen: false,
+                    ).setIndex(3);
                   } else if (value == "Profile") {
                     _navigateToPage(AppRoutes.PROFILE_PAGE);
                   } else if (value == "Favorites") {
@@ -294,14 +296,24 @@ class _MainMenuState extends State<MainMenu>
             opacity: _opacityAnimation,
             child:
                 _isProducer
-                    ? _producerPages[_selectedIndex]
-                    : _consumerPages[_selectedIndex],
+                    ? _producerPages[Provider.of<BottomNavigationNotifier>(
+                      context,
+                    ).currentIndex]
+                    : _consumerPages[Provider.of<BottomNavigationNotifier>(
+                      context,
+                    ).currentIndex],
           ),
           bottomNavigationBar: BottomNavigationBar(
             selectedItemColor: Theme.of(context).bottomAppBarTheme.color,
             unselectedItemColor: Theme.of(context).colorScheme.secondaryFixed,
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
+            currentIndex:
+                Provider.of<BottomNavigationNotifier>(context).currentIndex,
+            onTap: (index) {
+              Provider.of<BottomNavigationNotifier>(
+                context,
+                listen: false,
+              ).setIndex(index);
+            },
             items:
                 _isProducer
                     ? const [

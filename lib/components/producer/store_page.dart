@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:harvestly/core/models/store_review.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/models/product_ad.dart';
 import '../../core/models/store.dart';
+import '../../core/services/other/manage_section_notifier.dart';
 import '../../pages/profile_page.dart';
 
 class StorePage extends StatefulWidget {
@@ -214,7 +217,16 @@ class _StorePageState extends State<StorePage> {
                           Text(myStore.subName ?? ""),
                           const SizedBox(height: 8),
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Provider.of<BottomNavigationNotifier>(
+                                context,
+                                listen: false,
+                              ).setIndex(4);
+                              Provider.of<ManageSectionNotifier>(
+                                context,
+                                listen: false,
+                              ).setIndex(1);
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   Theme.of(context).colorScheme.primary,

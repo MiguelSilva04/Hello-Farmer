@@ -14,7 +14,9 @@ import '../pages/auth_or_app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/services/other/bottom_navigation_notifier.dart';
 import 'core/services/chat/chat_service.dart';
+import 'core/services/other/manage_section_notifier.dart';
 import 'pages/settings_page.dart';
 import 'utils/app_routes.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -35,6 +37,8 @@ void main() async {
         ChangeNotifierProvider<ChatService>(
           create: (_) => ChatFirebaseService(),
         ),
+        ChangeNotifierProvider(create: (_) => BottomNavigationNotifier()),
+        ChangeNotifierProvider(create: (_) => ManageSectionNotifier()),
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
       ],
       child: const MyApp(),
@@ -82,6 +86,7 @@ class MyApp extends StatelessWidget {
           surfaceContainerLow: const Color.fromRGBO(221, 247, 237, 1),
           secondary: Colors.white,
           secondaryFixed: const Color.fromARGB(255, 82, 82, 82),
+          tertiaryFixedDim: const Color.fromARGB(255, 199, 243, 226),
           tertiary: const Color.fromRGBO(155, 202, 184, 1),
           onTertiary: Colors.green[100],
           onTertiaryFixed: Colors.green[800],

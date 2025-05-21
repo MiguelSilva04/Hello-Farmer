@@ -56,23 +56,125 @@ class _ManagePageState extends State<ManagePage> {
     final List<Widget> sections = [
       MainSectionPage(
         onClicks: {
-          "mainPage": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(1)),
-          "billingPage": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(2)),
-          "ordersAbandoned": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(3)),
-          "manageStock": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(4)),
-          "managePrices": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(5)),
-          "gifts": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(6)),
-          "clients": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(7)),
-          "analysisManageStock": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(8)),
-          "analysisReports": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(9)),
-          "analysisSaleChannel": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(10)),
-          "analysisMainProducers": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(11)),
-          "analysisStoreViews": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(12)),
-          "analysisFinances": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(13)),
-          "saleChannel": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(14)),
-          "adds": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(15)),
-          "highlightedAdds": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(16)),
-          "finances": () => setState(() => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(17)),
+          "mainPage":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(1),
+              ),
+          "billingPage":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(2),
+              ),
+          "ordersAbandoned":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(3),
+              ),
+          "manageStock":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(4),
+              ),
+          "managePrices":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(5),
+              ),
+          "gifts":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(6),
+              ),
+          "clients":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(7),
+              ),
+          "analysisManageStock":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(8),
+              ),
+          "analysisReports":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(9),
+              ),
+          "analysisSaleChannel":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(10),
+              ),
+          "analysisMainProducers":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(11),
+              ),
+          "analysisStoreViews":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(12),
+              ),
+          "analysisFinances":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(13),
+              ),
+          "saleChannel":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(14),
+              ),
+          "adds":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(15),
+              ),
+          "highlightedAdds":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(16),
+              ),
+          "finances":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(17),
+              ),
         },
       ),
       MainPageSection(),
@@ -94,38 +196,51 @@ class _ManagePageState extends State<ManagePage> {
       FinancesSection(),
     ];
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            width: double.infinity,
-            color: Theme.of(context).colorScheme.surface,
-            child: BreadcrumbNavigation(
-              items:
-                  Provider.of<ManageSectionNotifier>(context, listen:false ).currentIndex == 0
-                      ? [
-                        BreadcrumbItem(
-                          label: sectionNames[0],
-                          onTap: () => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(0),
-                        ),
-                      ]
-                      : [
-                        BreadcrumbItem(
-                          label: sectionNames[0],
-                          onTap: () => Provider.of<ManageSectionNotifier>(context, listen:false ).setIndex(0),
-                        ),
-                        BreadcrumbItem(
-                          label: sectionNames[Provider.of<ManageSectionNotifier>(context, listen:false ).currentIndex],
-                          onTap: () {}, // Página atual
-                        ),
-                      ],
-            ),
+    return Consumer<ManageSectionNotifier>(
+      builder: (context, manageSectionNotifier, child) {
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                width: double.infinity,
+                color: Theme.of(context).colorScheme.surface,
+                child: BreadcrumbNavigation(
+                  items:
+                      manageSectionNotifier.currentIndex == 0
+                          ? [
+                            BreadcrumbItem(
+                              label: sectionNames[0],
+                              onTap: () {
+                                manageSectionNotifier.setIndex(0);
+                              },
+                            ),
+                          ]
+                          : [
+                            BreadcrumbItem(
+                              label: sectionNames[0],
+                              onTap: () {
+                                print(
+                                  "Index: ${manageSectionNotifier.currentIndex} Cliquei",
+                                );
+                                manageSectionNotifier.setIndex(0);
+                              },
+                            ),
+                            BreadcrumbItem(
+                              label:
+                                  sectionNames[manageSectionNotifier
+                                      .currentIndex],
+                              onTap: () => manageSectionNotifier.currentIndex,
+                            ),
+                          ],
+                ),
+              ),
+              sections[manageSectionNotifier.currentIndex],
+            ],
           ),
-          sections[Provider.of<ManageSectionNotifier>(context, listen:false ).currentIndex],
-        ],
-      ),
+        );
+      },
     );
   }
 }

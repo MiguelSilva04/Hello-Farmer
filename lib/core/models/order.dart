@@ -1,8 +1,4 @@
-enum OrderState {
-  Entregue,
-  Pendente,
-  Enviada,
-}
+enum OrderState { Entregue, Pendente, Enviada }
 
 class Order {
   final String id;
@@ -10,6 +6,7 @@ class Order {
   final DateTime deliveryDate;
   final String address;
   final OrderState state;
+  final double totalPrice;
 
   Order({
     required this.id,
@@ -17,5 +14,6 @@ class Order {
     required this.deliveryDate,
     required this.address,
     required this.state,
+    required this.totalPrice,
   });
 }

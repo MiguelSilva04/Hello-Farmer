@@ -177,7 +177,7 @@ class MainPageSection extends StatelessWidget {
         const SizedBox(height: 20),
 
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -210,10 +210,9 @@ class MainPageSection extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final ad = store.productsAds![index];
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        color: Theme.of(context).colorScheme.secondary,
+                        // margin: const EdgeInsets.symmetric(vertical: 8),
                         child: ListTile(
-                          tileColor:
-                              Theme.of(context).colorScheme.tertiaryFixedDim,
                           leading: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.asset(

@@ -25,6 +25,7 @@ class _SellsPageState extends State<SellsPage>
       deliveryDate: DateTime(2025, 4, 6),
       address: 'Rua do Pedido #1001',
       state: OrderState.Entregue,
+      totalPrice: 20.34
     ),
     Order(
       id: '0078',
@@ -32,6 +33,7 @@ class _SellsPageState extends State<SellsPage>
       deliveryDate: DateTime(2025, 5, 19),
       address: 'Rua do Pedido #0078',
       state: OrderState.Pendente,
+      totalPrice: 25.12
     ),
     Order(
       id: '0832',
@@ -39,6 +41,7 @@ class _SellsPageState extends State<SellsPage>
       deliveryDate: DateTime(2025, 4, 30),
       address: 'Rua do Pedido #0832',
       state: OrderState.Enviada,
+      totalPrice: 30.59
     ),
     Order(
       id: '3627',
@@ -46,6 +49,7 @@ class _SellsPageState extends State<SellsPage>
       deliveryDate: DateTime(2025, 5, 4),
       address: 'Rua do Pedido #3627',
       state: OrderState.Pendente,
+      totalPrice: 17.36
     ),
     Order(
       id: '1938',
@@ -53,6 +57,7 @@ class _SellsPageState extends State<SellsPage>
       deliveryDate: DateTime(2025, 4, 2),
       address: 'Rua do Pedido #1938',
       state: OrderState.Entregue,
+      totalPrice: 13.84
     ),
     Order(
       id: '8809',
@@ -60,6 +65,7 @@ class _SellsPageState extends State<SellsPage>
       deliveryDate: DateTime(2025, 4, 2),
       address: 'Rua do Pedido #8809',
       state: OrderState.Entregue,
+      totalPrice: 69.11
     ),
   ];
 

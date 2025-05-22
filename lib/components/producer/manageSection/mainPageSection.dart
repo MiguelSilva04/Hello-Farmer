@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/product_ad.dart';
@@ -8,57 +9,7 @@ import '../../../core/services/other/bottom_navigation_notifier.dart';
 class MainPageSection extends StatelessWidget {
   MainPageSection({super.key});
 
-  final store = Store(
-    backgroundImageUrl: "assets/images/mock_images/quinta.jpg",
-    imageUrl: "assets/images/mock_images/quinta.jpg",
-    name: "Quinta da Soeira",
-    subName: "Vale Verde",
-    description:
-        "Na Quinta do Vale Verde, cultivamos com paixão e respeito pela natureza. Todos os nossos produtos são 100% biológicos.",
-    location: "Braga",
-    address: "Rua da Agricultura, 123",
-    preferredMarkets: ["Feira de Guimarães", "Mercado de Braga"],
-    productsAds: [
-      ProductAd(
-        product: Product(
-          name: "Ovos Biológico",
-          imageUrl: ["assets/images/mock_images/eggs.jpg"],
-          category: "Ovos",
-          stock: 10,
-          minAmount: 6,
-          unit: Unit.UNIT,
-          price: 2.5,
-        ),
-        price: "2,50€/unidade",
-        highlight: "Colheita biológica!",
-      ),
-      ProductAd(
-        product: Product(
-          name: "Centeio",
-          imageUrl: ["assets/images/mock_images/centeio.jpg"],
-          category: "Ervas",
-          stock: 20,
-          minAmount: 5,
-          unit: Unit.KG,
-          price: 3,
-        ),
-        highlight: "Colheita fresca!",
-      ),
-      ProductAd(
-        product: Product(
-          name: "Cenouras baby",
-          imageUrl: ["assets/images/mock_images/baby_carrots.jpg"],
-          category: "Legumes",
-          stock: 30,
-          minAmount: 15,
-          unit: Unit.KG,
-          price: 1.2,
-        ),
-        highlight: "Promoção da semana",
-      ),
-    ],
-    storeReviews: [],
-  );
+  final store = AuthService().currentUser!.store!;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +19,7 @@ class MainPageSection extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             Image.asset(
-              store.imageUrl ?? "assets/images/default_store.jpg",
+              store.backgroundImageUrl ?? "assets/images/default_store.jpg",
               fit: BoxFit.cover,
               width: double.infinity,
               height: 180,
@@ -89,7 +40,7 @@ class MainPageSection extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 60,
                     backgroundImage: AssetImage(
-                      "assets/images/mock_images/trigo.jpg",
+                      store.imageUrl ?? "assets/images/default_store.jpg",
                     ),
                   ),
                 ),
@@ -151,40 +102,45 @@ class MainPageSection extends StatelessWidget {
                   const Spacer(),
                   TextButton(
                     onPressed: () {},
-                    child: const Text("Definir Canais de venda"),
+                    child: const Text(
+                      "Definir Canais de venda",
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
                 ],
               ),
               Wrap(
                 spacing: 10,
-                children: [
-                  Chip(
-                    avatar: Icon(
-                      Icons.local_shipping,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    label: Text(
-                      "Transportadora",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                  ),
-                  Chip(
-                    avatar: Icon(
-                      Icons.home,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    label: Text(
-                      "Entrega ao domicílio",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                  ),
-                ],
+                children:
+                    store.preferredDeliveryMethod?.map((method) {
+                      IconData icon;
+                      switch (method) {
+                        case DeliveryMethod.COURIER:
+                          icon = Icons.local_shipping;
+                          break;
+                        case DeliveryMethod.HOME_DELIVERY:
+                          icon = Icons.home;
+                          break;
+                        case DeliveryMethod.PICKUP:
+                          icon = Icons.store;
+                          break;
+                      }
+                      return Chip(
+                        avatar: Icon(
+                          icon,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        label: Text(
+                          method.toDisplayString(),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      );
+                    }).toList() ??
+                    [],
               ),
             ],
           ),
@@ -219,74 +175,89 @@ class MainPageSection extends StatelessWidget {
               const SizedBox(height: 8),
               store.productsAds!.isEmpty
                   ? const Text("Ainda não há anúncios publicados.")
-                  : ListView.builder(
+                  : ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: store.productsAds!.length,
                     itemBuilder: (context, index) {
                       final ad = store.productsAds![index];
-                      return Card(
-                        color: Theme.of(context).colorScheme.secondary,
-                        // margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              ad.product.imageUrl.first,
-                              width: 75,
-                              height: 75,
-                              fit: BoxFit.cover,
-                            ),
+                      return ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            ad.product.imageUrl.first,
+                            width: 75,
+                            height: 75,
+                            fit: BoxFit.cover,
                           ),
-                          title: Text(ad.product.name),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Preço: ${ad.price}"),
-                              Text("Categoria: ${ad.product.category}"),
-                              if (ad.highlight.isNotEmpty)
-                                Text(
-                                  ad.highlight,
-                                  style: const TextStyle(
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.bold,
+                        ),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              ad.product.name,
+                              style: TextStyle(fontSize: 20),
+                            ),
+                            const SizedBox(width: 5),
+                            if (ad.highlight.isNotEmpty)
+                              Tooltip(
+                                message: ad.highlight,
+                                showDuration: const Duration(seconds: 7),
+                                triggerMode: TooltipTriggerMode.tap,
+                                preferBelow: false,
+                                child: Icon(
+                                  Icons.info_outline,
+                                ), // usar info_outline é mais visual
+                              ),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Preço: ${ad.price}"),
+                            Text("Categoria: ${ad.product.category}"),
+                            // if (ad.highlight.isNotEmpty)
+                            //   Text(
+                            //     ad.highlight,
+                            //     style: const TextStyle(
+                            //       color: Colors.orange,
+                            //       fontWeight: FontWeight.bold,
+                            //     ),
+                            //   ),
+                          ],
+                        ),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {},
+                          itemBuilder:
+                              (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: ListTile(
+                                    leading: Icon(Icons.edit),
+                                    title: Text('Editar'),
                                   ),
                                 ),
-                            ],
-                          ),
-                          trailing: PopupMenuButton<String>(
-                            onSelected: (value) {
-                              // Implementar ações: editar, remover, tornar público/privado
-                            },
-                            itemBuilder:
-                                (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: ListTile(
-                                      leading: Icon(Icons.edit),
-                                      title: Text('Editar'),
-                                    ),
+                                const PopupMenuItem(
+                                  value: 'remove',
+                                  child: ListTile(
+                                    leading: Icon(Icons.delete),
+                                    title: Text('Remover'),
                                   ),
-                                  const PopupMenuItem(
-                                    value: 'remove',
-                                    child: ListTile(
-                                      leading: Icon(Icons.delete),
-                                      title: Text('Remover'),
-                                    ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'toggle_visibility',
+                                  child: ListTile(
+                                    leading: Icon(Icons.visibility),
+                                    title: Text('Tornar público/privado'),
                                   ),
-                                  const PopupMenuItem(
-                                    value: 'toggle_visibility',
-                                    child: ListTile(
-                                      leading: Icon(Icons.visibility),
-                                      title: Text('Tornar público/privado'),
-                                    ),
-                                  ),
-                                ],
-                          ),
+                                ),
+                              ],
                         ),
                       );
                     },
+                    separatorBuilder: (context, index) => Divider(),
                   ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

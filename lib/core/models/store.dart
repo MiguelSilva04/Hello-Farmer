@@ -1,9 +1,26 @@
+import 'order.dart';
 import 'product_ad.dart';
 import 'store_review.dart';
+
+enum DeliveryMethod { HOME_DELIVERY, COURIER, PICKUP }
+
+extension DeliveryMethodExtension on DeliveryMethod {
+  String toDisplayString() {
+    switch (this) {
+      case DeliveryMethod.HOME_DELIVERY:
+        return "Entrega ao Domicílio";
+      case DeliveryMethod.COURIER:
+        return "Transportadora";
+      case DeliveryMethod.PICKUP:
+        return "Recolha do Consumidor";
+    }
+  }
+}
 
 class Store {
   static int _idCounter = 0;
   final String id;
+  final DateTime createdAt;
   String? backgroundImageUrl;
   String? imageUrl;
   String? name;
@@ -14,8 +31,11 @@ class Store {
   List<String>? preferredMarkets;
   List<ProductAd>? productsAds;
   List<StoreReview>? storeReviews;
+  List<Order>? orders;
+  List<DeliveryMethod>? preferredDeliveryMethod;
 
   Store({
+    required this.createdAt,
     this.backgroundImageUrl,
     this.imageUrl,
     this.name,
@@ -26,5 +46,7 @@ class Store {
     this.preferredMarkets,
     this.productsAds,
     this.storeReviews,
+    this.orders,
+    this.preferredDeliveryMethod,
   }) : id = (_idCounter++).toString();
 }

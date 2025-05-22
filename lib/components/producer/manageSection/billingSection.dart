@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
+import '../../../core/services/other/manage_section_notifier.dart';
+import 'invoice_page.dart';
 
 enum DateRangeOption {
   none('Escolher data'),
@@ -23,62 +27,74 @@ class BillingSection extends StatefulWidget {
 }
 
 class _BillingSectionState extends State<BillingSection> {
-  DateTime? _filterDate;
   DateRangeOption _selectedRange = DateRangeOption.none;
+  late ManageSectionNotifier provider;
 
-  final List<Order> _orders = [
-    Order(
-      id: '001',
-      pickupDate: DateTime.now().subtract(const Duration(days: 2)),
-      deliveryDate: DateTime.now().subtract(const Duration(days: 1)),
-      address: 'Rua das Flores, 123',
-      state: OrderState.Entregue,
-      totalPrice: 29.90,
-    ),
-    Order(
-      id: '002',
-      pickupDate: DateTime.now(),
-      deliveryDate: DateTime.now().add(const Duration(days: 2)),
-      address: 'Av. Central, 456',
-      state: OrderState.Entregue,
-      totalPrice: 42.00,
-    ),
-    Order(
-      id: '003',
-      pickupDate: DateTime.now().subtract(const Duration(days: 5)),
-      deliveryDate: DateTime.now().subtract(const Duration(days: 3)),
-      address: 'Travessa do Sol, 789',
-      state: OrderState.Entregue,
-      totalPrice: 37.50,
-    ),
-    Order(
-      id: '004',
-      pickupDate: DateTime.now().subtract(const Duration(days: 15)),
-      deliveryDate: DateTime.now().subtract(const Duration(days: 14)),
-      address: 'Rio Tinto N23',
-      state: OrderState.Entregue,
-      totalPrice: 45.45,
-    ),
-    Order(
-      id: '005',
-      pickupDate: DateTime.now().subtract(const Duration(days: 35)),
-      deliveryDate: DateTime.now().subtract(const Duration(days: 34)),
-      address: 'Jurais do Compostal 74',
-      state: OrderState.Entregue,
-      totalPrice: 98.32,
-    ),
-    Order(
-      id: '006',
-      pickupDate: DateTime.now().subtract(const Duration(days: 35)),
-      deliveryDate: DateTime.now().subtract(const Duration(days: 34)),
-      address: 'Tirolado do Figo 19',
-      state: OrderState.Pendente,
-      totalPrice: 58.10,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    provider = Provider.of<ManageSectionNotifier>(context, listen: false);
+    _selectedRange = _getRangeFromDate(provider.billingFromDate);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Atualiza o dropdown se billingFromDate mudar externamente
+    final currentRange = _getRangeFromDate(provider.billingFromDate);
+    if (_selectedRange != currentRange) {
+      setState(() {
+        _selectedRange = currentRange;
+      });
+    }
+  }
+
+  DateRangeOption _getRangeFromDate(DateTime? date) {
+    if (date == null) return DateRangeOption.none;
+    final now = DateTime.now();
+    final createdAt = AuthService().currentUser!.store!.createdAt;
+    if (date.isAtSameMomentAs(createdAt)) return DateRangeOption.none;
+    if (date.isAtSameMomentAs(
+      now
+          .subtract(const Duration(days: 7))
+          .copyWith(
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+            microsecond: 0,
+          ),
+    )) {
+      return DateRangeOption.week;
+    }
+    if (date.year == now.year &&
+        date.month == now.month - 1 &&
+        date.day == now.day) {
+      return DateRangeOption.month;
+    }
+    if (date.year == now.year &&
+        date.month == now.month - 3 &&
+        date.day == now.day) {
+      return DateRangeOption.threeMonths;
+    }
+    if (date.year == now.year &&
+        date.month == now.month - 6 &&
+        date.day == now.day) {
+      return DateRangeOption.sixMonths;
+    }
+    if (date.year == now.year - 1 &&
+        date.month == now.month &&
+        date.day == now.day) {
+      return DateRangeOption.year;
+    }
+    return DateRangeOption.none;
+  }
+
+  final List<Order> _orders = AuthService().currentUser!.store!.orders!;
 
   List<Order> get _filteredOrders {
-    if (_filterDate == null) {
+    if (provider.billingFromDate ==
+        AuthService().currentUser!.store!.createdAt) {
       return _orders
           .where((order) => order.state == OrderState.Entregue)
           .toList();
@@ -86,7 +102,7 @@ class _BillingSectionState extends State<BillingSection> {
     return _orders
         .where(
           (order) =>
-              order.pickupDate.isAfter(_filterDate!) &&
+              order.pickupDate.isAfter(provider.billingFromDate) &&
               order.state == OrderState.Entregue,
         )
         .toList();
@@ -99,13 +115,13 @@ class _BillingSectionState extends State<BillingSection> {
   Future<void> _selectFilterDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _filterDate ?? DateTime.now(),
+      initialDate: provider.billingFromDate,
       firstDate: DateTime(2022),
       lastDate: DateTime(2100),
     );
-    if (picked != null && picked != _filterDate) {
+    if (picked != null && picked != provider.billingFromDate) {
+      provider.setBillingFromDate(picked);
       setState(() {
-        _filterDate = picked;
         _selectedRange = DateRangeOption.none;
       });
     }
@@ -115,29 +131,36 @@ class _BillingSectionState extends State<BillingSection> {
     if (option == null) return;
     setState(() {
       _selectedRange = option;
-      if (option == DateRangeOption.none) {
-        _filterDate = null;
-      } else {
-        final now = DateTime.now();
-        switch (option) {
-          case DateRangeOption.week:
-            _filterDate = now.subtract(const Duration(days: 7));
-            break;
-          case DateRangeOption.month:
-            _filterDate = DateTime(now.year, now.month - 1, now.day);
-            break;
-          case DateRangeOption.threeMonths:
-            _filterDate = DateTime(now.year, now.month - 3, now.day);
-            break;
-          case DateRangeOption.sixMonths:
-            _filterDate = DateTime(now.year, now.month - 6, now.day);
-            break;
-          case DateRangeOption.year:
-            _filterDate = DateTime(now.year - 1, now.month, now.day);
-            break;
-          default:
-            _filterDate = null;
-        }
+
+      final now = DateTime.now();
+      switch (option) {
+        case DateRangeOption.week:
+          provider.setBillingFromDate(now.subtract(const Duration(days: 7)));
+          break;
+        case DateRangeOption.month:
+          provider.setBillingFromDate(
+            DateTime(now.year, now.month - 1, now.day),
+          );
+          break;
+        case DateRangeOption.threeMonths:
+          provider.setBillingFromDate(
+            DateTime(now.year, now.month - 3, now.day),
+          );
+          break;
+        case DateRangeOption.sixMonths:
+          provider.setBillingFromDate(
+            DateTime(now.year, now.month - 6, now.day),
+          );
+          break;
+        case DateRangeOption.year:
+          provider.setBillingFromDate(
+            DateTime(now.year - 1, now.month, now.day),
+          );
+          break;
+        default:
+          provider.setBillingFromDate(
+            AuthService().currentUser!.store!.createdAt,
+          );
       }
     });
   }
@@ -185,31 +208,46 @@ class _BillingSectionState extends State<BillingSection> {
           ),
           const SizedBox(height: 16),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Filtrar desde:', style: TextStyle(fontSize: 14)),
-              const SizedBox(width: 5),
-              ElevatedButton.icon(
-                onPressed: () => _selectFilterDate(context),
-                icon: Icon(
-                  Icons.calendar_today,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-                label: Text(
-                  _filterDate != null
-                      ? DateFormat.yMMMd().format(_filterDate!)
-                      : 'Escolher data',
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  foregroundColor: Theme.of(context).colorScheme.secondary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+              Row(
+                children: [
+                  const Text('Filtrar desde:', style: TextStyle(fontSize: 12)),
+                  const SizedBox(width: 5),
+                  ElevatedButton.icon(
+                    onPressed: () => _selectFilterDate(context),
+                    icon: Icon(
+                      Icons.calendar_today,
+                      size: 13,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                    label: Text(
+                      Provider.of<ManageSectionNotifier>(
+                                context,
+                                listen: false,
+                              ).billingFromDate !=
+                              AuthService().currentUser!.store!.createdAt
+                          ? DateFormat.yMMMd().format(
+                            Provider.of<ManageSectionNotifier>(
+                              context,
+                              listen: false,
+                            ).billingFromDate,
+                          )
+                          : 'Escolher data',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      foregroundColor: Theme.of(context).colorScheme.secondary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                ],
               ),
-              const SizedBox(width: 12),
               DropdownButton<DateRangeOption>(
                 value: _selectedRange,
                 onChanged: _onRangeSelected,
@@ -224,9 +262,9 @@ class _BillingSectionState extends State<BillingSection> {
                         .toList(),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.secondaryFixed,
-                  fontSize: 16,
+                  fontSize: 13,
                 ),
-                dropdownColor: Theme.of(context).colorScheme.surface,
+                dropdownColor: Theme.of(context).colorScheme.secondary,
               ),
             ],
           ),
@@ -267,7 +305,24 @@ class _BillingSectionState extends State<BillingSection> {
               foregroundColor: Theme.of(context).colorScheme.secondary,
               iconColor: Theme.of(context).colorScheme.secondary,
             ),
-            onPressed: () {},
+            onPressed: () {
+              _filteredOrders.isNotEmpty
+                  ? Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) => InvoicePage(
+                            orders: _filteredOrders,
+                            total: _totalFaturacao,
+                            fromDate:
+                                Provider.of<ManageSectionNotifier>(
+                                  context,
+                                  listen: false,
+                                ).billingFromDate,
+                          ),
+                    ),
+                  )
+                  : null;
+            },
             icon: Padding(
               padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
               child: Icon(Icons.receipt, size: 30),

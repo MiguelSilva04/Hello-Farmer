@@ -229,7 +229,7 @@ class _SettingsTileGroupState extends State<SettingsTileGroup> {
             padding: const EdgeInsets.only(left: 40),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              height: _isExpanded ? (widget.subOptions!.length * 56.0) : 0,
+              height: _isExpanded ? (widget.subOptions!.length * 60.0) : 0,
               curve: Curves.fastOutSlowIn,
               child: SingleChildScrollView(
                 physics: const NeverScrollableScrollPhysics(),

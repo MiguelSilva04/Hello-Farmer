@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/models/order.dart';
@@ -18,56 +19,7 @@ class _SellsPageState extends State<SellsPage>
 
   late final TabController _tabController;
 
-  final List<Order> orders = [
-    Order(
-      id: '1001',
-      pickupDate: DateTime(2025, 4, 5),
-      deliveryDate: DateTime(2025, 4, 6),
-      address: 'Rua do Pedido #1001',
-      state: OrderState.Entregue,
-      totalPrice: 20.34
-    ),
-    Order(
-      id: '0078',
-      pickupDate: DateTime(2025, 4, 15),
-      deliveryDate: DateTime(2025, 5, 19),
-      address: 'Rua do Pedido #0078',
-      state: OrderState.Pendente,
-      totalPrice: 25.12
-    ),
-    Order(
-      id: '0832',
-      pickupDate: DateTime(2025, 4, 15),
-      deliveryDate: DateTime(2025, 4, 30),
-      address: 'Rua do Pedido #0832',
-      state: OrderState.Enviada,
-      totalPrice: 30.59
-    ),
-    Order(
-      id: '3627',
-      pickupDate: DateTime(2025, 4, 29),
-      deliveryDate: DateTime(2025, 5, 4),
-      address: 'Rua do Pedido #3627',
-      state: OrderState.Pendente,
-      totalPrice: 17.36
-    ),
-    Order(
-      id: '1938',
-      pickupDate: DateTime(2025, 4, 1),
-      deliveryDate: DateTime(2025, 4, 2),
-      address: 'Rua do Pedido #1938',
-      state: OrderState.Entregue,
-      totalPrice: 13.84
-    ),
-    Order(
-      id: '8809',
-      pickupDate: DateTime(2025, 4, 1),
-      deliveryDate: DateTime(2025, 4, 2),
-      address: 'Rua do Pedido #8809',
-      state: OrderState.Entregue,
-      totalPrice: 69.11
-    ),
-  ];
+  final List<Order> orders = AuthService().currentUser!.store!.orders!;
 
   @override
   void initState() {
@@ -98,8 +50,8 @@ class _SellsPageState extends State<SellsPage>
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
-                  "Data da Recolha: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].pickupDate)}\nData de Entrega: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate)}\nMorada: ${ordersFiltered[index].address}",
-                  style: TextStyle(fontSize: 13),
+                  "Data da Recolha: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].pickupDate)}\n${ordersFiltered[index].deliveryDate != null ? "Data de Entrega: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate!)}" : "Sem Recolha"}\nMorada: ${ordersFiltered[index].address}",
+                  style: TextStyle(fontSize: 12),
                 ),
                 isThreeLine: true,
                 trailing: Container(

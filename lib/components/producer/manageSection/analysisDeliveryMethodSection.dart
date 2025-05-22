@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class AnalysisSaleChannelSection extends StatelessWidget {
-  const AnalysisSaleChannelSection({super.key});
+class AnalysisDeliveryMethodSection extends StatelessWidget {
+  const AnalysisDeliveryMethodSection({super.key});
 
   @override
   Widget build(BuildContext context) {

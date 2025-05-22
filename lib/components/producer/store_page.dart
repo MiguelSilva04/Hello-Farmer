@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:harvestly/core/models/store_review.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:intl/intl.dart';
@@ -21,85 +20,7 @@ class StorePage extends StatefulWidget {
 class _StorePageState extends State<StorePage> {
   bool showBanca = true;
 
-  final Store myStore = Store(
-    name: "Quinta Sol Nascente",
-    subName: "Produzimos com foco na sustentabilidade",
-    description:
-        "Bem-vindo à Quinta Sol Nascente 🙂 | Produzimos com foco na sustentabilidade e bem-estar | Agricultura regenerativa | Do campo diretamente para a sua mesa, com amor e responsabilidade 🌱",
-    location: "Almeirim",
-    address: "-8.6235, 39.2081",
-    preferredMarkets: [
-      "Mercado Biológico de Lisboa",
-      "Feira Rural de Torres Vedras",
-      "Mercado Eco de Santarém",
-    ],
-    imageUrl: 'assets/images/mock_images/quinta.jpg',
-    productsAds: [
-      ProductAd(
-        product: Product(
-          name: 'Centeio',
-          imageUrl: ['assets/images/mock_images/centeio.jpg'],
-          category: 'Cereais',
-          stock: 10,
-          minAmount: 5,
-          unit: Unit.KG,
-          price: 13.5,
-        ),
-        highlight: 'Este anuncio está destacado há mais de 3 dias!',
-      ),
-      ProductAd(
-        product: Product(
-          name: 'Trigo',
-          imageUrl: ['assets/images/mock_images/trigo.jpg'],
-          category: 'Cereais',
-          stock: 20,
-          minAmount: 10,
-          unit: Unit.KG,
-          price: 12.5,
-        ),
-        highlight: 'Este anúncio não está em destaque!',
-      ),
-    ],
-    storeReviews: [
-      StoreReview(
-        rating: 4.3,
-        description: "Entrega em mãos impecável, correu tudo bem e rápido!",
-        dateTime: DateTime(2025, 4, 1, 11, 45),
-        reviewerId: "vjjzySrSiIYy1c3QcduZhlKglNh2",
-      ),
-      StoreReview(
-        rating: 4.5,
-        description: "Chegou tudo em condições e com ótima qualidade!",
-        dateTime: DateTime(2025, 5, 6, 09, 05),
-        reviewerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
-      ),
-      StoreReview(
-        rating: 3.6,
-        description:
-            "Em excelente condição podia ter sido é um pouco mais rápido...",
-        dateTime: DateTime(2025, 2, 26, 19, 13),
-        reviewerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
-      ),
-      StoreReview(
-        rating: 4.1,
-        description: "Entrega no ponto de encontro e produto tudo impecável.",
-        dateTime: DateTime(2025, 5, 12, 12, 00),
-        reviewerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-      ),
-      StoreReview(
-        rating: 4.9,
-        description: "Adorei as cenouras que comprei, é para repetir!!",
-        dateTime: DateTime(2025, 5, 12, 12, 08, 01),
-        reviewerId: "IyxNeUyr6QNA3lwSALZBHsV75ap2",
-      ),
-      StoreReview(
-        rating: 4.8,
-        description: "Comprei beterrabas e eram incriveis, adorei!",
-        dateTime: DateTime(2025, 5, 8, 08, 10),
-        reviewerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
-      ),
-    ],
-  );
+  final Store myStore = AuthService().currentUser!.store!;
 
   @override
   Widget build(BuildContext context) {

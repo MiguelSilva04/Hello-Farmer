@@ -4,7 +4,7 @@ import 'package:harvestly/components/producer/manageSection/analysisFinancesSect
 import 'package:harvestly/components/producer/manageSection/analysisMainProducersSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisManageStockSection.dart.dart';
 import 'package:harvestly/components/producer/manageSection/analysisReportsSection.dart';
-import 'package:harvestly/components/producer/manageSection/analysisSaleChannelSection.dart';
+import 'package:harvestly/components/producer/manageSection/analysisDeliveryMethodSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisStoreViewsSection.dart';
 import 'package:harvestly/components/producer/manageSection/billingSection.dart';
 import 'package:harvestly/components/producer/manageSection/breadCrumbNavigator.dart';
@@ -12,8 +12,8 @@ import 'package:harvestly/components/producer/manageSection/clientsSection.dart'
 import 'package:harvestly/components/producer/manageSection/financesSection.dart';
 import 'package:harvestly/components/producer/manageSection/giftsSection.dart';
 import 'package:harvestly/components/producer/manageSection/highlightedAddsSection.dart';
-import 'package:harvestly/components/producer/manageSection/ordersAbandonnedSection.dart';
-import 'package:harvestly/components/producer/manageSection/saleChannelSection.dart';
+import 'package:harvestly/components/producer/manageSection/abandonnedOrdersSection.dart';
+import 'package:harvestly/components/producer/manageSection/deliveryMethodsSection.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
 import '../../core/services/other/manage_section_notifier.dart';
@@ -178,18 +178,18 @@ class _ManagePageState extends State<ManagePage> {
       ),
       MainPageSection(),
       BillingSection(),
-      OrdersAbandonedSection(),
+      AbandonedOrdersPage(),
       ManageProductsSection(),
       ManageProductsSection(),
       GiftsSection(),
       ClientsSection(),
       AnalysisManageStockSection(),
       AnalysisReportsSection(),
-      AnalysisSaleChannelSection(),
+      AnalysisDeliveryMethodSection(),
       AnalysisMainProducersSection(),
       AnalysisStoreViewsSection(),
       AnalysisFinancesSection(),
-      SaleChannelSection(),
+      DeliveryMethodsSection(),
       AddsSection(),
       HighlightedAddsSection(),
       FinancesSection(),

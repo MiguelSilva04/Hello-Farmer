@@ -64,6 +64,9 @@ dependencies:
   intl_phone_field: ^3.2.0
   country_state_city_picker: ^1.2.8
   auto_size_text: ^3.0.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  image: ^4.5.4
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:

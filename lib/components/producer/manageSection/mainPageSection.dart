@@ -20,24 +20,40 @@ class MainPageSection extends StatelessWidget {
     preferredMarkets: ["Feira de Guimarães", "Mercado de Braga"],
     productsAds: [
       ProductAd(
-        name: "Ovos Biológico",
-        imageUrl: "assets/images/mock_images/eggs.jpg",
+        product: Product(
+          name: "Ovos Biológico",
+          imageUrl: ["assets/images/mock_images/eggs.jpg"],
+          category: "Ovos",
+          stock: 10,
+          minAmount: 6,
+          unit: Unit.UNIT,
+          price: 2.5,
+        ),
         price: "2,50€/unidade",
-        category: "Ovos",
         highlight: "Colheita biológica!",
       ),
       ProductAd(
-        name: "Centeio",
-        imageUrl: "assets/images/mock_images/centeio.jpg",
-        price: "3,00€/kg",
-        category: "Ervas",
+        product: Product(
+          name: "Centeio",
+          imageUrl: ["assets/images/mock_images/centeio.jpg"],
+          category: "Ervas",
+          stock: 20,
+          minAmount: 5,
+          unit: Unit.KG,
+          price: 3,
+        ),
         highlight: "Colheita fresca!",
       ),
       ProductAd(
-        name: "Cenouras baby",
-        imageUrl: "assets/images/mock_images/baby_carrots.jpg",
-        price: "1,20€/unidade",
-        category: "Legumes",
+        product: Product(
+          name: "Cenouras baby",
+          imageUrl: ["assets/images/mock_images/baby_carrots.jpg"],
+          category: "Legumes",
+          stock: 30,
+          minAmount: 15,
+          unit: Unit.KG,
+          price: 1.2,
+        ),
         highlight: "Promoção da semana",
       ),
     ],
@@ -216,18 +232,18 @@ class MainPageSection extends StatelessWidget {
                           leading: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.asset(
-                              ad.imageUrl,
+                              ad.product.imageUrl.first,
                               width: 75,
                               height: 75,
                               fit: BoxFit.cover,
                             ),
                           ),
-                          title: Text(ad.name),
+                          title: Text(ad.product.name),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("Preço: ${ad.price}"),
-                              Text("Categoria: ${ad.category}"),
+                              Text("Categoria: ${ad.product.category}"),
                               if (ad.highlight.isNotEmpty)
                                 Text(
                                   ad.highlight,

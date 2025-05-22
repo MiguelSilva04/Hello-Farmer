@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
           primary: const Color.fromRGBO(66, 139, 109, 1),
           surface: const Color.fromRGBO(42, 129, 94, 1),
           surfaceContainerLow: const Color.fromRGBO(221, 247, 237, 1),
-          onSurfaceVariant: const Color(0xFFDEF2EA),
+          surfaceDim: const Color(0xFFDEF2EA),
           secondary: Colors.white,
           secondaryFixed: const Color.fromARGB(255, 82, 82, 82),
           tertiaryFixedDim: const Color.fromARGB(255, 199, 243, 226),

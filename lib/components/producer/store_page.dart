@@ -36,27 +36,31 @@ class _StorePageState extends State<StorePage> {
     imageUrl: 'assets/images/mock_images/quinta.jpg',
     productsAds: [
       ProductAd(
-        imageUrl: 'assets/images/mock_images/centeio.jpg',
-        name: 'Centeio',
-        price: '13.5€/Kg',
-        category: 'Cereais',
+        product: Product(
+          name: 'Centeio',
+          imageUrl: ['assets/images/mock_images/centeio.jpg'],
+          category: 'Cereais',
+          stock: 10,
+          minAmount: 5,
+          unit: Unit.KG,
+          price: 13.5,
+        ),
         highlight: 'Este anuncio está destacado há mais de 3 dias!',
       ),
       ProductAd(
-        imageUrl: 'assets/images/mock_images/trigo.jpg',
-        name: 'Trigo',
-        price: '12.5€/Kg',
-        category: 'Cereais',
+        product: Product(
+          name: 'Trigo',
+          imageUrl: ['assets/images/mock_images/trigo.jpg'],
+          category: 'Cereais',
+          stock: 20,
+          minAmount: 10,
+          unit: Unit.KG,
+          price: 12.5,
+        ),
         highlight: 'Este anúncio não está em destaque!',
       ),
     ],
     storeReviews: [
-      StoreReview(
-        rating: 4.6,
-        description: "Excelente produto, adorei o centeio",
-        dateTime: DateTime(2025, 5, 3, 14, 50),
-        reviewerId: "rmcilPMCHGUDHXA1NmyZKZsWCVE3",
-      ),
       StoreReview(
         rating: 4.3,
         description: "Entrega em mãos impecável, correu tudo bem e rápido!",
@@ -610,7 +614,7 @@ class _StorePageState extends State<StorePage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.asset(
-              productAd.imageUrl,
+              productAd.product.imageUrl.first,
               width: 100,
               height: 100,
               fit: BoxFit.cover,
@@ -622,11 +626,11 @@ class _StorePageState extends State<StorePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  productAd.name,
+                  productAd.product.name,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(productAd.price),
-                Text(productAd.category),
+                Text(productAd.product.category),
                 Text(
                   productAd.highlight,
                   style: TextStyle(

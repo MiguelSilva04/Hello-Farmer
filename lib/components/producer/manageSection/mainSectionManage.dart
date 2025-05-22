@@ -225,33 +225,36 @@ class _SettingsTileGroupState extends State<SettingsTileGroup> {
           },
         ),
         if (widget.subOptions != null)
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: _isExpanded ? (widget.subOptions!.length * 65.0) : 0,
-            curve: Curves.fastOutSlowIn,
-            child: SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              child: Column(
-                children:
-                    widget.subOptions!
-                        .map(
-                          (sub) => ListTile(
-                            title: Text(
-                              sub.title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 20,
+          Padding(
+            padding: const EdgeInsets.only(left: 40),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: _isExpanded ? (widget.subOptions!.length * 56.0) : 0,
+              curve: Curves.fastOutSlowIn,
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Column(
+                  children:
+                      widget.subOptions!
+                          .map(
+                            (sub) => ListTile(
+                              title: Text(
+                                sub.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 20,
+                                  color: color,
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.arrow_forward_ios,
                                 color: color,
                               ),
+                              onTap: sub.onTap,
                             ),
-                            trailing: Icon(
-                              Icons.arrow_forward_ios,
-                              color: color,
-                            ),
-                            onTap: sub.onTap,
-                          ),
-                        )
-                        .toList(),
+                          )
+                          .toList(),
+                ),
               ),
             ),
           ),

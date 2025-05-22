@@ -12,8 +12,6 @@ import 'package:harvestly/components/producer/manageSection/clientsSection.dart'
 import 'package:harvestly/components/producer/manageSection/financesSection.dart';
 import 'package:harvestly/components/producer/manageSection/giftsSection.dart';
 import 'package:harvestly/components/producer/manageSection/highlightedAddsSection.dart';
-import 'package:harvestly/components/producer/manageSection/managePricesSection.dart';
-import 'package:harvestly/components/producer/manageSection/manageStockSection.dart';
 import 'package:harvestly/components/producer/manageSection/ordersAbandonnedSection.dart';
 import 'package:harvestly/components/producer/manageSection/saleChannelSection.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
@@ -21,6 +19,7 @@ import 'package:provider/provider.dart';
 import '../../core/services/other/manage_section_notifier.dart';
 import 'manageSection/mainPageSection.dart';
 import 'manageSection/mainSectionManage.dart';
+import 'manageSection/manageProductsSection.dart';
 
 class ManagePage extends StatefulWidget {
   @override
@@ -180,8 +179,8 @@ class _ManagePageState extends State<ManagePage> {
       MainPageSection(),
       BillingSection(),
       OrdersAbandonedSection(),
-      ManageStockSection(),
-      ManagePricesSection(),
+      ManageProductsSection(),
+      ManageProductsSection(),
       GiftsSection(),
       ClientsSection(),
       AnalysisManageStockSection(),
@@ -221,9 +220,6 @@ class _ManagePageState extends State<ManagePage> {
                             BreadcrumbItem(
                               label: sectionNames[0],
                               onTap: () {
-                                print(
-                                  "Index: ${manageSectionNotifier.currentIndex} Cliquei",
-                                );
                                 manageSectionNotifier.setIndex(0);
                               },
                             ),

@@ -626,21 +626,54 @@ class SellPageState extends State<SellPage> {
                   ],
                 ),
 
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Preço"),
-                  initialValue: price,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (val) => price = val,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return "O preço não pode estar vazio.";
-                    }
-                    if (double.tryParse(val) == null ||
-                        double.parse(val) <= 0) {
-                      return "Insira um preço válido maior que zero.";
-                    }
-                    return null;
-                  },
+                Row(
+                  children: [
+                    Flexible(
+                      flex: 2,
+                      child: TextFormField(
+                        decoration: InputDecoration(labelText: "Preço (€)"),
+                        initialValue: price,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        onChanged: (val) => price = val,
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return "O preço não pode estar vazio.";
+                          }
+                          if (double.tryParse(val) == null ||
+                              double.parse(val) <= 0) {
+                            return "Insira um preço válido maior que zero.";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 5),
+                    Flexible(
+                      flex: 3,
+                      child: TextFormField(
+                        decoration: InputDecoration(
+                          labelText: "Stock (${unit})",
+                        ),
+                        initialValue: price,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        onChanged: (val) => price = val,
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return "O stock não pode estar vazio.";
+                          }
+                          if (double.tryParse(val) == null ||
+                              double.parse(val) <= 0) {
+                            return "Insira um stock válido maior que zero.";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
 
                 SizedBox(height: 10),

@@ -67,6 +67,14 @@ class _BillingSectionState extends State<BillingSection> {
       state: OrderState.Entregue,
       totalPrice: 98.32,
     ),
+    Order(
+      id: '006',
+      pickupDate: DateTime.now().subtract(const Duration(days: 35)),
+      deliveryDate: DateTime.now().subtract(const Duration(days: 34)),
+      address: 'Tirolado do Figo 19',
+      state: OrderState.Pendente,
+      totalPrice: 58.10,
+    ),
   ];
 
   List<Order> get _filteredOrders {
@@ -148,7 +156,7 @@ class _BillingSectionState extends State<BillingSection> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceDim,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(

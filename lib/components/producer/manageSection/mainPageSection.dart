@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/models/product_ad.dart';
 import '../../../core/models/store.dart';
 import '../../../core/services/other/bottom_navigation_notifier.dart';
 

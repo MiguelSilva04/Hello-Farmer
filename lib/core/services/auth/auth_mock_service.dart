@@ -61,7 +61,7 @@ class AuthMockService implements AuthService {
       phone: phone,
       recoveryEmail: recoverEmail,
       dateOfBirth: dateOfBirth,
-      isProducer: isProducer,
+      isProducer: currentUser!.isProducer,
     );
 
     _users.putIfAbsent(email, () => newUser);
@@ -153,10 +153,6 @@ class AuthMockService implements AuthService {
   }
 
   @override
-  // TODO: implement isProducer
-  bool get isProducer => throw UnimplementedError();
-
-  @override
   void setProducerState(bool state) {
     // TODO: implement setProducerState
   }
@@ -166,7 +162,7 @@ class AuthMockService implements AuthService {
     // TODO: implement getMyStore
     throw UnimplementedError();
   }
-  
+
   @override
   Future<ClientUser?> getCurrentUser() {
     // TODO: implement getCurrentUser

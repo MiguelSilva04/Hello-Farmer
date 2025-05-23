@@ -241,7 +241,6 @@ class AbandonedOrdersPage extends StatelessWidget {
             const SizedBox(height: 16),
             ...abandonedOrders.map((order) {
               final consumidor = getUserName(order.consumerId);
-              final produtor = getUserName(order.producerId);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _buildAbandonedCard(order, consumidor),

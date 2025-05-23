@@ -34,15 +34,15 @@ class _MainMenuState extends State<MainMenu>
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      Provider.of<BottomNavigationNotifier>(
-        context,
-        listen: false,
-      ).setIndex(index);
-      _isSearching = false;
-    });
-  }
+  // void _onItemTapped(int index) {
+  //   setState(() {
+  //     Provider.of<BottomNavigationNotifier>(
+  //       context,
+  //       listen: false,
+  //     ).setIndex(index);
+  //     _isSearching = false;
+  //   });
+  // }
 
   @override
   void initState() {

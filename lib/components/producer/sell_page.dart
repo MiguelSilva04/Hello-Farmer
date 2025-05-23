@@ -32,6 +32,8 @@ class SellPageState extends State<SellPage> {
   );
   bool _isSubmitted = false;
   bool _isPreviewing = false;
+  bool? _highlighted = false;
+  String? _highlightOption;
 
   void toggleDelivery(String option, bool selected) {
     setState(() {
@@ -717,6 +719,46 @@ class SellPageState extends State<SellPage> {
                     return null;
                   },
                 ),
+
+                SizedBox(height: 16),
+                CheckboxListTile(
+                  title: Text("Publicar anúncio já destacado"),
+                  value: _highlighted ?? false,
+                  onChanged: (val) {
+                    setState(() {
+                      _highlighted = val ?? false;
+                      if (!_highlighted!) _highlightOption = null;
+                    });
+                  },
+                ),
+                if (_highlighted ?? false)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Escolha o tipo de destaque:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      RadioListTile<String>(
+                        title: Text(
+                          "Destaque para o topo da página de pesquisa",
+                        ),
+                        value: "topo_pesquisa",
+                        groupValue: _highlightOption,
+                        onChanged:
+                            (val) => setState(() => _highlightOption = val),
+                      ),
+                      RadioListTile<String>(
+                        title: Text(
+                          "Destaque na top de anúncios (Página Inicial)",
+                        ),
+                        value: "top_anuncios",
+                        groupValue: _highlightOption,
+                        onChanged:
+                            (val) => setState(() => _highlightOption = val),
+                      ),
+                    ],
+                  ),
 
                 SizedBox(height: 24),
                 SizedBox(

@@ -10,7 +10,7 @@ import '../utils/app_routes.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ProfilePage extends StatefulWidget {
-  ClientUser? user;
+  final ClientUser? user;
   ProfilePage([this.user]);
 
   @override
@@ -26,12 +26,12 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = false;
   bool _isButtonVisible = false;
   bool _isEditingBackgroundImage = false;
-  bool _isEditingNickname = false;
-  bool _isEditingAboutMe = false;
+  // bool _isEditingNickname = false;
+  // bool _isEditingAboutMe = false;
   bool _isEditingEmail = false;
 
   String _countryCode = 'PT';
-  String? _phone;
+  // String? _phone;
   String? countryValue;
   String? stateValue;
   String? cityValue;
@@ -39,11 +39,11 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _backgroundImage;
   File? _profileImage;
 
-  String? _errorMessage;
-  String? _currentPopUpTextMessage;
+  // String? _errorMessage;
+  // String? _currentPopUpTextMessage;
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
-  final _lastNameTextController = TextEditingController();
+  // final _lastNameTextController = TextEditingController();
 
   ClientUser? user;
 
@@ -89,7 +89,7 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       user = loadedUser;
       userName = "${user!.firstName} ${user!.lastName}";
-      final phoneParts = user!.phone.trim().split(" ") ?? [];
+      final phoneParts = user!.phone.trim().split(" ");
       user!.phone = phoneParts.isNotEmpty ? phoneParts.last : "";
     });
   }
@@ -263,8 +263,8 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       _isLoading = false;
       _isEditingName = false;
-      _isEditingNickname = false;
-      _isEditingAboutMe = false;
+      // _isEditingNickname = false;
+      // _isEditingAboutMe = false;
     });
   }
 
@@ -414,9 +414,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                         backgroundImage:
                                             _profileImage != null
                                                 ? FileImage(_profileImage!)
-                                                : (user!.imageUrl?.isNotEmpty ??
-                                                    false)
-                                                ? NetworkImage(user!.imageUrl!)
+                                                : (user!.imageUrl.isNotEmpty)
+                                                ? NetworkImage(user!.imageUrl)
                                                     as ImageProvider
                                                 : const AssetImage(
                                                   'assets/images/default_user.png',
@@ -520,7 +519,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             onChanged: (phone) {
               _countryCode = phone.countryCode;
-              _phone = phone.completeNumber;
+              // _phone = phone.completeNumber;
             },
           ),
 

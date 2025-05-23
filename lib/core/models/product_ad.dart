@@ -5,9 +5,9 @@ class ProductAd {
 
   final String id;
   final Product product;
-  String description;
+  String description = "";
   String price;
-  final String highlight;
+  String highlight;
 
   ProductAd({required this.product, String? description, String? price, required this.highlight})
     : description = description ?? "",

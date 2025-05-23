@@ -72,6 +72,8 @@ class ClientUser {
                unit: Unit.KG,
                price: 13.5,
              ),
+             description:
+                 "Centeio fresco, cultivado de forma sustentável, ideal para pães, farinhas e receitas saudáveis. Rico em fibras e nutrientes, direto do produtor para a sua mesa.",
              highlight: 'Este anuncio está destacado há mais de 3 dias!',
            ),
            ProductAd(
@@ -84,6 +86,8 @@ class ClientUser {
                unit: Unit.KG,
                price: 12.5,
              ),
+             description:
+                 "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
              highlight: 'Este anúncio não está em destaque!',
            ),
            ProductAd(
@@ -96,6 +100,8 @@ class ClientUser {
                unit: Unit.UNIT,
                price: 1.2,
              ),
+             description:
+                 "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
              highlight: 'Este anuncio está destacado há mais de 5 dias!',
            ),
            ProductAd(
@@ -108,6 +114,8 @@ class ClientUser {
                unit: Unit.KG,
                price: 2.8,
              ),
+             description:
+                 "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
              highlight: 'Este anuncio está destacado há 8 horas!',
            ),
            ProductAd(
@@ -120,6 +128,8 @@ class ClientUser {
                unit: Unit.KG,
                price: 3.5,
              ),
+             description:
+                 "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
              highlight: 'Este anúncio não está em destaque!',
            ),
            ProductAd(
@@ -132,6 +142,8 @@ class ClientUser {
                unit: Unit.UNIT,
                price: 2.0,
              ),
+             description:
+                 "Ovos frescos de galinhas criadas ao ar livre, ricos em sabor e nutrientes. Ideais para pequenos-almoços, bolos e receitas saudáveis. Direto do produtor para a sua mesa.",
              highlight: 'Este anuncio está destacado há 23 horas!',
            ),
          ],

@@ -1,273 +1,567 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/models/product.dart';
+import '../../../core/models/product_ad.dart';
 import '../../../core/models/store.dart';
 import '../../../core/services/other/bottom_navigation_notifier.dart';
+import 'addsSection.dart';
 
-class MainPageSection extends StatelessWidget {
+class MainPageSection extends StatefulWidget {
   MainPageSection({super.key});
 
+  @override
+  State<MainPageSection> createState() => _MainPageSectionState();
+}
+
+class _MainPageSectionState extends State<MainPageSection> {
   final store = AuthService().currentUser!.store!;
+  bool _isEditingAd = false;
+  ProductAd? _currentAd;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Stack(
-          clipBehavior: Clip.none,
+    return _isEditingAd
+        ? EditAdSection(
+          ad: _currentAd!,
+          onCancel: () => setState(() => _isEditingAd = false),
+          onSave: (val) {},
+        )
+        : Column(
           children: [
-            Image.asset(
-              store.backgroundImageUrl ?? "assets/images/default_store.jpg",
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 180,
-            ),
-            Positioned(
-              bottom: -50,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.secondaryFixed,
-                      width: 1,
-                    ),
-                  ),
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundImage: AssetImage(
-                      store.imageUrl ?? "assets/images/default_store.jpg",
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 60),
-
-        Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Stack(
+              clipBehavior: Clip.none,
               children: [
-                Text(
-                  store.name ?? "Sem Nome",
-                  style: const TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
+                Image.asset(
+                  store.backgroundImageUrl ?? "assets/images/default_store.jpg",
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 180,
+                ),
+                Positioned(
+                  bottom: -50,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.secondaryFixed,
+                          width: 1,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundImage: AssetImage(
+                          store.imageUrl ?? "assets/images/default_store.jpg",
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const Icon(Icons.edit, size: 20),
               ],
             ),
-          ),
-        ),
 
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Descrição",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                store.description ?? "Sem descrição disponível.",
-                style: const TextStyle(fontSize: 14),
-              ),
-            ],
-          ),
-        ),
+            const SizedBox(height: 60),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Text(
-                    "Canais de venda",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      "Definir Canais de venda",
-                      style: TextStyle(fontSize: 12),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      store.name ?? "Sem Nome",
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                    const Icon(Icons.edit, size: 20),
+                  ],
+                ),
               ),
-              Wrap(
-                spacing: 10,
-                children:
-                    store.preferredDeliveryMethod?.map((method) {
-                      IconData icon;
-                      switch (method) {
-                        case DeliveryMethod.COURIER:
-                          icon = Icons.local_shipping;
-                          break;
-                        case DeliveryMethod.HOME_DELIVERY:
-                          icon = Icons.home;
-                          break;
-                        case DeliveryMethod.PICKUP:
-                          icon = Icons.store;
-                          break;
-                      }
-                      return Chip(
-                        avatar: Icon(
-                          icon,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                        label: Text(
-                          method.toDisplayString(),
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      );
-                    }).toList() ??
-                    [],
-              ),
-            ],
-          ),
-        ),
+            ),
 
-        const SizedBox(height: 20),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Anúncios publicados",
+                    "Descrição",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: () {
-                      Provider.of<BottomNavigationNotifier>(
-                        context,
-                        listen: false,
-                      ).setIndex(2);
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text("Novo anúncio"),
+                  const SizedBox(height: 8),
+                  Text(
+                    store.description ?? "Sem descrição disponível.",
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              store.productsAds!.isEmpty
-                  ? const Text("Ainda não há anúncios publicados.")
-                  : ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: store.productsAds!.length,
-                    itemBuilder: (context, index) {
-                      final ad = store.productsAds![index];
-                      return ListTile(
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            ad.product.imageUrl.first,
-                            width: 75,
-                            height: 75,
-                            fit: BoxFit.cover,
-                          ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        "Canais de venda",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              ad.product.name,
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            const SizedBox(width: 5),
-                            if (ad.highlight.isNotEmpty)
-                              Tooltip(
-                                message: ad.highlight,
-                                showDuration: const Duration(seconds: 7),
-                                triggerMode: TooltipTriggerMode.tap,
-                                preferBelow: false,
-                                child: Icon(
-                                  Icons.info_outline,
-                                ), // usar info_outline é mais visual
-                              ),
-                          ],
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          "Definir Canais de venda",
+                          style: TextStyle(fontSize: 12),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Preço: ${ad.price}"),
-                            Text("Categoria: ${ad.product.category}"),
-                            // if (ad.highlight.isNotEmpty)
-                            //   Text(
-                            //     ad.highlight,
-                            //     style: const TextStyle(
-                            //       color: Colors.orange,
-                            //       fontWeight: FontWeight.bold,
-                            //     ),
-                            //   ),
-                          ],
-                        ),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {},
-                          itemBuilder:
-                              (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: ListTile(
-                                    leading: Icon(Icons.edit),
-                                    title: Text('Editar'),
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'remove',
-                                  child: ListTile(
-                                    leading: Icon(Icons.delete),
-                                    title: Text('Remover'),
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'toggle_visibility',
-                                  child: ListTile(
-                                    leading: Icon(Icons.visibility),
-                                    title: Text('Tornar público/privado'),
-                                  ),
-                                ),
-                              ],
-                        ),
-                      );
-                    },
-                    separatorBuilder: (context, index) => Divider(),
+                      ),
+                    ],
                   ),
-              const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 10,
+                    children:
+                        store.preferredDeliveryMethod?.map((method) {
+                          IconData icon;
+                          switch (method) {
+                            case DeliveryMethod.COURIER:
+                              icon = Icons.local_shipping;
+                              break;
+                            case DeliveryMethod.HOME_DELIVERY:
+                              icon = Icons.home;
+                              break;
+                            case DeliveryMethod.PICKUP:
+                              icon = Icons.store;
+                              break;
+                          }
+                          return Chip(
+                            avatar: Icon(
+                              icon,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                            label: Text(
+                              method.toDisplayString(),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          );
+                        }).toList() ??
+                        [],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        "Anúncios publicados",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: () {
+                          Provider.of<BottomNavigationNotifier>(
+                            context,
+                            listen: false,
+                          ).setIndex(2);
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text("Novo anúncio"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  store.productsAds!.isEmpty
+                      ? const Text("Ainda não há anúncios publicados.")
+                      : ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: store.productsAds!.length,
+                        itemBuilder: (context, index) {
+                          final ad = store.productsAds![index];
+                          return ListTile(
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                ad.product.imageUrl.first,
+                                width: 75,
+                                height: 75,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  ad.product.name,
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                                const SizedBox(width: 5),
+                                if (ad.highlight.isNotEmpty)
+                                  Tooltip(
+                                    message: ad.highlight,
+                                    showDuration: const Duration(seconds: 7),
+                                    triggerMode: TooltipTriggerMode.tap,
+                                    preferBelow: false,
+                                    child: Icon(
+                                      Icons.info_outline,
+                                    ), // usar info_outline é mais visual
+                                  ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Preço: ${ad.price}"),
+                                Text("Categoria: ${ad.product.category}"),
+                                // if (ad.highlight.isNotEmpty)
+                                //   Text(
+                                //     ad.highlight,
+                                //     style: const TextStyle(
+                                //       color: Colors.orange,
+                                //       fontWeight: FontWeight.bold,
+                                //     ),
+                                //   ),
+                              ],
+                            ),
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (value) {
+                                switch (value) {
+                                  case "edit":
+                                    {
+                                      setState(() {
+                                        _isEditingAd = true;
+                                        _currentAd = ad;
+                                      });
+                                    }
+                                }
+                              },
+                              itemBuilder:
+                                  (context) => [
+                                    const PopupMenuItem(
+                                      value: 'edit',
+                                      child: ListTile(
+                                        leading: Icon(Icons.edit),
+                                        title: Text('Editar'),
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'remove',
+                                      child: ListTile(
+                                        leading: Icon(Icons.delete),
+                                        title: Text('Remover'),
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'toggle_visibility',
+                                      child: ListTile(
+                                        leading: Icon(Icons.visibility),
+                                        title: Text('Tornar público/privado'),
+                                      ),
+                                    ),
+                                  ],
+                            ),
+                          );
+                        },
+                        separatorBuilder: (context, index) => Divider(),
+                      ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+            // Center(
+            //   child: ElevatedButton.icon(
+            //     onPressed: () {},
+            //     icon: const Icon(Icons.add),
+            //     label: const Text("Adicionar um produto"),
+            //   ),
+            // ),
+          ],
+        );
+  }
+}
+
+class EditAdSection extends StatefulWidget {
+  final ProductAd ad;
+  final Function(ProductAd) onSave;
+  final VoidCallback onCancel;
+
+  const EditAdSection({
+    super.key,
+    required this.ad,
+    required this.onSave,
+    required this.onCancel,
+  });
+
+  @override
+  State<EditAdSection> createState() => _EditAdSectionState();
+}
+
+class _EditAdSectionState extends State<EditAdSection> {
+  late TextEditingController nameController;
+  late TextEditingController descController;
+  late TextEditingController priceController;
+  late String category;
+  late List<ImageProvider?> images;
+  late TextEditingController stockController;
+  late TextEditingController minQtyController;
+  late String unit;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.ad.product.name);
+    descController = TextEditingController(text: widget.ad.description);
+    priceController = TextEditingController(
+      text: widget.ad.product.price?.toStringAsFixed(2),
+    );
+    category = widget.ad.product.category;
+    unit = widget.ad.product.unit.toDisplayString();
+
+    images = List.generate(6, (i) {
+      if (i < widget.ad.product.imageUrl.length) {
+        return imageProviderFromPath(widget.ad.product.imageUrl[i]);
+      }
+      return null;
+    });
+
+    stockController = TextEditingController(
+      text: widget.ad.product.stock?.toString() ?? "0",
+    );
+    minQtyController = TextEditingController(
+      text: widget.ad.product.minAmount?.toString() ?? "0",
+    );
+    unit = widget.ad.product.unit.toDisplayString();
+  }
+
+  Widget imageBox(int index) {
+    return GestureDetector(
+      onTap: () {
+        ImagePicker().pickImage(source: ImageSource.gallery).then((pickedFile) {
+          if (pickedFile != null) {
+            setState(() {
+              images[index] = FileImage(File(pickedFile.path));
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${index + 1}ª imagem selecionada')),
+            );
+          }
+        });
+      },
+      child: Container(
+        width: 100,
+        height: 100,
+        margin: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          color: Colors.grey[200],
+        ),
+        child:
+            images[index] != null
+                ? Image(
+                  image: images[index]!,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stackTrace) =>
+                          const Icon(Icons.broken_image),
+                )
+                : Icon(Icons.add_a_photo, color: Colors.grey[600]),
+      ),
+    );
+  }
+
+  ImageProvider? imageProviderFromPath(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) {
+      return NetworkImage(path);
+    } else if (path.startsWith('assets/')) {
+      return AssetImage(path);
+    } else {
+      final file = File(path);
+      if (file.existsSync()) {
+        return FileImage(file);
+      } else {
+        return AssetImage(path);
+      }
+    }
+  }
+
+  void _save() {
+    double? newPrice = double.tryParse(priceController.text);
+    if (newPrice == null || newPrice <= 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Preço inválido.')));
+      return;
+    }
+
+    int? newStock = int.tryParse(stockController.text);
+    if (newStock == null || newStock < 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Stock inválido.')));
+      return;
+    }
+
+    int? newMinQty = int.tryParse(minQtyController.text);
+    if (newMinQty == null || newMinQty <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Quantidade mínima inválida.')),
+      );
+      return;
+    }
+
+    widget.ad.description = descController.text;
+    widget.ad.product.price = newPrice;
+    widget.ad.product.category = category;
+
+    widget.ad.product.stock = newStock;
+    widget.ad.product.minAmount = newMinQty;
+    widget.ad.product.unit = unit == "Kg" ? Unit.KG : Unit.UNIT;
+
+    widget.ad.product.imageUrl.clear();
+    for (var image in images) {
+      if (image != null) {
+        if (image is FileImage) {
+          widget.ad.product.imageUrl.add(image.file.path);
+        } else if (image is NetworkImage) {
+          widget.ad.product.imageUrl.add(image.url);
+        } else if (image is AssetImage) {
+          widget.ad.product.imageUrl.add(image.assetName);
+        }
+      }
+    }
+
+    widget.onSave(widget.ad);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Editar Anúncio",
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          TextField(
+            controller: nameController,
+            decoration: const InputDecoration(labelText: 'Nome Produto'),
+          ),
+          TextField(
+            controller: descController,
+            decoration: const InputDecoration(labelText: 'Descrição'),
+          ),
+          TextField(
+            controller: priceController,
+            decoration: const InputDecoration(labelText: 'Preço (€)'),
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
+          ),
+
+          TextField(
+            controller: stockController,
+            decoration: InputDecoration(labelText: 'Stock ($unit)'),
+            keyboardType: TextInputType.number,
+          ),
+
+          const SizedBox(height: 8),
+
+          Text("Unidade de medida:"),
+          Row(
+            children: [
+              Expanded(
+                child: RadioListTile<String>(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text("Kg", style: TextStyle(fontSize: 12)),
+                  value: "Kg",
+                  groupValue: unit,
+                  onChanged: (val) => setState(() => unit = val!),
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+              Expanded(
+                child: RadioListTile<String>(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text("Unidade", style: TextStyle(fontSize: 12)),
+                  value: "Unidade(s)",
+                  groupValue: unit,
+                  onChanged: (val) => setState(() => unit = val!),
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
             ],
           ),
-        ),
-        // Center(
-        //   child: ElevatedButton.icon(
-        //     onPressed: () {},
-        //     icon: const Icon(Icons.add),
-        //     label: const Text("Adicionar um produto"),
-        //   ),
-        // ),
-      ],
+
+          const SizedBox(height: 8),
+
+          Text("Quantidade mínima:", style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 5),
+          TextField(
+            controller: minQtyController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+
+          const SizedBox(height: 12),
+
+          Align(child: Wrap(children: List.generate(6, (i) => imageBox(i)))),
+
+          const SizedBox(height: 20),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: widget.onCancel,
+                child: const Text("Cancelar"),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  foregroundColor: Theme.of(context).colorScheme.secondary,
+                ),
+                onPressed: _save,
+                child: const Text("Guardar"),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

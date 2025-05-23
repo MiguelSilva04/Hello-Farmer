@@ -16,7 +16,7 @@ class Product {
   final String id;
   final String name;
   final List<String> imageUrl;
-  final String category;
+  String category;
   double? price;
   int? stock = 0;
   int? minAmount = 0;
@@ -48,4 +48,6 @@ class Product {
   }
 
   void changeMinAmount(int minAmount) => this.minAmount = minAmount;
+
+  
 }

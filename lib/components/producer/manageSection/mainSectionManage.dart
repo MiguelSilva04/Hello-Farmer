@@ -112,10 +112,6 @@ class MainSectionPage extends StatelessWidget {
             title: "Análise de Dados",
             subOptions: [
               SettingsSubOption(
-                title: "Gestão de Stock",
-                onTap: onClicks["analysisManageStock"]!,
-              ),
-              SettingsSubOption(
                 title: "Relatórios",
                 onTap: onClicks["analysisReports"]!,
               ),

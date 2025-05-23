@@ -43,4 +43,18 @@ class Basket {
     required this.deliveryDate,
     required this.products,
   });
+
+  Basket copyWith({
+    String? name,
+    double? price,
+    DeliveryDate? deliveryDate,
+    List<Product>? products,
+  }) {
+    return Basket(
+      name: name ?? this.name,
+      price: price ?? this.price,
+      deliveryDate: deliveryDate ?? this.deliveryDate,
+      products: products ?? this.products,
+    );
+  }
 }

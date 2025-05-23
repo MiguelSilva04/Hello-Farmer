@@ -3,8 +3,35 @@ import 'package:harvestly/core/models/basket.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
-class BasketSection extends StatelessWidget {
-  final List<Basket> baskets = AuthService().currentUser!.store!.baskets!;
+class BasketSection extends StatefulWidget {
+  const BasketSection({Key? key}) : super(key: key);
+
+  @override
+  State<BasketSection> createState() => _BasketSectionState();
+}
+
+class _BasketSectionState extends State<BasketSection> {
+  List<Basket> baskets = AuthService().currentUser!.store!.baskets!;
+  Basket? _editingBasket = null;
+
+  void startEdit(Basket basket) {
+    setState(() {
+      _editingBasket = basket;
+    });
+  }
+
+  void stopEdit() {
+    setState(() {
+      _editingBasket = null;
+    });
+  }
+
+  void removeBasket(Basket basket) {
+    setState(() {
+      baskets.remove(basket);
+      _editingBasket = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +41,30 @@ class BasketSection extends StatelessWidget {
         height: MediaQuery.of(context).size.height * 0.8,
         child: ListView(
           children: [
-            for (var basket in baskets) BasketCard(basket: basket),
+            for (var basket in baskets)
+              if (_editingBasket == null)
+                BasketCard(
+                  basket: basket,
+                  onTap:
+                      () => setState(() {
+                        _editingBasket = basket;
+                      }),
+                ),
+            if (_editingBasket != null)
+              BasketEditPage(
+                basket: _editingBasket!,
+                onCancel: stopEdit,
+                onRemove: () => removeBasket(_editingBasket!),
+                onSave: (Basket updated) {
+                  setState(() {
+                    int idx = baskets.indexOf(_editingBasket!);
+                    baskets[idx] = updated;
+                    _editingBasket = null;
+                  });
+                },
+              ),
             SizedBox(height: 20),
-            AddBasketButton(),
+            if (_editingBasket == null) AddBasketButton(),
           ],
         ),
       ),
@@ -26,12 +74,13 @@ class BasketSection extends StatelessWidget {
 
 class BasketCard extends StatelessWidget {
   final Basket basket;
+  final VoidCallback? onTap;
 
-  const BasketCard({required this.basket});
+  const BasketCard({required this.basket, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    Widget cardContent = Card(
       margin: EdgeInsets.symmetric(vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 1,
@@ -126,6 +175,11 @@ class BasketCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (onTap != null) {
+      return GestureDetector(onTap: onTap, child: cardContent);
+    }
+    return cardContent;
   }
 }
 
@@ -148,6 +202,298 @@ class AddBasketButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class BasketEditPage extends StatefulWidget {
+  final Basket basket;
+  final VoidCallback onCancel;
+  final VoidCallback onRemove;
+  final ValueChanged<Basket> onSave;
+
+  const BasketEditPage({
+    required this.basket,
+    required this.onCancel,
+    required this.onRemove,
+    required this.onSave,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<BasketEditPage> createState() => _BasketEditPageState();
+}
+
+class _BasketEditPageState extends State<BasketEditPage> {
+  late TextEditingController nameController;
+  late TextEditingController priceController;
+  late DeliveryDate selectedDeliveryDate;
+  late List<Product> editableProducts;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.basket.name);
+    priceController = TextEditingController(
+      text: widget.basket.price.toString(),
+    );
+    selectedDeliveryDate = widget.basket.deliveryDate;
+    editableProducts = List<Product>.from(widget.basket.products);
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    priceController.dispose();
+    super.dispose();
+  }
+
+  void save() {
+    final updated = widget.basket.copyWith(
+      name: nameController.text,
+      price: double.tryParse(priceController.text) ?? widget.basket.price,
+      deliveryDate: selectedDeliveryDate,
+      products: editableProducts,
+    );
+    widget.onSave(updated);
+  }
+
+  void addProduct(Product product) {
+    setState(() {
+      editableProducts.add(product);
+    });
+  }
+
+  void removeProduct(Product product) {
+    setState(() {
+      editableProducts.remove(product);
+    });
+  }
+
+  Future<void> showAddProductDialog() async {
+    Product? newProduct = await showDialog<Product>(
+      context: context,
+      builder: (context) {
+        TextEditingController nameCtrl = TextEditingController();
+        TextEditingController priceCtrl = TextEditingController();
+        TextEditingController amountCtrl = TextEditingController();
+        Unit selectedUnit = Unit.UNIT;
+        return AlertDialog(
+          title: Text('Adicionar Produto'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(labelText: 'Nome'),
+              ),
+              TextField(
+                controller: priceCtrl,
+                decoration: InputDecoration(labelText: 'Preço (€)'),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              TextField(
+                controller: amountCtrl,
+                decoration: InputDecoration(labelText: 'Quantidade'),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              DropdownButton<Unit>(
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.tertiaryFixed,
+                ),
+                dropdownColor: Theme.of(context).colorScheme.secondary,
+                value: selectedUnit,
+                onChanged: (value) {
+                  if (value != null) {
+                    selectedUnit = value;
+                  }
+                },
+                items:
+                    Unit.values
+                        .map(
+                          (u) => DropdownMenuItem(
+                            value: u,
+                            child: Text(
+                              u.toDisplayString(),
+                              style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.tertiaryFixed,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nameCtrl.text.isNotEmpty &&
+                    priceCtrl.text.isNotEmpty &&
+                    amountCtrl.text.isNotEmpty) {
+                  Navigator.pop(
+                    context,
+                    Product(
+                      name: nameCtrl.text,
+                      imageUrl: [],
+                      category: '',
+                      price: double.tryParse(priceCtrl.text) ?? 0,
+                      amount: double.tryParse(amountCtrl.text) ?? 1,
+                      unit: selectedUnit,
+                    ),
+                  );
+                }
+              },
+              child: Text('Adicionar'),
+            ),
+          ],
+        );
+      },
+    );
+    if (newProduct != null) {
+      addProduct(newProduct);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Editar Cabaz",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            TextFormField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: "Nome"),
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              controller: priceController,
+              decoration: InputDecoration(labelText: "Preço (€)"),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+            ),
+            SizedBox(height: 10),
+            DropdownButtonFormField<DeliveryDate>(
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.tertiaryFixed,
+                fontSize: 16,
+              ),
+              dropdownColor: Theme.of(context).colorScheme.secondary,
+              value: selectedDeliveryDate,
+              decoration: InputDecoration(labelText: "Dia de Entrega"),
+              onChanged: (DeliveryDate? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    selectedDeliveryDate = newValue;
+                  });
+                }
+              },
+              items:
+                  DeliveryDate.values
+                      .map(
+                        (d) => DropdownMenuItem(
+                          value: d,
+                          child: Text(d.toDisplayString()),
+                        ),
+                      )
+                      .toList(),
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Produtos do Cabaz",
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                ),
+                GestureDetector(
+                  onTap: showAddProductDialog,
+                  child: Icon(
+                    Icons.add_circle,
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: editableProducts.length,
+              itemBuilder: (context, index) {
+                final p = editableProducts[index];
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    title: Text(p.name),
+                    subtitle: Text(
+                      "${p.unit == Unit.UNIT ? p.amount!.toStringAsFixed(0) : p.amount!.toStringAsFixed(2)} ${p.unit.toDisplayString()} - ${p.price!.toStringAsFixed(2)}€",
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => removeProduct(p),
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.scrim,
+                  ),
+                  onPressed: widget.onCancel,
+                  child: Text(
+                    "Cancelar",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiaryFixed,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: widget.onRemove,
+                  child: Text(
+                    "Remover",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                  ),
+                  onPressed: save,
+                  child: Text(
+                    "Guardar",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

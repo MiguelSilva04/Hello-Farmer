@@ -86,6 +86,7 @@ class MyApp extends StatelessWidget {
           surfaceContainerLow: const Color.fromRGBO(221, 247, 237, 1),
           surfaceDim: const Color(0xFFDEF2EA),
           secondary: Colors.white,
+          scrim: Colors.yellow,
           secondaryFixed: const Color.fromARGB(255, 82, 82, 82),
           tertiaryFixedDim: const Color.fromARGB(255, 199, 243, 226),
           tertiary: const Color.fromRGBO(155, 202, 184, 1),

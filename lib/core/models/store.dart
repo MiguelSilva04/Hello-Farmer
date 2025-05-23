@@ -1,3 +1,4 @@
+import 'basket.dart';
 import 'order.dart';
 import 'product_ad.dart';
 import 'store_review.dart';
@@ -33,6 +34,7 @@ class Store {
   List<StoreReview>? storeReviews;
   List<Order>? orders;
   List<DeliveryMethod>? preferredDeliveryMethod;
+  List<Basket>? baskets;
 
   Store({
     required this.createdAt,
@@ -48,5 +50,6 @@ class Store {
     this.storeReviews,
     this.orders,
     this.preferredDeliveryMethod,
+    this.baskets,
   }) : id = (_idCounter++).toString();
 }

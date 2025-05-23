@@ -10,7 +10,7 @@ import 'package:harvestly/components/producer/manageSection/billingSection.dart'
 import 'package:harvestly/components/producer/manageSection/breadCrumbNavigator.dart';
 import 'package:harvestly/components/producer/manageSection/clientsSection.dart';
 import 'package:harvestly/components/producer/manageSection/financesSection.dart';
-import 'package:harvestly/components/producer/manageSection/giftsSection.dart';
+import 'package:harvestly/components/producer/manageSection/basketSection.dart';
 import 'package:harvestly/components/producer/manageSection/highlightedAddsSection.dart';
 import 'package:harvestly/components/producer/manageSection/abandonnedOrdersSection.dart';
 import 'package:harvestly/components/producer/manageSection/deliveryMethodsSection.dart';
@@ -90,7 +90,7 @@ class _ManagePageState extends State<ManagePage> {
                   listen: false,
                 ).setIndex(5),
               ),
-          "gifts":
+          "baskets":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
@@ -181,7 +181,7 @@ class _ManagePageState extends State<ManagePage> {
       AbandonedOrdersPage(),
       ManageProductsSection(),
       ManageProductsSection(),
-      GiftsSection(),
+      BasketSection(),
       ClientsSection(),
       AnalysisManageStockSection(),
       AnalysisReportsSection(),

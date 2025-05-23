@@ -1,6 +1,8 @@
 import 'package:harvestly/core/models/store.dart';
 
+import 'basket.dart';
 import 'order.dart';
+import 'product.dart';
 import 'product_ad.dart';
 import 'store_review.dart';
 
@@ -351,6 +353,85 @@ class ClientUser {
          preferredDeliveryMethod: [
            DeliveryMethod.HOME_DELIVERY,
            DeliveryMethod.COURIER,
+         ],
+         baskets: [
+           Basket(
+             name: "Essenciais da Horta",
+             deliveryDate: DeliveryDate.WEDNESDAY,
+             price: 25.99,
+             products: [
+               Product(
+                 name: 'Alface Romana',
+                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                 category: 'Vegetais',
+                 amount: 10,
+                 unit: Unit.KG,
+                 price: 8.99,
+               ),
+               Product(
+                 name: 'Cenouras Baby',
+                 imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                 category: 'Vegetais',
+                 amount: 10,
+                 unit: Unit.KG,
+                 price: 10.98,
+               ),
+               Product(
+                 name: 'Tomate Cherry',
+                 imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                 category: 'Vegetais',
+                 amount: 10,
+                 unit: Unit.KG,
+                 price: 6,
+               ),
+             ],
+           ),
+           Basket(
+             name: "Cereais da Terra",
+             deliveryDate: DeliveryDate.FRIDAY,
+             price: 15.4,
+             products: [
+               Product(
+                 name: 'Centeio',
+                 imageUrl: ['assets/images/mock_images/centeio.jpg'],
+                 category: 'Cereais',
+                 amount: 10,
+                 unit: Unit.KG,
+                 price: 7.8,
+               ),
+               Product(
+                 name: 'Trigo',
+                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                 category: 'Cereais',
+                 amount: 10,
+                 unit: Unit.KG,
+                 price: 7.6,
+               ),
+             ],
+           ),
+           Basket(
+             name: "Pequeno-Almoço Completo",
+             deliveryDate: DeliveryDate.MONDAY,
+             price: 10.5,
+             products: [
+               Product(
+                 name: 'Ovos',
+                 imageUrl: ['assets/images/mock_images/eggs.jpg'],
+                 category: 'Ovos',
+                 amount: 6,
+                 unit: Unit.UNIT,
+                 price: 2.0,
+               ),
+               Product(
+                 name: 'Centeio',
+                 imageUrl: ['assets/images/mock_images/centeio.jpg'],
+                 category: 'Cereais',
+                 amount: 5,
+                 unit: Unit.KG,
+                 price: 8.5,
+               ),
+             ],
+           ),
          ],
        );
 

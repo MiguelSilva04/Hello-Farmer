@@ -107,7 +107,11 @@ class AbandonedOrdersPage extends StatelessWidget {
                   ),
                 ],
               ),
-              Text("Produtos:", style: TextStyle(fontWeight: FontWeight.bold)),
+
+              Text(
+                "Produtos Abandonados:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 2),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,6 +148,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                           style: const TextStyle(fontSize: 12),
                                           overflow: TextOverflow.ellipsis,
                                         ),
+                                        const SizedBox(height: 5),
                                         Container(
                                           height: imageSize,
                                           width: imageSize,

@@ -1,4 +1,5 @@
 import 'client_user.dart';
+import 'product.dart';
 import 'product_ad.dart';
 
 enum OrderState { Entregue, Pendente, Enviada, Abandonada }

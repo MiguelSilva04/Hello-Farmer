@@ -214,14 +214,6 @@ class AddBasketButton extends StatelessWidget {
                   onRemove: () => Navigator.of(context).pop(),
                   onSave: (Basket newBasket) {
                     Navigator.of(context).pop();
-                    // Add the new basket to the list
-                    final state =
-                        context.findAncestorStateOfType<_BasketSectionState>();
-                    if (state != null) {
-                      state.setState(() {
-                        state.baskets.add(newBasket);
-                      });
-                    }
                   },
                 ),
               );

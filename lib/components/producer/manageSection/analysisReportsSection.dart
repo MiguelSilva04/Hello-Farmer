@@ -118,7 +118,9 @@ class AnalysisReportsSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildMetricCard(
-                percentagemSemana > 0 ? "+${percentagemSemana.toStringAsFixed(2)}%" : "-${percentagemSemana.toStringAsFixed(2)}%",
+                percentagemSemana > 0
+                    ? "+${percentagemSemana.toStringAsFixed(2)}%"
+                    : "-${percentagemSemana.toStringAsFixed(2)}%",
                 'esta semana',
                 Icons.shopping_cart,
                 context,

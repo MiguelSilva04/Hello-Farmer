@@ -117,7 +117,7 @@ class MainSectionPage extends StatelessWidget {
               ),
               SettingsSubOption(
                 title: "Por canal de venda",
-                onTap: onClicks["analysisSaleChannel"]!,
+                onTap: onClicks["analysisDeliveryMethod"]!,
               ),
               SettingsSubOption(
                 title: "Principais produtores",
@@ -138,7 +138,7 @@ class MainSectionPage extends StatelessWidget {
           SettingsTileGroup(
             icon: Icons.storefront,
             title: "Canais de Venda",
-            onTap: onClicks["saleChannel"],
+            onTap: onClicks["deliveryMethod"],
           ),
           SettingsTileGroup(
             icon: Icons.campaign,

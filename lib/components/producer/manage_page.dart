@@ -109,7 +109,7 @@ class _ManagePageState extends State<ManagePage> {
                   listen: false,
                 ).setIndex(8),
               ),
-          "analysisSaleChannel":
+          "analysisDeliveryMethod":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
@@ -137,7 +137,7 @@ class _ManagePageState extends State<ManagePage> {
                   listen: false,
                 ).setIndex(12),
               ),
-          "saleChannel":
+          "deliveryMethod":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,

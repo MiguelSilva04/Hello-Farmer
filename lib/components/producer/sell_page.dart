@@ -2,9 +2,14 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+
+import '../../core/models/store.dart';
 
 class SellPage extends StatefulWidget {
   const SellPage({super.key});
@@ -512,33 +517,69 @@ class SellPageState extends State<SellPage> {
                 ),
 
                 SizedBox(height: 16),
-                Text(
-                  "Opções de entrega:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Row(
+                  children: [
+                    Text(
+                      "Opções de entrega:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Provider.of<BottomNavigationNotifier>(
+                          context,
+                          listen: false,
+                        ).setIndex(4);
+                        Provider.of<ManageSectionNotifier>(
+                          context,
+                          listen: false,
+                        ).setIndex(13);
+                      },
+                      child: Text(
+                        "alterar opções",
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
                 ),
-                CheckboxListTile(
-                  title: Text("Entrega ao domicílio"),
-                  value: deliveryOptions.contains("Entrega ao domicílio"),
-                  onChanged:
-                      (val) => toggleDelivery("Entrega ao domicílio", val!),
-                ),
-                CheckboxListTile(
-                  title: Text("Recolha num local à escolha"),
-                  value: deliveryOptions.contains(
-                    "Recolha num local à escolha",
+                ...DeliveryMethod.values.map(
+                  (method) => Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(method.toDisplayString()),
+                      Checkbox(
+                        value: AuthService()
+                            .currentUser!
+                            .store!
+                            .preferredDeliveryMethod!
+                            .contains(method),
+                        onChanged: (value) {},
+                      ),
+                    ],
                   ),
-                  onChanged:
-                      (val) =>
-                          toggleDelivery("Recolha num local à escolha", val!),
-                ),
-                CheckboxListTile(
-                  title: Text("Entrega por transportadora"),
-                  value: deliveryOptions.contains("Entrega por transportadora"),
-                  onChanged:
-                      (val) =>
-                          toggleDelivery("Entrega por transportadora", val!),
                 ),
 
+                // CheckboxListTile(
+                //   title: Text("Entrega ao domicílio"),
+                //   value: deliveryOptions.contains("Entrega ao domicílio"),
+                //   onChanged:
+                //       (val) => toggleDelivery("Entrega ao domicílio", val!),
+                // ),
+                // CheckboxListTile(
+                //   title: Text("Recolha num local à escolha"),
+                //   value: deliveryOptions.contains(
+                //     "Recolha num local à escolha",
+                //   ),
+                //   onChanged:
+                //       (val) =>
+                //           toggleDelivery("Recolha num local à escolha", val!),
+                // ),
+                // CheckboxListTile(
+                //   title: Text("Entrega por transportadora"),
+                //   value: deliveryOptions.contains("Entrega por transportadora"),
+                //   onChanged:
+                //       (val) =>
+                //           toggleDelivery("Entrega por transportadora", val!),
+                // ),
                 SizedBox(height: 16),
                 Text(
                   "Detalhes da venda:",
@@ -562,6 +603,20 @@ class SellPageState extends State<SellPage> {
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  width: 2.5,
+                                ),
                               ),
                             ),
                             keyboardType: TextInputType.number,

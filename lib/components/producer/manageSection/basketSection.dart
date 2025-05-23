@@ -36,22 +36,11 @@ class _BasketSectionState extends State<BasketSection> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        child: ListView(
-          children: [
-            for (var basket in baskets)
-              if (_editingBasket == null)
-                BasketCard(
-                  basket: basket,
-                  onTap:
-                      () => setState(() {
-                        _editingBasket = basket;
-                      }),
-                ),
-            if (_editingBasket != null)
-              BasketEditPage(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child:
+          _editingBasket != null
+              ? BasketEditAddPage(
+                isEditing: true,
                 basket: _editingBasket!,
                 onCancel: stopEdit,
                 onRemove: () => removeBasket(_editingBasket!),
@@ -62,12 +51,30 @@ class _BasketSectionState extends State<BasketSection> {
                     _editingBasket = null;
                   });
                 },
+              )
+              : ListView.builder(
+                itemCount: baskets.length + 1,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  if (index < baskets.length) {
+                    final basket = baskets[index];
+                    return BasketCard(
+                      basket: basket,
+                      onTap:
+                          () => setState(() {
+                            _editingBasket = basket;
+                          }),
+                    );
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: AddBasketButton(),
+                    );
+                  }
+                },
               ),
-            SizedBox(height: 20),
-            if (_editingBasket == null) AddBasketButton(),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -188,7 +195,31 @@ class AddBasketButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              Basket emptyBasket = Basket(
+                name: '',
+                price: 0,
+                deliveryDate: DeliveryDate.values.first,
+                products: [],
+              );
+              return Dialog(
+                insetPadding: EdgeInsets.all(30),
+                child: BasketEditAddPage(
+                  isEditing: false,
+                  basket: emptyBasket,
+                  onCancel: () => Navigator.of(context).pop(),
+                  onRemove: () => Navigator.of(context).pop(),
+                  onSave: (Basket newBasket) {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              );
+            },
+          );
+        },
         icon: Icon(
           Icons.add,
           color: Theme.of(context).colorScheme.secondary,
@@ -208,13 +239,15 @@ class AddBasketButton extends StatelessWidget {
   }
 }
 
-class BasketEditPage extends StatefulWidget {
+class BasketEditAddPage extends StatefulWidget {
   final Basket basket;
   final VoidCallback onCancel;
   final VoidCallback onRemove;
   final ValueChanged<Basket> onSave;
+  final bool isEditing;
 
-  const BasketEditPage({
+  const BasketEditAddPage({
+    required this.isEditing,
     required this.basket,
     required this.onCancel,
     required this.onRemove,
@@ -223,10 +256,10 @@ class BasketEditPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<BasketEditPage> createState() => _BasketEditPageState();
+  State<BasketEditAddPage> createState() => _BasketEditAddPageState();
 }
 
-class _BasketEditPageState extends State<BasketEditPage> {
+class _BasketEditAddPageState extends State<BasketEditAddPage> {
   late TextEditingController nameController;
   late TextEditingController priceController;
   late DeliveryDate selectedDeliveryDate;
@@ -454,33 +487,67 @@ class _BasketEditPageState extends State<BasketEditPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.scrim,
-                  ),
-                  onPressed: widget.onCancel,
-                  child: Text(
-                    "Cancelar",
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.tertiaryFixed,
-                      fontWeight: FontWeight.w600,
+                if (!widget.isEditing)
+                  InkWell(
+                    onTap: widget.onCancel,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(Icons.arrow_back),
                     ),
                   ),
-                ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: widget.onRemove,
-                  child: Text(
-                    "Remover",
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontWeight: FontWeight.w600,
+                if (widget.isEditing)
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.scrim,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
+                      ),
+                    ),
+                    onPressed: widget.onCancel,
+                    child: Text(
+                      "Cancelar",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.tertiaryFixed,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
-                ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
+                SizedBox(width: 8),
+                if (widget.isEditing)
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
+                      ),
+                    ),
+                    onPressed: widget.onRemove,
+                    child: Text(
+                      "Remover",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                SizedBox(width: 8),
+                TextButton(
+                  style: TextButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   ),
                   onPressed: save,
                   child: Text(
@@ -488,6 +555,7 @@ class _BasketEditPageState extends State<BasketEditPage> {
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.secondary,
                       fontWeight: FontWeight.w600,
+                      fontSize: 13,
                     ),
                   ),
                 ),

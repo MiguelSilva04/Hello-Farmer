@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/components/producer/manageSection/addsSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisFinancesSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisMainProducersSection.dart';
-import 'package:harvestly/components/producer/manageSection/analysisManageStockSection.dart.dart';
 import 'package:harvestly/components/producer/manageSection/analysisReportsSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisDeliveryMethodSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisStoreViewsSection.dart';
@@ -40,7 +39,6 @@ class _ManagePageState extends State<ManagePage> {
       "Gestão de Preços",
       "Cabazes",
       "Clientes",
-      "Análise de dados > Gestão de Stock",
       "Análise de dados > Relatórios",
       "Análise de dados > Por Canal de Venda",
       "Análise de dados > Principais Produtores",
@@ -104,75 +102,68 @@ class _ManagePageState extends State<ManagePage> {
                   listen: false,
                 ).setIndex(7),
               ),
-          "analysisManageStock":
+          "analysisReports":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(8),
               ),
-          "analysisReports":
+          "analysisDeliveryMethod":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(9),
               ),
-          "analysisSaleChannel":
+          "analysisMainProducers":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(10),
               ),
-          "analysisMainProducers":
+          "analysisStoreViews":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(11),
               ),
-          "analysisStoreViews":
+          "analysisFinances":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(12),
               ),
-          "analysisFinances":
+          "deliveryMethod":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(13),
               ),
-          "saleChannel":
+          "adds":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(14),
               ),
-          "adds":
+          "highlightedAdds":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
                 ).setIndex(15),
               ),
-          "highlightedAdds":
-              () => setState(
-                () => Provider.of<ManageSectionNotifier>(
-                  context,
-                  listen: false,
-                ).setIndex(16),
-              ),
           "finances":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
                   listen: false,
-                ).setIndex(17),
+                ).setIndex(16),
               ),
         },
       ),
@@ -183,7 +174,6 @@ class _ManagePageState extends State<ManagePage> {
       ManageProductsSection(),
       BasketSection(),
       ClientsSection(),
-      AnalysisManageStockSection(),
       AnalysisReportsSection(),
       AnalysisDeliveryMethodSection(),
       AnalysisMainProducersSection(),

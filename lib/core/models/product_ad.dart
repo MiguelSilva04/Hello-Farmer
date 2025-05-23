@@ -5,9 +5,11 @@ class ProductAd {
 
   final String id;
   final Product product;
+  String description;
   String price;
   String description = "";
   String highlight;
+
 
   ProductAd({
     required this.product,
@@ -18,6 +20,4 @@ class ProductAd {
            price ??
            "${product.price!.toStringAsFixed(2)}€/${product.unit.toDisplayString()}",
        id = (_idCounter++).toString();
-
-       
 }

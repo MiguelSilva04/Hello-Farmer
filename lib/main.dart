@@ -83,7 +83,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           primary: const Color.fromRGBO(66, 139, 109, 1),
           surface: const Color.fromRGBO(42, 129, 94, 1),
-          surfaceContainerLow: const Color.fromRGBO(221, 247, 237, 1),
+          // surfaceContainerLow: const Color.fromRGBO(221, 247, 237, 1),
           surfaceDim: const Color(0xFFDEF2EA),
           secondary: Colors.white,
           scrim: Colors.yellow,

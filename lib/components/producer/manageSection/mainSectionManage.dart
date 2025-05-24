@@ -120,8 +120,8 @@ class MainSectionPage extends StatelessWidget {
                 onTap: onClicks["analysisDeliveryMethod"]!,
               ),
               SettingsSubOption(
-                title: "Principais produtores",
-                onTap: onClicks["analysisMainProducers"]!,
+                title: "Principais produtos",
+                onTap: onClicks["analysisMainProducts"]!,
               ),
               SettingsSubOption(
                 title: "Visitas à banca",

@@ -60,7 +60,7 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
           } else {
             unitsPerMethod[method] = (unitsPerMethod[method] ?? 0) + 1;
             kgPerMethod[method] =
-                (kgPerMethod[method] ?? 0) + ad.product.minAmount!;
+                (kgPerMethod[method] ?? 0) + ad.product.amount!;
           }
         }
       }

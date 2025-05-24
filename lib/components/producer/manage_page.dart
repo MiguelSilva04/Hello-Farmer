@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/producer/manageSection/addsSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisFinancesSection.dart';
-import 'package:harvestly/components/producer/manageSection/analysisMainProducersSection.dart';
+import 'package:harvestly/components/producer/manageSection/analysisMainProductsSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisReportsSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisDeliveryMethodSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisStoreViewsSection.dart';
@@ -41,7 +41,7 @@ class _ManagePageState extends State<ManagePage> {
       "Clientes",
       "Análise de dados > Relatórios",
       "Análise de dados > Por Canal de Venda",
-      "Análise de dados > Principais Produtores",
+      "Análise de dados > Principais Produtos",
       "Análise de dados > Visitas à Banca",
       "Análise de dados > Finanças",
       "Canais de Venda",
@@ -116,7 +116,7 @@ class _ManagePageState extends State<ManagePage> {
                   listen: false,
                 ).setIndex(9),
               ),
-          "analysisMainProducers":
+          "analysisMainProducts":
               () => setState(
                 () => Provider.of<ManageSectionNotifier>(
                   context,
@@ -176,7 +176,7 @@ class _ManagePageState extends State<ManagePage> {
       ClientsSection(),
       AnalysisReportsSection(),
       AnalysisDeliveryMethodSection(),
-      AnalysisMainProducersSection(),
+      AnalysisMainProductsSection(),
       AnalysisStoreViewsSection(),
       AnalysisFinancesSection(),
       DeliveryMethodsSection(),

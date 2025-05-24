@@ -72,6 +72,10 @@ class ClientUser {
                unit: Unit.KG,
                price: 13.5,
              ),
+             preferredDeliveryMethods: [
+               DeliveryMethod.COURIER,
+               DeliveryMethod.HOME_DELIVERY,
+             ],
              description:
                  "Centeio fresco, cultivado de forma sustentável, ideal para pães, farinhas e receitas saudáveis. Rico em fibras e nutrientes, direto do produtor para a sua mesa.",
              highlight: 'Este anuncio está destacado há mais de 3 dias!',
@@ -86,6 +90,7 @@ class ClientUser {
                unit: Unit.KG,
                price: 12.5,
              ),
+             preferredDeliveryMethods: [DeliveryMethod.COURIER],
              description:
                  "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
              highlight: 'Este anúncio não está em destaque!',
@@ -100,6 +105,7 @@ class ClientUser {
                unit: Unit.UNIT,
                price: 1.2,
              ),
+             preferredDeliveryMethods: [DeliveryMethod.PICKUP],
              description:
                  "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
              highlight: 'Este anuncio está destacado há mais de 5 dias!',
@@ -114,6 +120,7 @@ class ClientUser {
                unit: Unit.KG,
                price: 2.8,
              ),
+             preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
              description:
                  "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
              highlight: 'Este anuncio está destacado há 8 horas!',
@@ -128,6 +135,11 @@ class ClientUser {
                unit: Unit.KG,
                price: 3.5,
              ),
+             preferredDeliveryMethods: [
+               DeliveryMethod.COURIER,
+               DeliveryMethod.HOME_DELIVERY,
+               DeliveryMethod.PICKUP,
+             ],
              description:
                  "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
              highlight: 'Este anúncio não está em destaque!',
@@ -142,6 +154,10 @@ class ClientUser {
                unit: Unit.UNIT,
                price: 2.0,
              ),
+             preferredDeliveryMethods: [
+               DeliveryMethod.COURIER,
+               DeliveryMethod.HOME_DELIVERY,
+             ],
              description:
                  "Ovos frescos de galinhas criadas ao ar livre, ricos em sabor e nutrientes. Ideais para pequenos-almoços, bolos e receitas saudáveis. Direto do produtor para a sua mesa.",
              highlight: 'Este anuncio está destacado há 23 horas!',
@@ -192,17 +208,27 @@ class ClientUser {
            Order(
              id: '1001',
              pickupDate: DateTime(2025, 5, 18),
-             deliveryDate: DateTime(2025, 5, 19),
+             deliveryDate: null,
              address: 'Rua do Pedido #1001',
-             state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+             state: OrderState.Abandonada,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Centeio',
+                   imageUrl: ['assets/images/mock_images/centeio.jpg'],
+                   category: 'Cereais',
+                   stock: 10,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 13.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                 ],
+                 description:
+                     "Centeio fresco, cultivado de forma sustentável, ideal para pães, farinhas e receitas saudáveis. Rico em fibras e nutrientes, direto do produtor para a sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 3 dias!',
                ),
              ],
              totalPrice: 20.34,
@@ -215,14 +241,21 @@ class ClientUser {
              deliveryDate: DateTime(2025, 5, 19),
              address: 'Rua do Pedido #0078',
              state: OrderState.Pendente,
-             products: [
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
              ],
              totalPrice: 25.12,
@@ -235,14 +268,25 @@ class ClientUser {
              deliveryDate: null,
              address: 'Rua do Pedido #0832',
              state: OrderState.Abandonada,
-             products: [
-               Product(
-                 name: 'Tomate Cherry',
-                 imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 25,
-                 unit: Unit.KG,
-                 price: 3.5,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Tomate Cherry',
+                   imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                   category: 'Vegetais',
+                   stock: 15,
+                   minAmount: 25,
+                   unit: Unit.KG,
+                   price: 3.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                   DeliveryMethod.PICKUP,
+                 ],
+                 description:
+                     "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
              ],
              totalPrice: 30.59,
@@ -255,14 +299,21 @@ class ClientUser {
              deliveryDate: DateTime(2025, 5, 4),
              address: 'Rua do Pedido #3627',
              state: OrderState.Pendente,
-             products: [
-               Product(
-                 name: 'Cenouras Baby',
-                 imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 2.8,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Cenouras Baby',
+                   imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                   category: 'Vegetais',
+                   stock: 25,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 2.8,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
+                 description:
+                     "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
+                 highlight: 'Este anuncio está destacado há 8 horas!',
                ),
              ],
              totalPrice: 17.36,
@@ -275,14 +326,21 @@ class ClientUser {
              deliveryDate: DateTime(2025, 4, 2),
              address: 'Rua do Pedido #1938',
              state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
              ],
              totalPrice: 13.84,
@@ -295,14 +353,21 @@ class ClientUser {
              deliveryDate: DateTime(2025, 4, 2),
              address: 'Rua do Pedido #8809',
              state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Cenouras Baby',
-                 imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 2.8,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Cenouras Baby',
+                   imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                   category: 'Vegetais',
+                   stock: 25,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 2.8,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
+                 description:
+                     "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
+                 highlight: 'Este anuncio está destacado há 8 horas!',
                ),
              ],
              totalPrice: 69.11,
@@ -315,46 +380,89 @@ class ClientUser {
              deliveryDate: null,
              address: 'Rua do Pedido #8809',
              state: OrderState.Abandonada,
-             products: [
-               Product(
-                 name: 'Centeio',
-                 imageUrl: ['assets/images/mock_images/centeio.jpg'],
-                 category: 'Cereais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 13.5,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Tomate Cherry',
+                   imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                   category: 'Vegetais',
+                   stock: 15,
+                   minAmount: 25,
+                   unit: Unit.KG,
+                   price: 3.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                   DeliveryMethod.PICKUP,
+                 ],
+                 description:
+                     "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   stock: 20,
+                   minAmount: 10,
+                   unit: Unit.KG,
+                   price: 12.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
-               Product(
-                 name: 'Cenouras Baby',
-                 imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 2.8,
+               ProductAd(
+                 product: Product(
+                   name: 'Cenouras Baby',
+                   imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                   category: 'Vegetais',
+                   stock: 25,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 2.8,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
+                 description:
+                     "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
+                 highlight: 'Este anuncio está destacado há 8 horas!',
                ),
-               Product(
-                 name: 'Tomate Cherry',
-                 imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 25,
-                 unit: Unit.KG,
-                 price: 3.5,
+               ProductAd(
+                 product: Product(
+                   name: 'Tomate Cherry',
+                   imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                   category: 'Vegetais',
+                   stock: 15,
+                   minAmount: 25,
+                   unit: Unit.KG,
+                   price: 3.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                   DeliveryMethod.PICKUP,
+                 ],
+                 description:
+                     "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
              ],
              totalPrice: 69.11,
@@ -366,95 +474,164 @@ class ClientUser {
              pickupDate: DateTime(2025, 5, 9),
              deliveryDate: DateTime(2025, 5, 10),
              address: 'Rua do Pedido #9809',
-             state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Centeio',
-                 imageUrl: ['assets/images/mock_images/centeio.jpg'],
-                 category: 'Cereais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 13.5,
+             state: OrderState.Enviada,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Centeio',
+                   imageUrl: ['assets/images/mock_images/centeio.jpg'],
+                   category: 'Cereais',
+                   stock: 10,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 13.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                 ],
+                 description:
+                     "Centeio fresco, cultivado de forma sustentável, ideal para pães, farinhas e receitas saudáveis. Rico em fibras e nutrientes, direto do produtor para a sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 3 dias!',
                ),
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   stock: 20,
+                   minAmount: 10,
+                   unit: Unit.KG,
+                   price: 12.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
-               Product(
-                 name: 'Cenouras Baby',
-                 imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 2.8,
+               ProductAd(
+                 product: Product(
+                   name: 'Cenouras Baby',
+                   imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                   category: 'Vegetais',
+                   stock: 25,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 2.8,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
+                 description:
+                     "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
+                 highlight: 'Este anuncio está destacado há 8 horas!',
                ),
-               Product(
-                 name: 'Tomate Cherry',
-                 imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 25,
-                 unit: Unit.KG,
-                 price: 3.5,
+               ProductAd(
+                 product: Product(
+                   name: 'Tomate Cherry',
+                   imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                   category: 'Vegetais',
+                   stock: 15,
+                   minAmount: 25,
+                   unit: Unit.KG,
+                   price: 3.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                   DeliveryMethod.PICKUP,
+                 ],
+                 description:
+                     "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
              ],
              totalPrice: 69.11,
              consumerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
-           Order(
-             id: '2001',
-             pickupDate: DateTime(2024, 6, 1),
-             deliveryDate: DateTime(2024, 6, 2),
-             address: 'Rua do Pedido #2001',
-             state: OrderState.Pendente,
-             products: [
-               Product(
-                 name: 'Ovos',
-                 imageUrl: ['assets/images/mock_images/eggs.jpg'],
-                 category: 'Ovos',
-                 minAmount: 6,
-                 unit: Unit.UNIT,
-                 price: 2.0,
-               ),
-             ],
-             totalPrice: 12.0,
-             consumerId: "vjjzySrSiIYy1c3QcduZhlKglNh2",
-             producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
-           ),
+           //  Order(
+           //    id: '2001',
+           //    pickupDate: DateTime(2024, 6, 1),
+           //    deliveryDate: null,
+           //    address: 'Rua do Pedido #2001',
+           //    state: OrderState.Abandonada,
+           //    productsAds: [
+           //      ProductAd(
+           //        product: Product(
+           //          name: 'Ovos',
+           //          imageUrl: ['assets/images/mock_images/eggs.jpg'],
+           //          category: 'Ovos',
+           //          stock: 50,
+           //          minAmount: 6,
+           //          unit: Unit.UNIT,
+           //          price: 2.0,
+           //        ),
+           //        preferredDeliveryMethods: [
+           //          DeliveryMethod.COURIER,
+           //          DeliveryMethod.HOME_DELIVERY,
+           //        ],
+           //        description:
+           //            "Ovos frescos de galinhas criadas ao ar livre, ricos em sabor e nutrientes. Ideais para pequenos-almoços, bolos e receitas saudáveis. Direto do produtor para a sua mesa.",
+           //        highlight: 'Este anuncio está destacado há 23 horas!',
+           //      ),
+           //    ],
+           //    totalPrice: 12.0,
+           //    consumerId: "vjjzySrSiIYy1c3QcduZhlKglNh2",
+           //    producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
+           //  ),
            Order(
              id: '2002',
              pickupDate: DateTime(2024, 6, 3),
              deliveryDate: DateTime(2024, 6, 4),
              address: 'Rua do Pedido #2002',
-             state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Centeio',
-                 imageUrl: ['assets/images/mock_images/centeio.jpg'],
-                 category: 'Cereais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 13.5,
+             state: OrderState.Enviada,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Centeio',
+                   imageUrl: ['assets/images/mock_images/centeio.jpg'],
+                   category: 'Cereais',
+                   stock: 10,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 13.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                 ],
+                 description:
+                     "Centeio fresco, cultivado de forma sustentável, ideal para pães, farinhas e receitas saudáveis. Rico em fibras e nutrientes, direto do produtor para a sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 3 dias!',
                ),
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   stock: 20,
+                   minAmount: 10,
+                   unit: Unit.KG,
+                   price: 12.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
              ],
              totalPrice: 26.0,
@@ -464,25 +641,39 @@ class ClientUser {
            Order(
              id: '2003',
              pickupDate: DateTime(2024, 6, 5),
-             deliveryDate: null,
+             deliveryDate: DateTime(2024, 6, 7),
              address: 'Rua do Pedido #2003',
-             state: OrderState.Abandonada,
-             products: [
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+             state: OrderState.Enviada,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
-               Product(
-                 name: 'Cenouras Baby',
-                 imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 2.8,
+               ProductAd(
+                 product: Product(
+                   name: 'Cenouras Baby',
+                   imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                   category: 'Vegetais',
+                   stock: 25,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 2.8,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
+                 description:
+                     "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
+                 highlight: 'Este anuncio está destacado há 8 horas!',
                ),
              ],
              totalPrice: 14.2,
@@ -494,15 +685,26 @@ class ClientUser {
              pickupDate: DateTime(2024, 6, 7),
              deliveryDate: DateTime(2024, 6, 8),
              address: 'Rua do Pedido #2004',
-             state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Tomate Cherry',
-                 imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 25,
-                 unit: Unit.KG,
-                 price: 3.5,
+             state: OrderState.Enviada,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Tomate Cherry',
+                   imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                   category: 'Vegetais',
+                   stock: 15,
+                   minAmount: 25,
+                   unit: Unit.KG,
+                   price: 3.5,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                   DeliveryMethod.PICKUP,
+                 ],
+                 description:
+                     "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
              ],
              totalPrice: 87.5,
@@ -515,22 +717,36 @@ class ClientUser {
              deliveryDate: DateTime(2024, 6, 11),
              address: 'Rua do Pedido #2005',
              state: OrderState.Pendente,
-             products: [
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   stock: 20,
+                   minAmount: 10,
+                   unit: Unit.KG,
+                   price: 12.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
-               Product(
-                 name: 'Cenouras Baby',
-                 imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 5,
-                 unit: Unit.KG,
-                 price: 2.8,
+               ProductAd(
+                 product: Product(
+                   name: 'Cenouras Baby',
+                   imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                   category: 'Vegetais',
+                   stock: 25,
+                   minAmount: 5,
+                   unit: Unit.KG,
+                   price: 2.8,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
+                 description:
+                     "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
+                 highlight: 'Este anuncio está destacado há 8 horas!',
                ),
              ],
              totalPrice: 15.3,
@@ -543,14 +759,21 @@ class ClientUser {
              deliveryDate: DateTime(2025, 5, 23),
              address: 'Rua do Pedido #2006',
              state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   stock: 20,
+                   minAmount: 10,
+                   unit: Unit.KG,
+                   price: 12.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
              ],
              totalPrice: 5.10,
@@ -563,14 +786,21 @@ class ClientUser {
              deliveryDate: DateTime(2025, 5, 22),
              address: 'Rua do Pedido #2007',
              state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
              ],
              totalPrice: 7.99,
@@ -583,22 +813,36 @@ class ClientUser {
              deliveryDate: DateTime(2025, 5, 19),
              address: 'Rua do Pedido #2008',
              state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   stock: 20,
+                   minAmount: 10,
+                   unit: Unit.KG,
+                   price: 12.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
              ],
              totalPrice: 9.99,
@@ -611,22 +855,36 @@ class ClientUser {
              deliveryDate: DateTime(2025, 5, 16),
              address: 'Rua do Pedido #2009',
              state: OrderState.Entregue,
-             products: [
-               Product(
-                 name: 'Alface Romana',
-                 imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-                 category: 'Vegetais',
-                 minAmount: 1,
-                 unit: Unit.UNIT,
-                 price: 1.2,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   stock: 30,
+                   minAmount: 1,
+                   unit: Unit.UNIT,
+                   price: 1.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
                ),
-               Product(
-                 name: 'Trigo',
-                 imageUrl: ['assets/images/mock_images/trigo.jpg'],
-                 category: 'Cereais',
-                 minAmount: 10,
-                 unit: Unit.KG,
-                 price: 12.5,
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   stock: 20,
+                   minAmount: 10,
+                   unit: Unit.KG,
+                   price: 12.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
                ),
              ],
              totalPrice: 9.99,

@@ -119,7 +119,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        final products = order.products;
+                        final products = order.productsAds;
                         final productCount = products.length;
 
                         double imageSize;
@@ -144,7 +144,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                     child: Column(
                                       children: [
                                         Text(
-                                          p.name,
+                                          p.product.name,
                                           style: const TextStyle(fontSize: 12),
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -153,7 +153,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                           height: imageSize,
                                           width: imageSize,
                                           child: Image.asset(
-                                            p.imageUrl.first,
+                                            p.product.imageUrl.first,
                                             fit: BoxFit.cover,
                                           ),
                                         ),
@@ -180,7 +180,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                         child: Column(
                                           children: [
                                             Text(
-                                              p.name,
+                                              p.product.name,
                                               style: const TextStyle(
                                                 fontSize: 12,
                                               ),
@@ -190,7 +190,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                               height: imageSize,
                                               width: imageSize,
                                               child: Image.asset(
-                                                p.imageUrl.first,
+                                                p.product.imageUrl.first,
                                                 fit: BoxFit.cover,
                                               ),
                                             ),

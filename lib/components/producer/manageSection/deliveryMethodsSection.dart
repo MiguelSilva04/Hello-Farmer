@@ -3,8 +3,15 @@ import 'package:harvestly/core/models/store.dart';
 
 import '../../../core/services/auth/auth_service.dart';
 
-class DeliveryMethodsSection extends StatelessWidget {
+class DeliveryMethodsSection extends StatefulWidget {
   const DeliveryMethodsSection({super.key});
+
+  @override
+  State<DeliveryMethodsSection> createState() => _DeliveryMethodsSectionState();
+}
+
+class _DeliveryMethodsSectionState extends State<DeliveryMethodsSection> {
+  bool _isEditing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +70,7 @@ class DeliveryMethodsSection extends StatelessWidget {
                       value: checked,
                       onChanged: (val) {
                         setState(() {
+                          _isEditing = true;
                           if (checked) {
                             deliverOptions.remove(method);
                           } else {
@@ -75,6 +83,19 @@ class DeliveryMethodsSection extends StatelessWidget {
                 );
               },
             ),
+            if (_isEditing)
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  foregroundColor: Theme.of(context).colorScheme.secondary,
+                ),
+                onPressed: () {},
+                label: Text("Guardar Alterações"),
+                icon: Icon(
+                  Icons.save,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
           ],
         );
       },

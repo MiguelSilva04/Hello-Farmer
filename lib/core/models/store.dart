@@ -35,6 +35,7 @@ class Store {
   List<Order>? orders;
   List<DeliveryMethod>? preferredDeliveryMethod;
   List<Basket>? baskets;
+  List<Map<DateTime, String>>? viewsByUserDateTime;
 
   Store({
     required this.createdAt,
@@ -51,5 +52,6 @@ class Store {
     this.orders,
     this.preferredDeliveryMethod,
     this.baskets,
+    this.viewsByUserDateTime
   }) : id = (_idCounter++).toString();
 }

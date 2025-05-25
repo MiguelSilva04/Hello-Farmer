@@ -11,12 +11,14 @@ class ProductAd {
   String price;
   String highlight;
   List<DeliveryMethod> preferredDeliveryMethods;
+  List<Map<DateTime, String>>? viewsByUserDateTime;
 
   ProductAd({
     required this.product,
     required this.preferredDeliveryMethods,
     String? description,
     String? price,
+    this.viewsByUserDateTime,
     required this.highlight,
   }) : description = description ?? "",
        price =

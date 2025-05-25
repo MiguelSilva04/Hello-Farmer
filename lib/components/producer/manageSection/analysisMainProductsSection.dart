@@ -38,7 +38,6 @@ class _PodiumProduct extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // You can customize the appearance as needed
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -56,7 +55,7 @@ class _PodiumProduct extends StatelessWidget {
           ),
           progressColor:
               place == 1
-                  ? Colors.amber
+                  ? Colors.amber[900]
                   : place == 2
                   ? Colors.grey
                   : Colors.brown,
@@ -79,13 +78,13 @@ class _PodiumProduct extends StatelessWidget {
           '${product.totalKg.toStringAsFixed(2)} kg',
           style: TextStyle(color: Colors.grey[600], fontSize: 12),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: (place == 1) ? 14 : 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
             color:
                 place == 1
-                    ? Colors.amber
+                    ? Colors.amber[900]
                     : place == 2
                     ? Colors.grey
                     : Colors.brown,
@@ -225,12 +224,14 @@ class AnalysisMainProductsSection extends StatelessWidget {
                         totalSales > 0 ? top3[1].totalSales / totalSales : 0.0,
                     place: 2,
                   ),
+                const SizedBox(width: 20),
                 _PodiumProduct(
                   product: top3[0],
                   percent:
                       totalSales > 0 ? top3[0].totalSales / totalSales : 0.0,
                   place: 1,
                 ),
+                const SizedBox(width: 20),
                 if (top3.length > 2)
                   _PodiumProduct(
                     product: top3[2],

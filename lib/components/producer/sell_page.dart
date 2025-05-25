@@ -410,6 +410,7 @@ class SellPageState extends State<SellPage> {
                   decoration: InputDecoration(labelText: "Título do anúncio"),
                   initialValue: title,
                   onChanged: (val) => title = val,
+                  maxLength: 20,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
                       return "O título não pode estar vazio.";

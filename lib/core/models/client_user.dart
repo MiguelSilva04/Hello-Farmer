@@ -647,7 +647,7 @@ class ClientUser {
          orders: [
            Order(
              id: '1001',
-             pickupDate: DateTime(2025, 5, 18),
+             pickupDate: DateTime(2025, 5, 19),
              deliveryDate: null,
              address: 'Rua do Pedido #1001',
              state: OrderState.Abandonada,
@@ -676,8 +676,8 @@ class ClientUser {
            ),
            Order(
              id: '0078',
-             pickupDate: DateTime(2025, 4, 15),
-             deliveryDate: DateTime(2025, 5, 19),
+             pickupDate: DateTime(2025, 5, 19),
+             deliveryDate: DateTime(2025, 5, 20),
              address: 'Rua do Pedido #0078',
              state: OrderState.Pendente,
              productsAds: [
@@ -702,7 +702,7 @@ class ClientUser {
            ),
            Order(
              id: '0832',
-             pickupDate: DateTime(2025, 4, 15),
+             pickupDate: DateTime(2025, 5, 20),
              deliveryDate: null,
              address: 'Rua do Pedido #0832',
              state: OrderState.Abandonada,
@@ -732,8 +732,8 @@ class ClientUser {
            ),
            Order(
              id: '3627',
-             pickupDate: DateTime(2025, 4, 29),
-             deliveryDate: DateTime(2025, 5, 4),
+             pickupDate: DateTime(2025, 5, 21),
+             deliveryDate: DateTime(2025, 5, 22),
              address: 'Rua do Pedido #3627',
              state: OrderState.Pendente,
              productsAds: [
@@ -758,8 +758,8 @@ class ClientUser {
            ),
            Order(
              id: '1938',
-             pickupDate: DateTime(2025, 4, 1),
-             deliveryDate: DateTime(2025, 4, 2),
+             pickupDate: DateTime(2025, 5, 21),
+             deliveryDate: DateTime(2025, 5, 24),
              address: 'Rua do Pedido #1938',
              state: OrderState.Entregue,
              productsAds: [
@@ -784,8 +784,8 @@ class ClientUser {
            ),
            Order(
              id: '8809',
-             pickupDate: DateTime(2025, 4, 1),
-             deliveryDate: DateTime(2025, 4, 2),
+             pickupDate: DateTime(2025, 5, 19),
+             deliveryDate: DateTime(2025, 5, 21),
              address: 'Rua do Pedido #8809',
              state: OrderState.Entregue,
              productsAds: [
@@ -806,6 +806,96 @@ class ClientUser {
              ],
              totalPrice: 69.11,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
+             producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
+           ),
+           Order(
+             id: '1377',
+             pickupDate: DateTime(2025, 5, 22),
+             deliveryDate: DateTime(2025, 5, 24),
+             address: 'Rua do Pedido #8809',
+             state: OrderState.Entregue,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Tomate Cherry',
+                   imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                   category: 'Vegetais',
+                   amount: 5,
+                   unit: Unit.KG,
+                   price: 3.2,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                   DeliveryMethod.PICKUP,
+                 ],
+                 description:
+                     "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
+                 highlight: 'Este anúncio não está em destaque!',
+               ),
+               ProductAd(
+                 product: Product(
+                   name: 'Trigo',
+                   imageUrl: ['assets/images/mock_images/trigo.jpg'],
+                   category: 'Cereais',
+                   amount: 10,
+                   unit: Unit.KG,
+                   price: 6.2,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.COURIER],
+                 description:
+                     "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
+                 highlight: 'Este anúncio não está em destaque!',
+               ),
+               ProductAd(
+                 product: Product(
+                   name: 'Cenouras Baby',
+                   imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
+                   category: 'Vegetais',
+                   amount: 5,
+                   unit: Unit.KG,
+                   price: 2.5,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
+                 description:
+                     "Cenouras baby frescas, crocantes e doces, ideais para snacks saudáveis, saladas e receitas variadas. Cultivadas com práticas sustentáveis para garantir qualidade e sabor direto do produtor.",
+                 highlight: 'Este anuncio está destacado há 8 horas!',
+               ),
+               ProductAd(
+                 product: Product(
+                   name: 'Tomate Cherry',
+                   imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
+                   category: 'Vegetais',
+                   amount: 5,
+                   unit: Unit.KG,
+                   price: 3.2,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                   DeliveryMethod.PICKUP,
+                 ],
+                 description:
+                     "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
+                 highlight: 'Este anúncio não está em destaque!',
+               ),
+               ProductAd(
+                 product: Product(
+                   name: 'Alface Romana',
+                   imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
+                   category: 'Vegetais',
+                   amount: 10,
+                   unit: Unit.KG,
+                   price: 7.99,
+                 ),
+                 preferredDeliveryMethods: [DeliveryMethod.PICKUP],
+                 description:
+                     "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 5 dias!',
+               ),
+             ],
+             totalPrice: 69.11,
+             consumerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -900,8 +990,8 @@ class ClientUser {
            ),
            Order(
              id: '1252',
-             pickupDate: DateTime(2025, 5, 9),
-             deliveryDate: DateTime(2025, 5, 10),
+             pickupDate: DateTime(2025, 5, 24),
+             deliveryDate: DateTime(2025, 5, 25),
              address: 'Rua do Pedido #9809',
              state: OrderState.Enviada,
              productsAds: [
@@ -989,10 +1079,10 @@ class ClientUser {
            ),
            Order(
              id: '2002',
-             pickupDate: DateTime(2024, 6, 3),
-             deliveryDate: DateTime(2024, 6, 4),
+             pickupDate: DateTime(2025, 5, 22),
+             deliveryDate: DateTime(2025, 5, 23),
              address: 'Rua do Pedido #2002',
-             state: OrderState.Enviada,
+             state: OrderState.Entregue,
              productsAds: [
                ProductAd(
                  product: Product(
@@ -1031,9 +1121,38 @@ class ClientUser {
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
+             id: '2002',
+             pickupDate: DateTime(2025, 5, 22),
+             deliveryDate: DateTime(2025, 5, 24),
+             address: 'Rua do Pedido #1398',
+             state: OrderState.Enviada,
+             productsAds: [
+               ProductAd(
+                 product: Product(
+                   name: 'Centeio',
+                   imageUrl: ['assets/images/mock_images/centeio.jpg'],
+                   category: 'Cereais',
+                   amount: 5,
+                   unit: Unit.KG,
+                   price: 6.75,
+                 ),
+                 preferredDeliveryMethods: [
+                   DeliveryMethod.COURIER,
+                   DeliveryMethod.HOME_DELIVERY,
+                 ],
+                 description:
+                     "Centeio fresco, cultivado de forma sustentável, ideal para pães, farinhas e receitas saudáveis. Rico em fibras e nutrientes, direto do produtor para a sua mesa.",
+                 highlight: 'Este anuncio está destacado há mais de 3 dias!',
+               ),
+             ],
+             totalPrice: 26.0,
+             consumerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
+             producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
+           ),
+           Order(
              id: '2003',
-             pickupDate: DateTime(2024, 6, 5),
-             deliveryDate: DateTime(2024, 6, 7),
+             pickupDate: DateTime(2025, 5, 22),
+             deliveryDate: DateTime(2025, 5, 25),
              address: 'Rua do Pedido #2003',
              state: OrderState.Enviada,
              productsAds: [
@@ -1072,8 +1191,8 @@ class ClientUser {
            ),
            Order(
              id: '2004',
-             pickupDate: DateTime(2024, 6, 7),
-             deliveryDate: DateTime(2024, 6, 8),
+             pickupDate: DateTime(2025, 5, 21),
+             deliveryDate: DateTime(2025, 5, 24),
              address: 'Rua do Pedido #2004',
              state: OrderState.Entregue,
              productsAds: [
@@ -1102,10 +1221,10 @@ class ClientUser {
            ),
            Order(
              id: '2005',
-             pickupDate: DateTime(2024, 6, 10),
-             deliveryDate: DateTime(2024, 6, 11),
+             pickupDate: DateTime(2025, 5, 19),
+             deliveryDate: DateTime(2025, 5, 25),
              address: 'Rua do Pedido #2005',
-             state: OrderState.Pendente,
+             state: OrderState.Entregue,
              productsAds: [
                ProductAd(
                  product: Product(
@@ -1136,7 +1255,7 @@ class ClientUser {
                  highlight: 'Este anuncio está destacado há 8 horas!',
                ),
              ],
-             totalPrice: 15.3,
+             totalPrice: 35.3,
              consumerId: "cEK6hsmFrZO8N3G7AqltGVZtMYs2",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
@@ -1194,8 +1313,8 @@ class ClientUser {
            ),
            Order(
              id: '2008',
-             pickupDate: DateTime(2025, 5, 18),
-             deliveryDate: DateTime(2025, 5, 19),
+             pickupDate: DateTime(2025, 5, 19),
+             deliveryDate: DateTime(2025, 5, 20),
              address: 'Rua do Pedido #2008',
              state: OrderState.Entregue,
              productsAds: [
@@ -1228,14 +1347,14 @@ class ClientUser {
                  highlight: 'Este anúncio não está em destaque!',
                ),
              ],
-             totalPrice: 9.99,
+             totalPrice: 29.99,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
              id: '2009',
-             pickupDate: DateTime(2025, 5, 15),
-             deliveryDate: DateTime(2025, 5, 16),
+             pickupDate: DateTime(2025, 5, 18),
+             deliveryDate: DateTime(2025, 5, 19),
              address: 'Rua do Pedido #2009',
              state: OrderState.Entregue,
              productsAds: [
@@ -1268,7 +1387,7 @@ class ClientUser {
                  highlight: 'Este anúncio não está em destaque!',
                ),
              ],
-             totalPrice: 9.99,
+             totalPrice: 15.99,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),

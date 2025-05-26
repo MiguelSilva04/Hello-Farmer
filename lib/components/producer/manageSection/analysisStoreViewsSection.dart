@@ -2,7 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
-import '../../../core/models/order.dart'; // Certifique-se que o caminho está correto
+import '../../../core/models/order.dart';
+
+enum DateFilter {
+  TODAY,
+  LAST_WEEK,
+  LAST_MONTH,
+  LAST_3MONTHS,
+  LAST_6MONTHS,
+  YEAR,
+  ALL,
+}
+
+extension DateFilterExtension on DateFilter {
+  String toDisplayString() {
+    switch (this) {
+      case DateFilter.TODAY:
+        return 'Hoje';
+      case DateFilter.LAST_WEEK:
+        return 'Última Semana';
+      case DateFilter.LAST_MONTH:
+        return 'Este Mês';
+      case DateFilter.LAST_3MONTHS:
+        return 'Últimos 3 Meses';
+      case DateFilter.LAST_6MONTHS:
+        return 'Últimos 6 Meses';
+      case DateFilter.YEAR:
+        return 'Este Ano';
+      case DateFilter.ALL:
+        return 'Todo o Período';
+    }
+  }
+}
 
 class AnalysisStoreViewsSection extends StatefulWidget {
   const AnalysisStoreViewsSection({Key? key}) : super(key: key);
@@ -13,18 +44,9 @@ class AnalysisStoreViewsSection extends StatefulWidget {
 }
 
 class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
-  String _selectedPeriod = 'Últimos 7 Dias';
+  DateFilter _selectedPeriod = DateFilter.LAST_WEEK;
 
-  final List<String> availablePeriods = [
-    'Hoje',
-    'Últimos 7 Dias',
-    'Últimas 30 Dias',
-    'Este Mês',
-    'Últimos 3 Meses',
-    'Últimos 6 Meses',
-    'Este Ano',
-    'Todo o Período',
-  ];
+  final List<DateFilter> availablePeriods = DateFilter.values;
 
   @override
   Widget build(BuildContext context) {
@@ -62,38 +84,31 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
             999,
           );
           switch (_selectedPeriod) {
-            case 'Hoje':
+            case DateFilter.TODAY:
               startDate = DateTime(now.year, now.month, now.day);
               break;
-            case 'Últimos 7 Dias':
+            case DateFilter.LAST_WEEK:
               startDate = DateTime(
                 now.year,
                 now.month,
                 now.day,
               ).subtract(const Duration(days: 6));
               break;
-            case 'Últimas 30 Dias':
-              startDate = DateTime(
-                now.year,
-                now.month,
-                now.day,
-              ).subtract(const Duration(days: 29));
-              break;
-            case 'Este Mês':
+            case DateFilter.LAST_MONTH:
               startDate = DateTime(now.year, now.month, 1);
               endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
               break;
-            case 'Últimos 3 Meses':
+            case DateFilter.LAST_3MONTHS:
               startDate = DateTime(now.year, now.month - 2, 1);
               break;
-            case 'Últimos 6 Meses':
+            case DateFilter.LAST_6MONTHS:
               startDate = DateTime(now.year, now.month - 5, 1);
               break;
-            case 'Este Ano':
+            case DateFilter.YEAR:
               startDate = DateTime(now.year, 1, 1);
               endDate = DateTime(now.year, 12, 31, 23, 59, 59, 999);
               break;
-            case 'Todo o Período':
+            case DateFilter.ALL:
             default:
               startDate = DateTime(2000, 1, 1);
               break;
@@ -121,9 +136,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
 
     final products =
         currentStore.productsAds
-            ?.where(
-              (p) => p.product.name != null && p.product.imageUrl.isNotEmpty,
-            )
+            ?.where((p) => p.product.imageUrl.isNotEmpty)
             .toList();
     products?.sort(
       (a, b) => (b.viewsByUserDateTime?.length ?? 0).compareTo(
@@ -170,7 +183,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
           Align(
             alignment: Alignment.centerRight,
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
+              child: DropdownButton<DateFilter>(
                 dropdownColor: Theme.of(context).colorScheme.secondary,
                 style: TextStyle(
                   fontSize: 20,
@@ -186,7 +199,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                         .map(
                           (period) => DropdownMenuItem(
                             value: period,
-                            child: Text(period),
+                            child: Text(period.toDisplayString()),
                           ),
                         )
                         .toList(),
@@ -222,7 +235,6 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
           ),
           const SizedBox(height: 24),
 
-          // Produtos Mais Vistos
           Text(
             'Produtos Mais Vistos',
             style: Theme.of(context).textTheme.headlineSmall,
@@ -328,44 +340,37 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
     );
   }
 
-  List<dynamic> _filterViewsByPeriod(List<dynamic> views, String period) {
+  List<dynamic> _filterViewsByPeriod(List<dynamic> views, DateFilter period) {
     final now = DateTime.now();
     DateTime startDate;
     DateTime endDate = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
 
     switch (period) {
-      case 'Hoje':
+      case DateFilter.TODAY:
         startDate = DateTime(now.year, now.month, now.day);
         break;
-      case 'Últimos 7 Dias':
+      case DateFilter.LAST_WEEK:
         startDate = DateTime(
           now.year,
           now.month,
           now.day,
         ).subtract(const Duration(days: 6));
         break;
-      case 'Últimas 30 Dias':
-        startDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(const Duration(days: 29));
-        break;
-      case 'Este Mês':
+      case DateFilter.LAST_MONTH:
         startDate = DateTime(now.year, now.month, 1);
         endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
         break;
-      case 'Últimos 3 Meses':
+      case DateFilter.LAST_3MONTHS:
         startDate = DateTime(now.year, now.month - 2, 1);
         break;
-      case 'Últimos 6 Meses':
+      case DateFilter.LAST_6MONTHS:
         startDate = DateTime(now.year, now.month - 5, 1);
         break;
-      case 'Este Ano':
+      case DateFilter.YEAR:
         startDate = DateTime(now.year, 1, 1);
         endDate = DateTime(now.year, 12, 31, 23, 59, 59, 999);
         break;
-      case 'Todo o Período':
+      case DateFilter.ALL:
       default:
         startDate = DateTime(2000, 1, 1);
         break;
@@ -393,10 +398,6 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
 
     final sortedDates = groupedViews.keys.toList()..sort();
 
-    sortedDates.forEach((s) => print("Data: $s"));
-
-    // Removed duplicate declaration of spots
-
     List<DateTime> allDates = [];
     if (sortedDates.isNotEmpty) {
       DateTime start = sortedDates.first;
@@ -409,18 +410,17 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
         allDates.add(d);
       }
     }
-    // Se for "Hoje", agrupar por hora
+
     List<DateTime> xLabels = [];
     Map<int, int> groupedByHour = {};
     List<FlSpot> spots = [];
 
     bool showBottomTitles =
-        _selectedPeriod == 'Hoje'
+        _selectedPeriod.toDisplayString() == 'Hoje'
             ? allDates.length <= 24
             : allDates.length <= 7;
 
-    if (_selectedPeriod == 'Hoje') {
-      // Agrupa as views por hora do dia
+    if (_selectedPeriod.toDisplayString() == 'Hoje') {
       for (var view in viewsByUserDateTime) {
         final date = view.keys.first as DateTime;
         final hour = date.hour;
@@ -490,6 +490,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                     sideTitles: SideTitles(showTitles: false),
                   ),
                   leftTitles: AxisTitles(
+                    axisNameWidget: Text("Visitas"),
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
@@ -502,6 +503,13 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                     ),
                   ),
                   bottomTitles: AxisTitles(
+                    axisNameWidget: Text(
+                      _selectedPeriod.toDisplayString() == 'Hoje'
+                          ? "Horas do Dia"
+                          : _selectedPeriod.toDisplayString() == 'Última Semana'
+                          ? "Dias Da Semana"
+                          : "Dias",
+                    ),
                     sideTitles: SideTitles(
                       showTitles: showBottomTitles,
                       getTitlesWidget: (value, meta) {
@@ -511,7 +519,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                             index >= xLabels.length) {
                           return const SizedBox.shrink();
                         }
-                        if (_selectedPeriod == 'Hoje') {
+                        if (_selectedPeriod.toDisplayString() == 'Hoje') {
                           // Exibe apenas algumas horas para não poluir
                           if (index % 2 != 0 && xLabels.length > 12)
                             return const SizedBox.shrink();

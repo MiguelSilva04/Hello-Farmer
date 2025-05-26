@@ -380,6 +380,8 @@ class _EditAdSectionState extends State<EditAdSection> {
   late TextEditingController stockController;
   late TextEditingController minQtyController;
   late String unit;
+  late bool isSearch;
+  late bool isVisible;
 
   @override
   void initState() {
@@ -406,6 +408,10 @@ class _EditAdSectionState extends State<EditAdSection> {
       text: widget.ad.product.minAmount?.toString() ?? "0",
     );
     unit = widget.ad.product.unit.toDisplayString();
+
+    // Initialize isSearch based on the current ad's highlight type
+    isSearch = widget.ad.highlightType == HighlightType.SEARCH;
+    isVisible = widget.ad.visibility == AdVisibility.PUBLIC;
   }
 
   Widget imageBox(int index) {
@@ -506,6 +512,10 @@ class _EditAdSectionState extends State<EditAdSection> {
       }
     }
 
+    // Atualiza o tipo de destaque conforme o valor de isSearch
+    widget.ad.highlightType =
+        isSearch ? HighlightType.SEARCH : HighlightType.HOME;
+
     widget.onSave(widget.ad);
   }
 
@@ -517,6 +527,122 @@ class _EditAdSectionState extends State<EditAdSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.secondaryFixed,
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          widget.ad.product.imageUrl.first,
+                          width: 75,
+                          height: 75,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      if (widget.ad.highlightType == HighlightType.HOME)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: Badge(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.secondaryFixed,
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.star, size: 10, color: Colors.white),
+                                SizedBox(width: 3),
+                                Text(
+                                  "Inicio",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (widget.ad.highlightType == HighlightType.SEARCH)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: Badge(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.secondaryFixed,
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.star, size: 10, color: Colors.white),
+                                SizedBox(width: 3),
+                                Text(
+                                  "Pesquisa",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.ad.product.name,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (widget.ad.highlight.isNotEmpty)
+                              Tooltip(
+                                message: widget.ad.highlight,
+                                showDuration: const Duration(seconds: 7),
+                                triggerMode: TooltipTriggerMode.tap,
+                                preferBelow: false,
+                                child: const Icon(Icons.info_outline, size: 18),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Preço: ${widget.ad.price}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        Text(
+                          "Categoria: ${widget.ad.product.category}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -524,11 +650,44 @@ class _EditAdSectionState extends State<EditAdSection> {
                   "Editar Anúncio",
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                const SizedBox(width: 30),
                 Row(
                   children: [
-                    Icon(Icons.delete, color: Colors.red),
-                    Icon(Icons.visibility, color: Colors.blue),
+                    IconButton(
+                      onPressed:
+                          () => showDialog(
+                            context: context,
+                            builder:
+                                (ctx) => AlertDialog(
+                                  content: Text(
+                                    "Tem a certeza que pretende eliminar este anúncio?",
+                                  ),
+                                  title: Text("Aviso"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(),
+                                      child: Text("Não"),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(),
+                                      child: Text("Sim"),
+                                    ),
+                                  ],
+                                ),
+                          ),
+                      icon: Icon(Icons.delete, color: Colors.red),
+                    ),
+                    const SizedBox(width: 15),
+                    (isVisible)
+                        ? IconButton(
+                          onPressed: () => setState(() => isVisible = false),
+                          icon: Icon(Icons.visibility, color: Colors.blue),
+                        )
+                        : IconButton(
+                          onPressed: () => setState(() => isVisible = true),
+                          icon: Icon(Icons.visibility_off, color: Colors.blue),
+                        ),
                   ],
                 ),
               ],
@@ -604,9 +763,121 @@ class _EditAdSectionState extends State<EditAdSection> {
 
             const SizedBox(height: 12),
 
+            Text("Imagens do produto:", style: const TextStyle(fontSize: 13)),
             Align(child: Wrap(children: List.generate(6, (i) => imageBox(i)))),
 
             const SizedBox(height: 20),
+
+            Text(
+              "Escolha a forma de destaque:",
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.secondaryFixed,
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      "Para o topo da página de pesquisa",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    shape: const CircleBorder(),
+                                    value: isSearch,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        isSearch = !isSearch;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                "Com este destaque, o anúncio sobe de posição relativamente a anúncio semelhantes que não têm qualquer destaque.",
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.secondaryFixed,
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      "Top de anúncios, destaque na página inicial",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    shape: const CircleBorder(),
+                                    value: !isSearch,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        isSearch = !isSearch;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                "Com este destaque, o anúncio vai ser apresentado rotativamente na página inicial de consumidores, antes mesmo de iniciarem a sua pesquisa, colocando também o embelema de 'TOP' na foto do anúncio de forma a apelar mais à atenção dos consumidores.",
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

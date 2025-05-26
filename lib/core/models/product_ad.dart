@@ -42,7 +42,7 @@ class ProductAd {
   }) : description = description ?? "",
        price =
            price ??
-           "${product.price!.toStringAsFixed(2)}€/${product.unit.toDisplayString()}" {
+           "${product.price!.toStringAsFixed(2)}€ | ${product.unit.toDisplayString()}" {
     if (highlightDate != null) {
       final now = DateTime.now();
       final diff = now.difference(highlightDate!);

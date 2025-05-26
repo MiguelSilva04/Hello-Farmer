@@ -175,7 +175,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
           final name = product.name;
           final image = product.imageUrl.first;
           final unit = productAd.product.unit;
-          final amount = productAd.product.amount ?? 0.0;
+          final amount = ad.qty;
           final price = productAd.product.price;
 
           statsMap.putIfAbsent(

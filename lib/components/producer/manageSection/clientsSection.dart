@@ -135,6 +135,11 @@ class _ClientsSectionState extends State<ClientsSection> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
+              _consumers.sort(
+                (a, b) => _ordersByConsumer[b.id]!.length.compareTo(
+                  _ordersByConsumer[a.id]!.length,
+                ),
+              );
               final client = _consumers[index];
               final orders = _ordersByConsumer[client.id]!;
               final nonNullDates =

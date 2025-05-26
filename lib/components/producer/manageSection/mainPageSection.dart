@@ -9,7 +9,6 @@ import '../../../core/models/product.dart';
 import '../../../core/models/product_ad.dart';
 import '../../../core/models/store.dart';
 import '../../../core/services/other/bottom_navigation_notifier.dart';
-import 'addsSection.dart';
 
 class MainPageSection extends StatefulWidget {
   MainPageSection({super.key});
@@ -178,136 +177,178 @@ class _MainPageSectionState extends State<MainPageSection> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Row(
+                    Tooltip(
+                      message:
+                          "Os anúncios, se destacados, são classificados em:\n\nInicio: Para o topo da página de pesquisa \n- Com este destaque, o anúncio sobre de posição relativamente a anúncios semelhantes que não têm qualquer destaque\n\nPesquisa: Top de anúncios (destaque na página inicial) \n- Com este destaque, o anúncio vai ser apresentado rotativamente na página inicial de consumidores, antes mesmo de iniciarem a sua pesquisa, colocando também o embelema 'TOP' na foto do anúncio para que chame mais à atenção.",
+                      textStyle: TextStyle(
+                        fontSize: 20,
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      showDuration: const Duration(seconds: 300),
+                      triggerMode: TooltipTriggerMode.tap,
+                      preferBelow: false,
+                      child: Icon(Icons.info_outline),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Anúncios publicados",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            const Text(
+                              "Anúncios publicados",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton.icon(
+                              onPressed: () {
+                                Provider.of<BottomNavigationNotifier>(
+                                  context,
+                                  listen: false,
+                                ).setIndex(2);
+                              },
+                              icon: const Icon(Icons.add),
+                              label: const Text("Novo anúncio"),
+                            ),
+                          ],
                         ),
-                        const Spacer(),
-                        TextButton.icon(
-                          onPressed: () {
-                            Provider.of<BottomNavigationNotifier>(
-                              context,
-                              listen: false,
-                            ).setIndex(2);
-                          },
-                          icon: const Icon(Icons.add),
-                          label: const Text("Novo anúncio"),
-                        ),
+                        const SizedBox(height: 8),
+                        store.productsAds!.isEmpty
+                            ? const Text("Ainda não há anúncios publicados.")
+                            : ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: store.productsAds!.length,
+                              itemBuilder: (context, index) {
+                                final ad = store.productsAds![index];
+                                return ListTile(
+                                  leading: Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.asset(
+                                          ad.product.imageUrl.first,
+                                          width: 75,
+                                          height: 75,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      if (ad.highlightType ==
+                                          HighlightType.HOME)
+                                        Positioned(
+                                          top: 0,
+                                          left: 0,
+                                          child: Badge(
+                                            backgroundColor:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.secondaryFixed,
+                                            label: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(
+                                                  Icons.star,
+                                                  size: 10,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 3),
+                                                Text(
+                                                  "Inicio",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      if (ad.highlightType ==
+                                          HighlightType.SEARCH)
+                                        Positioned(
+                                          top: 0,
+                                          left: 0,
+                                          child: Badge(
+                                            backgroundColor:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.secondaryFixed,
+                                            label: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(
+                                                  Icons.star,
+                                                  size: 10,
+                                                  color: Colors.white,
+                                                ),
+                                                SizedBox(width: 3),
+                                                Text(
+                                                  "Pesquisa",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        ad.product.name,
+                                        style: TextStyle(fontSize: 20),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      if (ad.highlight.isNotEmpty)
+                                        Tooltip(
+                                          message: ad.highlight,
+                                          showDuration: const Duration(
+                                            seconds: 7,
+                                          ),
+                                          triggerMode: TooltipTriggerMode.tap,
+                                          preferBelow: false,
+                                          child: Icon(Icons.info_outline),
+                                        ),
+                                    ],
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("Preço: ${ad.price}"),
+                                      Text("Categoria: ${ad.product.category}"),
+                                    ],
+                                  ),
+                                  trailing: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isEditingAd = true;
+                                        _currentAd = ad;
+                                      });
+                                    },
+                                    icon: Icon(Icons.edit),
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (context, index) => Divider(),
+                            ),
+                        const SizedBox(height: 20),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    store.productsAds!.isEmpty
-                        ? const Text("Ainda não há anúncios publicados.")
-                        : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: store.productsAds!.length,
-                          itemBuilder: (context, index) {
-                            final ad = store.productsAds![index];
-                            return ListTile(
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  ad.product.imageUrl.first,
-                                  width: 75,
-                                  height: 75,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              title: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    ad.product.name,
-                                    style: TextStyle(fontSize: 20),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  if (ad.highlight.isNotEmpty)
-                                    Tooltip(
-                                      message: ad.highlight,
-                                      showDuration: const Duration(seconds: 7),
-                                      triggerMode: TooltipTriggerMode.tap,
-                                      preferBelow: false,
-                                      child: Icon(
-                                        Icons.info_outline,
-                                      ), // usar info_outline é mais visual
-                                    ),
-                                ],
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Preço: ${ad.price}"),
-                                  Text("Categoria: ${ad.product.category}"),
-                                  // if (ad.highlight.isNotEmpty)
-                                  //   Text(
-                                  //     ad.highlight,
-                                  //     style: const TextStyle(
-                                  //       color: Colors.orange,
-                                  //       fontWeight: FontWeight.bold,
-                                  //     ),
-                                  //   ),
-                                ],
-                              ),
-                              trailing: PopupMenuButton<String>(
-                                onSelected: (value) {
-                                  switch (value) {
-                                    case "edit":
-                                      {
-                                        setState(() {
-                                          _isEditingAd = true;
-                                          _currentAd = ad;
-                                        });
-                                      }
-                                  }
-                                },
-                                itemBuilder:
-                                    (context) => [
-                                      const PopupMenuItem(
-                                        value: 'edit',
-                                        child: ListTile(
-                                          leading: Icon(Icons.edit),
-                                          title: Text('Editar'),
-                                        ),
-                                      ),
-                                      const PopupMenuItem(
-                                        value: 'remove',
-                                        child: ListTile(
-                                          leading: Icon(Icons.delete),
-                                          title: Text('Remover'),
-                                        ),
-                                      ),
-                                      const PopupMenuItem(
-                                        value: 'toggle_visibility',
-                                        child: ListTile(
-                                          leading: Icon(Icons.visibility),
-                                          title: Text('Tornar público/privado'),
-                                        ),
-                                      ),
-                                    ],
-                              ),
-                            );
-                          },
-                          separatorBuilder: (context, index) => Divider(),
-                        ),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-              // Center(
-              //   child: ElevatedButton.icon(
-              //     onPressed: () {},
-              //     icon: const Icon(Icons.add),
-              //     label: const Text("Adicionar um produto"),
-              //   ),
-              // ),
             ],
           ),
         );
@@ -476,10 +517,24 @@ class _EditAdSectionState extends State<EditAdSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Editar Anúncio",
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Editar Anúncio",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(width: 30),
+                Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red),
+                    Icon(Icons.visibility, color: Colors.blue),
+                  ],
+                ),
+              ],
             ),
+            const SizedBox(height: 10),
+            const Divider(),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Nome Produto'),

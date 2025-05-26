@@ -3,13 +3,21 @@ import 'product_ad.dart';
 
 enum OrderState { Entregue, Pendente, Enviada, Abandonada }
 
+class OrderItem {
+  final String produtctAdId;
+  final double qty;
+
+  OrderItem({required this.produtctAdId, required this.qty});
+}
+
+
 class Order {
   final String id;
   final DateTime pickupDate;
   DateTime? deliveryDate;
   final String address;
   final OrderState state;
-  final List<ProductAd> productsAds;
+  final List<OrderItem> productsAds;
   final double totalPrice;
   final String consumerId;
   final String producerId;

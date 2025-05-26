@@ -9,6 +9,7 @@ class AnalysisReportsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currentStore = AuthService().currentUser!.store!;
     double calcularDiasRestantesDeStock({
       required List<Product> products,
       required List<Order> orders,
@@ -24,7 +25,7 @@ class AnalysisReportsSection extends StatelessWidget {
       double totalVendido = 0.0;
       for (var order in orders) {
         for (var produtoAd in order.productsAds) {
-          totalVendido += produtoAd.product.amount!;
+          totalVendido += produtoAd.qty;
         }
       }
 
@@ -294,9 +295,13 @@ class AnalysisReportsSection extends StatelessWidget {
       DateTime? lastOrderDate;
 
       for (var order in orders) {
-        final hasProduct = order.productsAds.any(
-          (p) => p.product.name == productName,
-        );
+        final hasProduct = order.productsAds.any((p) {
+          final finalProductAd =
+              AuthService().currentUser!.store!.productsAds!
+                  .where((pr) => pr.id == p.produtctAdId)
+                  .first;
+          return finalProductAd.product.name == productName;
+        });
         if (hasProduct) {
           totalOrders++;
           if (order.state == OrderState.Entregue) {

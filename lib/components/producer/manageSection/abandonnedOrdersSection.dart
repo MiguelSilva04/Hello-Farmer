@@ -9,7 +9,8 @@ class AbandonedOrdersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final orders = AuthService().currentUser!.store!.orders!;
+    final currentStore = AuthService().currentUser!.store!;
+    final orders = currentStore.orders!;
 
     final abandonedOrders =
         orders
@@ -139,12 +140,18 @@ class AbandonedOrdersPage extends StatelessWidget {
                           return Row(
                             children:
                                 products.map((p) {
+                                  final productAd =
+                                      currentStore.productsAds!
+                                          .where(
+                                            (pr) => pr.id == p.produtctAdId,
+                                          )
+                                          .first;
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 8.0),
                                     child: Column(
                                       children: [
                                         Text(
-                                          p.product.name,
+                                          productAd.product.name,
                                           style: const TextStyle(fontSize: 12),
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -153,7 +160,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                           height: imageSize,
                                           width: imageSize,
                                           child: Image.asset(
-                                            p.product.imageUrl.first,
+                                            productAd.product.imageUrl.first,
                                             fit: BoxFit.cover,
                                           ),
                                         ),
@@ -173,6 +180,12 @@ class AbandonedOrdersPage extends StatelessWidget {
                                     itemCount: productCount,
                                     itemBuilder: (context, index) {
                                       final p = products[index];
+                                      final productAd =
+                                          currentStore.productsAds!
+                                              .where(
+                                                (pr) => pr.id == p.produtctAdId,
+                                              )
+                                              .first;
                                       return Padding(
                                         padding: const EdgeInsets.only(
                                           right: 8.0,
@@ -180,7 +193,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                         child: Column(
                                           children: [
                                             Text(
-                                              p.product.name,
+                                              productAd.product.name,
                                               style: const TextStyle(
                                                 fontSize: 12,
                                               ),
@@ -190,7 +203,10 @@ class AbandonedOrdersPage extends StatelessWidget {
                                               height: imageSize,
                                               width: imageSize,
                                               child: Image.asset(
-                                                p.product.imageUrl.first,
+                                                productAd
+                                                    .product
+                                                    .imageUrl
+                                                    .first,
                                                 fit: BoxFit.cover,
                                               ),
                                             ),

@@ -7,10 +7,10 @@ import '../../../core/models/store.dart';
 
 class AnalysisDeliveryMethodSection extends StatelessWidget {
   AnalysisDeliveryMethodSection({Key? key}) : super(key: key);
-
   final List<Order> orders = AuthService().currentUser!.store!.orders ?? [];
-
   static List<Map<String, dynamic>> _calculateChannelData(List<Order> orders) {
+    final currentStore = AuthService().currentUser!.store!;
+    final List<Order> orders = currentStore.orders ?? [];
     final deliveryMethods = [
       {
         'method': 'Entrega ao domicílio',
@@ -47,20 +47,23 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
 
     for (var order in deliveredOrders) {
       for (var ad in order.productsAds) {
-        for (var method in ad.preferredDeliveryMethods) {
+        final productAd =
+            currentStore.productsAds!
+                .where((p) => p.id == ad.produtctAdId)
+                .first;
+        for (var method in productAd.preferredDeliveryMethods) {
           selectedPerMethod[method] = true;
         }
 
-        for (var method in ad.preferredDeliveryMethods) {
+        for (var method in productAd.preferredDeliveryMethods) {
           salesPerMethod[method] =
               (salesPerMethod[method] ?? 0) + order.totalPrice;
-          if (ad.product.unit == Unit.UNIT) {
+          if (productAd.product.unit == Unit.UNIT) {
             unitsPerMethod[method] = (unitsPerMethod[method] ?? 0) + 1;
             kgPerMethod[method] = (kgPerMethod[method] ?? 0) + 0;
           } else {
             unitsPerMethod[method] = (unitsPerMethod[method] ?? 0) + 1;
-            kgPerMethod[method] =
-                (kgPerMethod[method] ?? 0) + ad.product.amount!;
+            kgPerMethod[method] = (kgPerMethod[method] ?? 0) + ad.qty;
           }
         }
       }

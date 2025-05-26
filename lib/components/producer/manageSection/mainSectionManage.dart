@@ -43,7 +43,7 @@ class MainSectionPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "Siga estas etapas para começar a vender: \n• Adicionar um produto\n• Configurar os canais de venda\n• Destacar o seu anúncio",
+                          "Siga estas etapas para começar a vender: \n• Gerir as vendas \n• Configurar os canais de venda\n• Destacar o seu anúncio",
                           style: TextStyle(
                             fontSize: 16,
                             color: Theme.of(context).colorScheme.primary,
@@ -58,18 +58,16 @@ class MainSectionPage extends StatelessWidget {
           ).animate().slide(duration: 500.ms),
           const SizedBox(height: 10),
 
-          // Página Principal
           SettingsTileGroup(
             icon: Icons.home,
             title: "Página Principal",
             onTap: onClicks["mainPage"],
           ),
 
-          // Encomendas
           SettingsTileGroup(
             icon: Icons.shopping_cart,
             title: "Encomendas",
-            onTap: () {}, // opcional
+            onTap: () {},
             subOptions: [
               SettingsSubOption(
                 title: "Faturação",
@@ -82,7 +80,6 @@ class MainSectionPage extends StatelessWidget {
             ],
           ),
 
-          // Produtos
           SettingsTileGroup(
             icon: Icons.inventory,
             title: "Produtos",
@@ -99,14 +96,12 @@ class MainSectionPage extends StatelessWidget {
             ],
           ),
 
-          // Clientes
           SettingsTileGroup(
             icon: Icons.people,
             title: "Clientes",
             onTap: onClicks["clients"],
           ),
 
-          // Análise de Dados
           SettingsTileGroup(
             icon: Icons.analytics,
             title: "Análise de Dados",
@@ -134,26 +129,10 @@ class MainSectionPage extends StatelessWidget {
             ],
           ),
 
-          // Restantes opções
           SettingsTileGroup(
             icon: Icons.storefront,
             title: "Canais de Venda",
             onTap: onClicks["deliveryMethod"],
-          ),
-          SettingsTileGroup(
-            icon: Icons.campaign,
-            title: "Anúncios",
-            onTap: onClicks["adds"],
-          ),
-          SettingsTileGroup(
-            icon: Icons.star,
-            title: "Destaques de Anúncios",
-            onTap: onClicks["highlightedAdds"],
-          ),
-          SettingsTileGroup(
-            icon: Icons.attach_money,
-            title: "Finanças",
-            onTap: onClicks["finances"],
           ),
         ],
       ),

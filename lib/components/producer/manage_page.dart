@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/components/producer/manageSection/addsSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisFinancesSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisMainProductsSection.dart';
 import 'package:harvestly/components/producer/manageSection/analysisReportsSection.dart';
@@ -8,9 +7,7 @@ import 'package:harvestly/components/producer/manageSection/analysisStoreViewsSe
 import 'package:harvestly/components/producer/manageSection/billingSection.dart';
 import 'package:harvestly/components/producer/manageSection/breadCrumbNavigator.dart';
 import 'package:harvestly/components/producer/manageSection/clientsSection.dart';
-import 'package:harvestly/components/producer/manageSection/financesSection.dart';
 import 'package:harvestly/components/producer/manageSection/basketSection.dart';
-import 'package:harvestly/components/producer/manageSection/highlightedAddsSection.dart';
 import 'package:harvestly/components/producer/manageSection/abandonnedOrdersSection.dart';
 import 'package:harvestly/components/producer/manageSection/deliveryMethodsSection.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
@@ -144,27 +141,6 @@ class _ManagePageState extends State<ManagePage> {
                   listen: false,
                 ).setIndex(13),
               ),
-          "adds":
-              () => setState(
-                () => Provider.of<ManageSectionNotifier>(
-                  context,
-                  listen: false,
-                ).setIndex(14),
-              ),
-          "highlightedAdds":
-              () => setState(
-                () => Provider.of<ManageSectionNotifier>(
-                  context,
-                  listen: false,
-                ).setIndex(15),
-              ),
-          "finances":
-              () => setState(
-                () => Provider.of<ManageSectionNotifier>(
-                  context,
-                  listen: false,
-                ).setIndex(16),
-              ),
         },
       ),
       MainPageSection(),
@@ -180,9 +156,6 @@ class _ManagePageState extends State<ManagePage> {
       AnalysisStoreViewsSection(),
       AnalysisFinancesSection(),
       DeliveryMethodsSection(),
-      AddsSection(),
-      HighlightedAddsSection(),
-      FinancesSection(),
     ];
 
     return Consumer<ManageSectionNotifier>(

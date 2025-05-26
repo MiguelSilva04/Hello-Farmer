@@ -161,17 +161,22 @@ class AnalysisMainProductsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<ProductStats> calculateProductStats() {
-      final orders = AuthService().currentUser!.store!.orders!;
+      final currentStore = AuthService().currentUser!.store!;
+      final orders = currentStore.orders!;
       final Map<String, ProductStats> statsMap = {};
 
       for (final order in orders) {
         for (final ad in order.productsAds) {
-          final product = ad.product;
+          final productAd =
+              currentStore.productsAds!
+                  .where((p) => p.id == ad.produtctAdId)
+                  .first;
+          final product = productAd.product;
           final name = product.name;
           final image = product.imageUrl.first;
-          final unit = product.unit;
-          final amount = product.amount ?? 0.0;
-          final price = ad.product.price ?? 0.0;
+          final unit = productAd.product.unit;
+          final amount = productAd.product.amount ?? 0.0;
+          final price = productAd.product.price;
 
           statsMap.putIfAbsent(
             name,
@@ -180,7 +185,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
           final stats = statsMap[name]!;
 
           stats.totalSales += 1;
-          stats.totalAmountInSales += price;
+          stats.totalAmountInSales += price!;
 
           if (unit == Unit.KG) {
             stats.totalKg += amount;
@@ -197,7 +202,8 @@ class AnalysisMainProductsSection extends StatelessWidget {
     stats.sort((a, b) => b.totalSales.compareTo(a.totalSales));
     final totalSales = stats.fold<int>(0, (sum, s) => sum + s.totalSales);
 
-    // Separar top 3 e o resto
+    stats.forEach((s) => print(s.totalKg)); // 0
+
     final top3 = stats.take(3).toList();
     final rest = stats.length > 3 ? stats.sublist(3) : [];
 
@@ -216,7 +222,6 @@ class AnalysisMainProductsSection extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // 2º lugar
                 if (top3.length > 1)
                   _PodiumProduct(
                     product: top3[1],

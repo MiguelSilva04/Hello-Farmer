@@ -35,46 +35,48 @@ class _BasketSectionState extends State<BasketSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      child:
-          _editingBasket != null
-              ? BasketEditAddPage(
-                isEditing: true,
-                basket: _editingBasket!,
-                onCancel: stopEdit,
-                onRemove: () => removeBasket(_editingBasket!),
-                onSave: (Basket updated) {
-                  setState(() {
-                    int idx = baskets.indexOf(_editingBasket!);
-                    baskets[idx] = updated;
-                    _editingBasket = null;
-                  });
-                },
-              )
-              : ListView.builder(
-                itemCount: baskets.length + 1,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  if (index < baskets.length) {
-                    final basket = baskets[index];
-                    return BasketCard(
-                      basket: basket,
-                      onTap:
-                          () => setState(() {
-                            _editingBasket = basket;
-                          }),
-                    );
-                  } else {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: AddBasketButton(),
-                    );
-                  }
-                },
-              ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child:
+            _editingBasket != null
+                ? BasketEditAddPage(
+                  isEditing: true,
+                  basket: _editingBasket!,
+                  onCancel: stopEdit,
+                  onRemove: () => removeBasket(_editingBasket!),
+                  onSave: (Basket updated) {
+                    setState(() {
+                      int idx = baskets.indexOf(_editingBasket!);
+                      baskets[idx] = updated;
+                      _editingBasket = null;
+                    });
+                  },
+                )
+                : ListView.builder(
+                  itemCount: baskets.length + 1,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    if (index < baskets.length) {
+                      final basket = baskets[index];
+                      return BasketCard(
+                        basket: basket,
+                        onTap:
+                            () => setState(() {
+                              _editingBasket = basket;
+                            }),
+                      );
+                    } else {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: AddBasketButton(),
+                      );
+                    }
+                  },
+                ),
+      ),
     );
   }
 }

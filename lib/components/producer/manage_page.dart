@@ -187,44 +187,47 @@ class _ManagePageState extends State<ManagePage> {
 
     return Consumer<ManageSectionNotifier>(
       builder: (context, manageSectionNotifier, child) {
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                width: double.infinity,
-                color: Theme.of(context).colorScheme.surface,
-                child: BreadcrumbNavigation(
-                  items:
-                      manageSectionNotifier.currentIndex == 0
-                          ? [
-                            BreadcrumbItem(
-                              label: sectionNames[0],
-                              onTap: () {
-                                manageSectionNotifier.setIndex(0);
-                              },
-                            ),
-                          ]
-                          : [
-                            BreadcrumbItem(
-                              label: sectionNames[0],
-                              onTap: () {
-                                manageSectionNotifier.setIndex(0);
-                              },
-                            ),
-                            BreadcrumbItem(
-                              label:
-                                  sectionNames[manageSectionNotifier
-                                      .currentIndex],
-                              onTap: () => manageSectionNotifier.currentIndex,
-                            ),
-                          ],
-                ),
+        final int currentIndex = manageSectionNotifier.currentIndex;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              width: double.infinity,
+              color: Theme.of(context).colorScheme.surface,
+              child: BreadcrumbNavigation(
+                items:
+                    currentIndex == 0
+                        ? [
+                          BreadcrumbItem(
+                            label: sectionNames[0],
+                            onTap: () {
+                              manageSectionNotifier.setIndex(0);
+                            },
+                          ),
+                        ]
+                        : [
+                          BreadcrumbItem(
+                            label: sectionNames[0],
+                            onTap: () {
+                              manageSectionNotifier.setIndex(0);
+                            },
+                          ),
+                          BreadcrumbItem(
+                            label: sectionNames[currentIndex],
+                            onTap: () {},
+                          ),
+                        ],
               ),
-              sections[manageSectionNotifier.currentIndex],
-            ],
-          ),
+            ),
+            Expanded(
+              child:
+                  currentIndex == 0
+                      ? SingleChildScrollView(child: sections[currentIndex])
+                      : sections[currentIndex],
+            ),
+          ],
         );
       },
     );

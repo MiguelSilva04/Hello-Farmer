@@ -172,167 +172,174 @@ class _BillingSectionState extends State<BillingSection> {
       symbol: '€',
     );
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceDim,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.bar_chart,
-                  color: Theme.of(context).colorScheme.surface,
-                  size: 30,
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Total de Faturação:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-                const Spacer(),
-                Text(
-                  currencyFormatter.format(_totalFaturacao),
-                  style: TextStyle(
-                    fontSize: 20,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceDim,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.bar_chart,
                     color: Theme.of(context).colorScheme.surface,
-                    fontWeight: FontWeight.bold,
+                    size: 30,
                   ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Total de Faturação:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  Text(
+                    currencyFormatter.format(_totalFaturacao),
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Theme.of(context).colorScheme.surface,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Filtrar desde:',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(width: 5),
+                    ElevatedButton.icon(
+                      onPressed: () => _selectFilterDate(context),
+                      icon: Icon(
+                        Icons.calendar_today,
+                        size: 13,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      label: Text(
+                        Provider.of<ManageSectionNotifier>(
+                                  context,
+                                  listen: false,
+                                ).billingFromDate !=
+                                AuthService().currentUser!.store!.createdAt
+                            ? DateFormat.yMMMd().format(
+                              Provider.of<ManageSectionNotifier>(
+                                context,
+                                listen: false,
+                              ).billingFromDate,
+                            )
+                            : 'Escolher data',
+                        style: TextStyle(fontSize: 13),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                ),
+                DropdownButton<DateRangeOption>(
+                  value: _selectedRange,
+                  onChanged: _onRangeSelected,
+                  items:
+                      DateRangeOption.values
+                          .map(
+                            (option) => DropdownMenuItem<DateRangeOption>(
+                              value: option,
+                              child: Text(option.label),
+                            ),
+                          )
+                          .toList(),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondaryFixed,
+                    fontSize: 13,
+                  ),
+                  dropdownColor: Theme.of(context).colorScheme.secondary,
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Text('Filtrar desde:', style: TextStyle(fontSize: 12)),
-                  const SizedBox(width: 5),
-                  ElevatedButton.icon(
-                    onPressed: () => _selectFilterDate(context),
-                    icon: Icon(
-                      Icons.calendar_today,
-                      size: 13,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    label: Text(
-                      Provider.of<ManageSectionNotifier>(
-                                context,
-                                listen: false,
-                              ).billingFromDate !=
-                              AuthService().currentUser!.store!.createdAt
-                          ? DateFormat.yMMMd().format(
-                            Provider.of<ManageSectionNotifier>(
-                              context,
-                              listen: false,
-                            ).billingFromDate,
-                          )
-                          : 'Escolher data',
-                      style: TextStyle(fontSize: 13),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      foregroundColor: Theme.of(context).colorScheme.secondary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                ],
-              ),
-              DropdownButton<DateRangeOption>(
-                value: _selectedRange,
-                onChanged: _onRangeSelected,
-                items:
-                    DateRangeOption.values
-                        .map(
-                          (option) => DropdownMenuItem<DateRangeOption>(
-                            value: option,
-                            child: Text(option.label),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                children:
+                    _filteredOrders.map((order) {
+                      return Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListTile(
+                          title: Text('Encomenda ${order.id}'),
+                          subtitle: Text(
+                            'Data: ${DateFormat.yMMMd().format(order.pickupDate)}\nEstado: ${order.state.name}',
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).colorScheme.inversePrimary,
+                            ),
                           ),
-                        )
-                        .toList(),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondaryFixed,
-                  fontSize: 13,
-                ),
-                dropdownColor: Theme.of(context).colorScheme.secondary,
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Column(
-              children:
-                  _filteredOrders.map((order) {
-                    return Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: ListTile(
-                        title: Text('Encomenda ${order.id}'),
-                        subtitle: Text(
-                          'Data: ${DateFormat.yMMMd().format(order.pickupDate)}\nEstado: ${order.state.name}',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.inversePrimary,
+                          trailing: Text(
+                            currencyFormatter.format(order.totalPrice),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.surface,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                        trailing: Text(
-                          currencyFormatter.format(order.totalPrice),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.surface,
-                            fontSize: 16,
-                          ),
-                        ),
+                      );
+                    }).toList(),
+              ),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                foregroundColor: Theme.of(context).colorScheme.secondary,
+                iconColor: Theme.of(context).colorScheme.secondary,
+              ),
+              onPressed: () {
+                _filteredOrders.isNotEmpty
+                    ? Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder:
+                            (context) => InvoicePage(
+                              orders: _filteredOrders,
+                              total: _totalFaturacao,
+                              fromDate:
+                                  Provider.of<ManageSectionNotifier>(
+                                    context,
+                                    listen: false,
+                                  ).billingFromDate,
+                            ),
                       ),
-                    );
-                  }).toList(),
+                    )
+                    : null;
+              },
+              icon: Padding(
+                padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+                child: Icon(Icons.receipt, size: 30),
+              ),
+              label: Padding(
+                padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                child: Text("Gerar Fatura", style: TextStyle(fontSize: 20)),
+              ),
             ),
-          ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              foregroundColor: Theme.of(context).colorScheme.secondary,
-              iconColor: Theme.of(context).colorScheme.secondary,
-            ),
-            onPressed: () {
-              _filteredOrders.isNotEmpty
-                  ? Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:
-                          (context) => InvoicePage(
-                            orders: _filteredOrders,
-                            total: _totalFaturacao,
-                            fromDate:
-                                Provider.of<ManageSectionNotifier>(
-                                  context,
-                                  listen: false,
-                                ).billingFromDate,
-                          ),
-                    ),
-                  )
-                  : null;
-            },
-            icon: Padding(
-              padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
-              child: Icon(Icons.receipt, size: 30),
-            ),
-            label: Padding(
-              padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-              child: Text("Gerar Fatura", style: TextStyle(fontSize: 20)),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

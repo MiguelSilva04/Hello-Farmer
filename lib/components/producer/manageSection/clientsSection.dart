@@ -125,90 +125,95 @@ class _ClientsSectionState extends State<ClientsSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildHeader(),
-        ListView.builder(
-          itemCount: _consumers.length,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            final client = _consumers[index];
-            final orders = _ordersByConsumer[client.id]!;
-            final nonNullDates =
-                orders
-                    .map((o) => o.deliveryDate)
-                    .where((date) => date != null)
-                    .cast<DateTime>()
-                    .toList();
-            final lastOrderDate =
-                nonNullDates.isNotEmpty
-                    ? nonNullDates.reduce((a, b) => a.isAfter(b) ? a : b)
-                    : null;
-            final formattedDate =
-                lastOrderDate != null
-                    ? DateFormat.yMMMd().format(lastOrderDate)
-                    : 'Abandonada';
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildHeader(),
+          ListView.builder(
+            itemCount: _consumers.length,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              final client = _consumers[index];
+              final orders = _ordersByConsumer[client.id]!;
+              final nonNullDates =
+                  orders
+                      .map((o) => o.deliveryDate)
+                      .where((date) => date != null)
+                      .cast<DateTime>()
+                      .toList();
+              final lastOrderDate =
+                  nonNullDates.isNotEmpty
+                      ? nonNullDates.reduce((a, b) => a.isAfter(b) ? a : b)
+                      : null;
+              final formattedDate =
+                  lastOrderDate != null
+                      ? DateFormat.yMMMd().format(lastOrderDate)
+                      : 'Abandonada';
 
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.tertiaryFixedDim,
-                    Theme.of(context).colorScheme.tertiary,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.tertiaryFixedDim,
+                      Theme.of(context).colorScheme.tertiary,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
-              ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.all(12),
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(client.imageUrl),
-                  radius: 28,
-                ),
-                title: Row(
-                  children: [
-                    Text(
-                      "${client.firstName} ${client.lastName}",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
                     ),
-                    const SizedBox(width: 2),
-                    if (orders.length > 3)
-                      const Icon(Icons.star, color: Colors.amber, size: 25),
                   ],
                 ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(12),
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage(client.imageUrl),
+                    radius: 28,
+                  ),
+                  title: Row(
+                    children: [
+                      Text(
+                        "${client.firstName} ${client.lastName}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 2),
+                      if (orders.length > 3)
+                        const Icon(Icons.star, color: Colors.amber, size: 25),
+                    ],
+                  ),
 
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 4),
-                    Text("Telefone: ${client.phone}"),
-                    Text("Encomendas: ${orders.length}"),
-                    Text("Última encomenda: $formattedDate"),
-                  ],
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text("Telefone: ${client.phone}"),
+                      Text("Encomendas: ${orders.length}"),
+                      Text("Última encomenda: $formattedDate"),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(
+                      Icons.message_rounded,
+                      color: Colors.green,
+                    ),
+                    onPressed: () {
+                      // Lógica para contactar (e.g., abrir WhatsApp ou chat interno)
+                    },
+                  ),
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.message_rounded, color: Colors.green),
-                  onPressed: () {
-                    // Lógica para contactar (e.g., abrir WhatsApp ou chat interno)
-                  },
-                ),
-              ),
-            );
-          },
-        ),
-      ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

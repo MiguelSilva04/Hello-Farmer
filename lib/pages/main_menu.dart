@@ -203,10 +203,10 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Profile",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(
-                              Icons.co_present_outlined,
+                              Icons.person,
                               color:
                                   Theme.of(context).colorScheme.secondaryFixed,
                             ),
@@ -217,7 +217,7 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Store",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(
                               FontAwesomeIcons.buildingUser,
@@ -231,7 +231,7 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Notifications",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Badge.count(
                               count: 1,
@@ -251,7 +251,7 @@ class _MainMenuState extends State<MainMenu>
                         PopupMenuItem(
                           value: "Favorites",
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Icon(
                                 FontAwesomeIcons.heart,
@@ -267,7 +267,7 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Settings",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(
                               Icons.settings,
@@ -282,16 +282,6 @@ class _MainMenuState extends State<MainMenu>
               ),
             ],
           ),
-          // floatingActionButton:
-          //     _selectedIndex == 0
-          //         ? FloatingActionButton(
-          //           backgroundColor: Theme.of(context).colorScheme.surface,
-          //           foregroundColor:
-          //               Theme.of(context).floatingActionButtonTheme.foregroundColor,
-          //           onPressed: () => _navigateToPage(AppRoutes.NEW_CHAT_PAGE),
-          //           child: const Icon(Icons.add),
-          //         )
-          //         : null,
           body: FadeTransition(
             opacity: _opacityAnimation,
             child:

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:harvestly/core/models/client_user.dart' as client_user;
 import 'package:harvestly/core/services/auth/auth_service.dart';
@@ -13,7 +14,7 @@ import '../../models/client_user.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
 
-class AuthFirebaseService implements AuthService {
+class AuthFirebaseService extends ChangeNotifier implements AuthService {
   static bool? _isLoggingIn;
   static bool? _isProducer;
   static ClientUser? _currentUser;
@@ -21,15 +22,35 @@ class AuthFirebaseService implements AuthService {
   static StreamSubscription? _userChangesSubscription;
   static final _userStream = Stream<ClientUser?>.multi((controller) async {
     final authChanges = FirebaseAuth.instance.authStateChanges();
+
     await for (final user in authChanges) {
-      _currentUser = user == null ? null : _toClientUser(user);
-      controller.add(_currentUser);
+      if (user == null) {
+        _currentUser = null;
+        controller.add(null);
+      } else {
+        final doc =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get();
+
+        if (doc.exists) {
+          final data = doc.data()!;
+          _currentUser = ClientUser.fromJson(data);
+        } else {
+          _currentUser = _toClientUser(user);
+          _currentUser!.taxpayerNumber = 10104903809739;
+        }
+
+        controller.add(_currentUser);
+      }
     }
   });
+
   static Store? _myStore;
 
   AuthFirebaseService() {
-    _listenToUserChanges();
+    listenToUserChanges();
   }
 
   @override
@@ -42,7 +63,7 @@ class AuthFirebaseService implements AuthService {
     );
   }
 
-  void _listenToUserChanges() {
+  void listenToUserChanges() {
     _userChangesSubscription = FirebaseFirestore.instance
         .collection('users')
         .snapshots()
@@ -123,6 +144,7 @@ class AuthFirebaseService implements AuthService {
             }
           }
         });
+    notifyListeners();
   }
 
   @override
@@ -143,6 +165,11 @@ class AuthFirebaseService implements AuthService {
   @override
   ClientUser? get currentUser {
     return _currentUser;
+  }
+
+  void setCurrentUser(ClientUser user) {
+    _currentUser = user;
+    notifyListeners();
   }
 
   @override

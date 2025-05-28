@@ -48,4 +48,23 @@ class Product {
   }
 
   void changeMinAmount(int minAmount) => this.minAmount = minAmount;
+
+  static Product fromJson(Map<String, dynamic> json) {
+    return Product(
+      name: json['name'] ?? '',
+      imageUrl:
+          json['imageUrl'] != null ? List<String>.from(json['imageUrl']) : [],
+      category: json['category'] ?? '',
+      minAmount: (json['minAmount'] ?? 0).toDouble(),
+      unit:
+          json['unit'] != null
+              ? Unit.values.firstWhere(
+                (u) => u.toString() == 'Unit.${json['unit']}',
+                orElse: () => Unit.KG,
+              )
+              : Unit.KG,
+      price: (json['price'] ?? 0).toDouble(),
+      // Adicione outros campos conforme necessário
+    );
+  }
 }

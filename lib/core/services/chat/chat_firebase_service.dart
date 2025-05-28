@@ -402,9 +402,9 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
     return FirebaseFirestore.instance
         .collection('chats')
         .where(
-          'members.$userId',
-          isNull: false,
-        ) // Verifica se userId está no Map
+          'membersIds',
+          arrayContains: userId,
+        )
         .snapshots()
         .map((querySnapshot) {
           return querySnapshot.docs.map((doc) {

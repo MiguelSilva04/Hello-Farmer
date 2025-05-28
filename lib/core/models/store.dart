@@ -56,4 +56,57 @@ class Store {
     this.baskets,
     this.viewsByUserDateTime,
   }) : id = (_idCounter++).toString();
+
+  factory Store.fromJson(Map<String, dynamic> json) {
+    return Store(
+      createdAt:
+          json['createdAt'] != null
+              ? DateTime.parse(json['createdAt'])
+              : DateTime.now(),
+      name: json['name'] ?? '',
+      subName: json['subName'] ?? '',
+      description: json['description'] ?? '',
+      location: json['location'] ?? '',
+      address: json['address'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      backgroundImageUrl: json['backgroundImageUrl'],
+      preferredMarkets:
+          json['preferredMarkets'] != null
+              ? List<String>.from(json['preferredMarkets'])
+              : [],
+      productsAds:
+          json['productsAds'] != null
+              ? List<ProductAd>.from(
+                json['productsAds'].map((x) => ProductAd.fromJson(x)),
+              )
+              : [],
+      storeReviews:
+          json['storeReviews'] != null
+              ? List<StoreReview>.from(
+                json['storeReviews'].map((x) => StoreReview.fromJson(x)),
+              )
+              : [],
+      viewsByUserDateTime:
+          json['viewsByUserDateTime'] != null
+              ? List<Map<DateTime, String>>.from(
+                (json['viewsByUserDateTime'] as List).map((item) {
+                  final key = DateTime.parse(item.keys.first);
+                  final value = item.values.first;
+                  return {key: value};
+                }),
+              )
+              : [],
+      preferredDeliveryMethod:
+          json['preferredDeliveryMethod'] != null
+              ? List<DeliveryMethod>.from(
+                (json['preferredDeliveryMethod'] as List).map(
+                  (x) => DeliveryMethod.values.firstWhere(
+                    (e) => e.toString() == 'DeliveryMethod.$x',
+                    orElse: () => DeliveryMethod.HOME_DELIVERY,
+                  ),
+                ),
+              )
+              : [],
+    );
+  }
 }

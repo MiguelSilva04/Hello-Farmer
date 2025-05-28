@@ -52,11 +52,11 @@ class ClientUser {
     this.customStatus,
     this.customIconStatus,
     this.friendsIds,
-    this.taxpayerNumber = 12345678910111213,
-    this.iban = "PT50 0085 9837 8776 7846 4789",
-    this.address = "Rua Central, 458\n1100-145 Lisboa, Portugal",
-    this.billingAddress = "Rua Principal, 458\n2000-789 Santarém, Portugal",
-  }) : notifications = [
+  }) : taxpayerNumber = 12345678910111213, 
+  iban = "PT50 0085 9837 8776 7846 4789",
+  address = "Rua Central, 458\n1100-145 Lisboa, Portugal",
+  billingAddress = "Rua Principal, 458\n2000-789 Santarém, Portugal",
+  notifications = [
          NotificationItem(
            id: '1',
            title: 'Encomenda enviada',
@@ -1045,5 +1045,31 @@ class ClientUser {
       imageUrl: map['imageUrl'] ?? '',
       isProducer: map['isProducer'] ?? '',
     );
+  }
+
+  factory ClientUser.fromJson(Map<String, dynamic> json) {
+    return ClientUser(
+      id: json['id'] ?? '',
+      firstName: json['firstName'] ?? '',
+      lastName: json['lastName'] ?? '',
+      email: json['email'] ?? '',
+      gender: json['gender'] ?? '',
+      phone: json['phone'] ?? '',
+      recoveryEmail: json['recoveryEmail'] ?? '',
+      imageUrl: json['imageUrl'] ?? '',
+      dateOfBirth: json['dateOfBirth'] ?? '',
+      isProducer: json['isProducer'] ?? false,
+      // Adiciona outros campos conforme necessários:
+      // store: json['store'] != null ? Store.fromJson(json['store']) : null,
+      // taxpayerNumber: json['taxpayerNumber'],
+      // address: json['address'],
+      // billingAddress: json['billingAddress'],
+      // etc.
+    );
+  }
+
+  @override
+  String toString() {
+    return 'ClientUser(id: $id, firstName: $firstName, lastName: $lastName, email: $email, gender: $gender, phone: $phone, recoveryEmail: $recoveryEmail, dateOfBirth: $dateOfBirth, imageUrl: $imageUrl, backgroundUrl: $backgroundUrl, nickname: $nickname, aboutMe: $aboutMe, status: $status, iconStatus: $iconStatus, customStatus: $customStatus, customIconStatus: $customIconStatus, friendsIds: $friendsIds, isProducer: $isProducer, store: $store, taxpayerNumber: $taxpayerNumber, address: $address, iban: $iban, billingAddress: $billingAddress, notifications: $notifications)';
   }
 }

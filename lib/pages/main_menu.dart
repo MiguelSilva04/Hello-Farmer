@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/client_user.dart';
+import 'package:harvestly/core/services/auth/auth_firebase_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
@@ -17,6 +18,7 @@ import '../components/producer/store_page.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'chat_list_page.dart';
+import 'loading_page.dart';
 import 'new_chat_page.dart';
 import 'profile_page.dart';
 
@@ -33,15 +35,12 @@ class _MainMenuState extends State<MainMenu>
   String _profileImageUrl = "";
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
-
-  Future<ClientUser?> _loadUser() async {
-    final user = await AuthService().getCurrentUser();
-    return user;
-  }
+  late ClientUser user;
 
   @override
   void initState() {
     super.initState();
+    user = Provider.of<AuthFirebaseService>(context, listen: false).currentUser!;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -95,316 +94,276 @@ class _MainMenuState extends State<MainMenu>
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<ClientUser?>(
-      future: _loadUser(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    final bool isProducer = user.isProducer ?? false;
+    _profileImageUrl = user.imageUrl;
 
-        final user = snapshot.data;
-        if (user == null) {
-          return Scaffold(
-            appBar: AppBar(),
-            body: Center(child: Text("Erro ao carregar o utilizador")),
-          );
-        }
+    final List<Widget> _producerPages = [
+      ProducerHomePage(),
+      SellsPage(),
+      SellPage(),
+      ChatListPage(),
+      ManagePage(),
+      StorePage(),
+    ];
 
-        final bool _isProducer = user.isProducer ?? false;
-        _profileImageUrl = user.imageUrl;
+    final List<Widget> _consumerPages = [
+      ConsumerHomePage(),
+      OrdersPage(),
+      ExplorePage(),
+      MapPage(),
+      ChatListPage(),
+    ];
 
-        final List<Widget> _producerPages = [
-          ProducerHomePage(),
-          SellsPage(),
-          SellPage(),
-          ChatListPage(),
-          ManagePage(),
-          StorePage(),
-        ];
-
-        final List<Widget> _consumerPages = [
-          ConsumerHomePage(),
-          OrdersPage(),
-          ExplorePage(),
-          MapPage(),
-          ChatListPage(),
-        ];
-
-        return Scaffold(
-          appBar: AppBar(
-            centerTitle: false,
-            title: Row(
-              children: [
-                if (Provider.of<BottomNavigationNotifier>(
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        title: Row(
+          children: [
+            if (Provider.of<BottomNavigationNotifier>(context).currentIndex ==
+                5)
+              InkWell(
+                onTap:
+                    () => Provider.of<BottomNavigationNotifier>(
                       context,
-                    ).currentIndex ==
-                    5)
-                  InkWell(
-                    onTap:
-                        () => Provider.of<BottomNavigationNotifier>(
-                          context,
-                          listen: false,
-                        ).setIndex(0),
-                    child: const Icon(Icons.arrow_back),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Image.asset(
-                    "assets/images/logo_android2.png",
-                    height: 45,
-                  ),
-                ),
-              ],
+                      listen: false,
+                    ).setIndex(0),
+                child: const Icon(Icons.arrow_back),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Image.asset("assets/images/logo_android2.png", height: 45),
             ),
-            actions: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-                child:
-                    _isSearching
-                        ? Padding(
-                          key: const ValueKey(1),
-                          padding: const EdgeInsets.all(8),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.65,
-                            child: SearchBar(
-                              autoFocus: true,
-                              hintText: "Procurar...",
-                              onChanged: (query) {
+          ],
+        ),
+        actions: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child:
+                _isSearching
+                    ? Padding(
+                      key: const ValueKey(1),
+                      padding: const EdgeInsets.all(8),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.65,
+                        child: SearchBar(
+                          autoFocus: true,
+                          hintText: "Procurar...",
+                          onChanged: (query) {
+                            Provider.of<ChatListNotifier>(
+                              context,
+                              listen: false,
+                            ).setSearchQuery(query);
+                          },
+                          trailing: [
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isSearching = false;
+                                });
                                 Provider.of<ChatListNotifier>(
                                   context,
                                   listen: false,
-                                ).setSearchQuery(query);
+                                ).setSearchQuery("");
                               },
-                              trailing: [
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isSearching = false;
-                                    });
-                                    Provider.of<ChatListNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).setSearchQuery("");
-                                  },
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
+                              icon: const Icon(Icons.close, color: Colors.grey),
                             ),
-                          ),
-                        )
-                        : IconButton(
-                          key: const ValueKey(2),
-                          icon: const Icon(Icons.search),
-                          onPressed: _toggleSearch,
+                          ],
                         ),
-              ),
-              PopupMenuButton<String>(
-                tooltip: "Opções",
-                offset: const Offset(0, 50),
-                icon:
-                    user.imageUrl.isNotEmpty
-                        ? CircleAvatar(
-                          backgroundImage: NetworkImage(_profileImageUrl),
-                        )
-                        : const Icon(Icons.account_circle),
-                onSelected: (value) async {
-                  switch (value) {
-                    case "Notifications":
-                      Navigator.of(
-                        context,
-                      ).pushNamed(AppRoutes.NOTIFICATION_PAGE);
-                      break;
-                    case "Store":
-                      Provider.of<BottomNavigationNotifier>(
-                        context,
-                        listen: false,
-                      ).setIndex(5);
-                      break;
-                    case "Profile":
-                      _navigateToPage(AppRoutes.PROFILE_PAGE);
-                      break;
-                    case "Favorites":
-                      Navigator.of(context).pushNamed(AppRoutes.FAVORITES_PAGE);
-                      break;
-                    case "Settings":
-                      Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
-                      break;
-                  }
+                      ),
+                    )
+                    : IconButton(
+                      key: const ValueKey(2),
+                      icon: const Icon(Icons.search),
+                      onPressed: _toggleSearch,
+                    ),
+          ),
+          PopupMenuButton<String>(
+            tooltip: "Opções",
+            offset: const Offset(0, 50),
+            icon:
+                user.imageUrl.isNotEmpty
+                    ? CircleAvatar(
+                      backgroundImage: NetworkImage(_profileImageUrl),
+                    )
+                    : const Icon(Icons.account_circle),
+            onSelected: (value) async {
+              switch (value) {
+                case "Notifications":
+                  Navigator.of(context).pushNamed(AppRoutes.NOTIFICATION_PAGE);
+                  break;
+                case "Store":
+                  Provider.of<BottomNavigationNotifier>(
+                    context,
+                    listen: false,
+                  ).setIndex(5);
+                  break;
+                case "Profile":
+                  _navigateToPage(AppRoutes.PROFILE_PAGE);
+                  break;
+                case "Favorites":
+                  Navigator.of(context).pushNamed(AppRoutes.FAVORITES_PAGE);
+                  break;
+                case "Settings":
+                  Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+                  break;
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  PopupMenuItem(
+                    value: "Profile",
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(
+                          Icons.person,
+                          color: Theme.of(context).colorScheme.tertiaryFixed,
+                        ),
+                        SizedBox(width: 10),
+                        Text("Perfil"),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: "Store",
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(
+                          FontAwesomeIcons.buildingUser,
+                          color: Theme.of(context).colorScheme.tertiaryFixed,
+                        ),
+                        SizedBox(width: 10),
+                        Text("Banca"),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: "Notifications",
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Badge.count(
+                          count: user.notifications!.length,
+                          child: Icon(
+                            Icons.notifications_none_rounded,
+                            color: Theme.of(context).colorScheme.secondaryFixed,
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Text("Notificações"),
+                      ],
+                    ),
+                  ),
+                  if (!(user.isProducer ?? false))
+                    PopupMenuItem(
+                      value: "Favorites",
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Icon(
+                            FontAwesomeIcons.heart,
+                            color: Theme.of(context).colorScheme.tertiaryFixed,
+                          ),
+                          SizedBox(width: 10),
+                          Text("Favoritos"),
+                        ],
+                      ),
+                    ),
+                  PopupMenuItem(
+                    value: "Settings",
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(
+                          Icons.settings,
+                          color: Theme.of(context).colorScheme.tertiaryFixed,
+                        ),
+                        SizedBox(width: 10),
+                        Text("Definições"),
+                      ],
+                    ),
+                  ),
+                ],
+          ),
+        ],
+      ),
+      body: FadeTransition(
+        opacity: _opacityAnimation,
+        child:
+            isProducer
+                ? _producerPages[Provider.of<BottomNavigationNotifier>(
+                  context,
+                ).currentIndex]
+                : _consumerPages[Provider.of<BottomNavigationNotifier>(
+                  context,
+                ).currentIndex],
+      ),
+      bottomNavigationBar:
+          Provider.of<BottomNavigationNotifier>(context).currentIndex < 5
+              ? BottomNavigationBar(
+                selectedItemColor: Theme.of(context).bottomAppBarTheme.color,
+                unselectedItemColor:
+                    Theme.of(context).colorScheme.secondaryFixed,
+                currentIndex:
+                    Provider.of<BottomNavigationNotifier>(context).currentIndex,
+                onTap: (index) {
+                  Provider.of<BottomNavigationNotifier>(
+                    context,
+                    listen: false,
+                  ).setIndex(index);
                 },
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: "Profile",
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(
-                              Icons.person,
-                              color:
-                                  Theme.of(context).colorScheme.tertiaryFixed,
-                            ),
-                            SizedBox(width: 10),
-                            Text("Perfil"),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: "Store",
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(
-                              FontAwesomeIcons.buildingUser,
-                              color:
-                                  Theme.of(context).colorScheme.tertiaryFixed,
-                            ),
-                            SizedBox(width: 10),
-                            Text("Banca"),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: "Notifications",
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Badge.count(
-                              count: user.notifications!.length,
-                              child: Icon(
-                                Icons.notifications_none_rounded,
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.secondaryFixed,
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Text("Notificações"),
-                          ],
-                        ),
-                      ),
-                      if (!(user.isProducer ?? false))
-                        PopupMenuItem(
-                          value: "Favorites",
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Icon(
-                                FontAwesomeIcons.heart,
-                                color:
-                                    Theme.of(context).colorScheme.tertiaryFixed,
-                              ),
-                              SizedBox(width: 10),
-                              Text("Favoritos"),
-                            ],
+                items:
+                    isProducer
+                        ? const [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.home),
+                            label: "Início",
                           ),
-                        ),
-                      PopupMenuItem(
-                        value: "Settings",
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Icon(
-                              Icons.settings,
-                              color:
-                                  Theme.of(context).colorScheme.tertiaryFixed,
-                            ),
-                            SizedBox(width: 10),
-                            Text("Definições"),
-                          ],
-                        ),
-                      ),
-                    ],
-              ),
-            ],
-          ),
-          body: FadeTransition(
-            opacity: _opacityAnimation,
-            child:
-                _isProducer
-                    ? _producerPages[Provider.of<BottomNavigationNotifier>(
-                      context,
-                    ).currentIndex]
-                    : _consumerPages[Provider.of<BottomNavigationNotifier>(
-                      context,
-                    ).currentIndex],
-          ),
-          bottomNavigationBar:
-              Provider.of<BottomNavigationNotifier>(context).currentIndex < 5
-                  ? BottomNavigationBar(
-                    selectedItemColor:
-                        Theme.of(context).bottomAppBarTheme.color,
-                    unselectedItemColor:
-                        Theme.of(context).colorScheme.secondaryFixed,
-                    currentIndex:
-                        Provider.of<BottomNavigationNotifier>(
-                          context,
-                        ).currentIndex,
-                    onTap: (index) {
-                      Provider.of<BottomNavigationNotifier>(
-                        context,
-                        listen: false,
-                      ).setIndex(index);
-                    },
-                    items:
-                        _isProducer
-                            ? const [
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.home),
-                                label: "Início",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(FontAwesomeIcons.fileInvoiceDollar),
-                                label: "Vendas",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.add_circle),
-                                label: "Vender",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.message_rounded),
-                                label: "Mensagens",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.manage_accounts),
-                                label: "Gestão",
-                              ),
-                            ]
-                            : const [
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.home),
-                                label: "Início",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(FontAwesomeIcons.boxOpen),
-                                label: "Encomendas",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.search),
-                                label: "Explorar",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.map_rounded),
-                                label: "Mapa",
-                              ),
-                              BottomNavigationBarItem(
-                                icon: Icon(Icons.message_rounded),
-                                label: "Mensagens",
-                              ),
-                            ],
-                  )
-                  : null,
-        );
-      },
+                          BottomNavigationBarItem(
+                            icon: Icon(FontAwesomeIcons.fileInvoiceDollar),
+                            label: "Vendas",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.add_circle),
+                            label: "Vender",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.message_rounded),
+                            label: "Mensagens",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.manage_accounts),
+                            label: "Gestão",
+                          ),
+                        ]
+                        : const [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.home),
+                            label: "Início",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(FontAwesomeIcons.boxOpen),
+                            label: "Encomendas",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.search),
+                            label: "Explorar",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.map_rounded),
+                            label: "Mapa",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.message_rounded),
+                            label: "Mensagens",
+                          ),
+                        ],
+              )
+              : null,
     );
   }
 }

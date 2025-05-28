@@ -1,3 +1,4 @@
+import 'package:harvestly/core/services/auth/auth_firebase_service.dart';
 import 'package:harvestly/core/services/chat/chat_firebase_service.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/pages/auth_page.dart';
@@ -41,6 +42,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => BottomNavigationNotifier()),
         ChangeNotifierProvider(create: (_) => ManageSectionNotifier()),
         ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
+        ChangeNotifierProvider(create: (_) => AuthFirebaseService()),
       ],
       child: const MyApp(),
     ),

@@ -40,7 +40,8 @@ class _MainMenuState extends State<MainMenu>
   @override
   void initState() {
     super.initState();
-    user = Provider.of<AuthFirebaseService>(context, listen: false).currentUser!;
+    user =
+        Provider.of<AuthFirebaseService>(context, listen: false).currentUser!;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -110,8 +111,8 @@ class _MainMenuState extends State<MainMenu>
       ConsumerHomePage(),
       OrdersPage(),
       ExplorePage(),
-      MapPage(),
       ChatListPage(),
+      MapPage(),
     ];
 
     return Scaffold(
@@ -354,12 +355,12 @@ class _MainMenuState extends State<MainMenu>
                             label: "Explorar",
                           ),
                           BottomNavigationBarItem(
-                            icon: Icon(Icons.map_rounded),
-                            label: "Mapa",
-                          ),
-                          BottomNavigationBarItem(
                             icon: Icon(Icons.message_rounded),
                             label: "Mensagens",
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.map_rounded),
+                            label: "Mapa",
                           ),
                         ],
               )

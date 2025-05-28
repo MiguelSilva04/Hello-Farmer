@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum Language { PORTUGUESE, ENGLISH }
+
 class PreferencesNotifier with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
+  Language language = Language.PORTUGUESE;
+  bool _biometricsAuthentication = false;
+  bool _permissions = false;
+  bool _localization = false;
+  bool _notifications = false;
 
   final String conditions = '''
 Termos e Condições de Utilização

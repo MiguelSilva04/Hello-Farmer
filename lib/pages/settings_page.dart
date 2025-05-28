@@ -21,39 +21,6 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   int _selectedIndex = 0;
 
-  Future<void> _confirmLogout(BuildContext context) async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text("Confirmar"),
-            content: const Text(
-              "Tem a certeza que pretende terminar a sessão?",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text("Não"),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text("Sim"),
-              ),
-            ],
-          ),
-    );
-
-    if (shouldLogout == true) {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        context.read<ChatListNotifier>().clearChats();
-        await AuthService().logout();
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil(AppRoutes.AUTH_OR_APP_PAGE, (route) => false);
-      });
-    }
-  }
-
   Widget _buildSettingsTile({
     required IconData icon,
     required String title,
@@ -107,12 +74,6 @@ class _SettingsPageState extends State<SettingsPage> {
             style: const TextStyle(fontSize: 40),
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () => _confirmLogout(context),
-            icon: const Icon(Icons.exit_to_app),
-          ),
-        ],
       ),
       body: pages[_selectedIndex].entries.first.value,
     );

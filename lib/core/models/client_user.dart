@@ -26,6 +26,8 @@ class ClientUser {
   List<String>? friendsIds;
   bool? isProducer;
   Store? store;
+  int? taxpayerNumber;
+  String? address;
 
   ClientUser({
     required this.gender,
@@ -46,6 +48,8 @@ class ClientUser {
     this.customStatus,
     this.customIconStatus,
     this.friendsIds,
+    this.taxpayerNumber = 12345678910111213,
+    this.address = "Rua Central, 458\n1100-145 Lisboa, Portugal",
   }) : store = Store(
          createdAt: DateTime(2025, 1, 1),
          name: "Quinta Sol Nascente",

@@ -103,4 +103,41 @@ final List<ProducerLocation> _producerLocations = [
             markers: _markers,
           );
   }
+/* 
+  Future<void> _determinePosition() async {
+    // Pede permissão
+    var status = await Permission.location.request();
+
+    if (status.isGranted) {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      setState(() {
+        _currentPosition = LatLng(position.latitude, position.longitude);
+      });
+    } else {
+      // Permissão negada
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permissão de localização negada.')),
+      );
+    }
+  } */
+
+ /*  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mapa')),
+      body: _currentPosition == null
+          ? const Center(child: CircularProgressIndicator())
+          : GoogleMap(
+              onMapCreated: (controller) => _mapController = controller,
+              initialCameraPosition: CameraPosition(
+                target: _currentPosition!,
+                zoom: 15,
+              ),
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+            ),
+    );
+  } */
 }

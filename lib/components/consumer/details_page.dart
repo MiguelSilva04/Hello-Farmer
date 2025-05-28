@@ -30,11 +30,10 @@ class OrderDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.asset(
+
               ads.first.product.imageUrl.first,
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
+              //order['imagePath']!,
+              height: 180),
             const SizedBox(height: 20),
             Text(
               'Encomenda #${order.id}',

@@ -37,8 +37,6 @@ class AuthFirebaseService implements AuthService {
     if (_currentUser != null) {
       return _currentUser;
     }
-
-    // Aguarda o primeiro valor emitido pela stream de autenticação
     return await _userStream.firstWhere(
       (user) => user != null || FirebaseAuth.instance.currentUser == null,
     );
@@ -471,7 +469,7 @@ class AuthFirebaseService implements AuthService {
       // recoveryEmail: recoveryEmail != null ? recoveryEmail : curUser.recoveryEmail,
       imageUrl: imageUrl ?? user.photoURL ?? 'assets/images/avatar.png',
       dateOfBirth: dateOfBirth ?? '',
-      isProducer: isProducer ?? false,
+      isProducer: isProducer,
     );
   }
 

@@ -57,15 +57,16 @@ class _ChatListPageState extends State<ChatListPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text(
-            "Ainda não estás em nenhum grupo?",
-            style: TextStyle(fontSize: 18),
+            "Ainda não entraste em contacto com ninguém?",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20),
           ),
           const SizedBox(height: 10),
           TextButton(
             onPressed:
                 () => Navigator.of(context).pushNamed(AppRoutes.NEW_CHAT_PAGE),
             child: const Text(
-              "Cria um novo grupo",
+              "Começa agora uma conversa!",
               style: TextStyle(fontSize: 16),
             ),
           ),

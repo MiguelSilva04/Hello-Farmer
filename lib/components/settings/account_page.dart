@@ -46,95 +46,93 @@ class AccountPage extends StatelessWidget {
     final currentUser = AuthService().currentUser!;
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Nome",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-                ),
-                Text(
-                  "${currentUser.firstName} ${currentUser.lastName}",
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-                ),
-              ],
-            ),
-            const Divider(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Email",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-                ),
-                Text(
-                  "${currentUser.email}",
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-                ),
-              ],
-            ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Nome",
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+              ),
+              Text(
+                "${currentUser.firstName} ${currentUser.lastName}",
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+              ),
+            ],
+          ),
+          const Divider(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Email",
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+              ),
+              Text(
+                "${currentUser.email}",
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+              ),
+            ],
+          ),
 
-            const Divider(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Número de contribuinte",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+          const Divider(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Número de contribuinte",
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+              ),
+              Text(
+                "${currentUser.taxpayerNumber!}",
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+              ),
+            ],
+          ),
+          const Divider(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Morada",
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+              ),
+              Text(
+                "${currentUser.address!}",
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                foregroundColor:
+                    Theme.of(context).colorScheme.onSecondaryContainer,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(width: 0.5),
                 ),
-                Text(
-                  "${currentUser.taxpayerNumber!}",
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-                ),
-              ],
-            ),
-            const Divider(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Morada",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-                ),
-                Text(
-                  "${currentUser.address!}",
-                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  foregroundColor:
-                      Theme.of(context).colorScheme.onSecondaryContainer,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(width: 0.5),
-                  ),
-                  elevation: 0,
-                ),
-                onPressed: () => _confirmLogout(context),
-                child: Text(
-                  "Terminar Sessão",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red,
-                  ),
+                elevation: 0,
+              ),
+              onPressed: () => _confirmLogout(context),
+              child: Text(
+                "Terminar Sessão",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

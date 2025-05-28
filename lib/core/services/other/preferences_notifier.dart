@@ -3,13 +3,143 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum Language { PORTUGUESE, ENGLISH }
 
+enum ReturnPolicy { NONE, THREE_DAYS, WEEK, MONTH }
+
+extension ReturnPolicyExtension on ReturnPolicy {
+  String toDisplayString() {
+    switch (this) {
+      case ReturnPolicy.NONE:
+        return 'Sem devolução';
+      case ReturnPolicy.THREE_DAYS:
+        return '3 dias após a entrega';
+      case ReturnPolicy.WEEK:
+        return '1 semana após a entrega';
+      case ReturnPolicy.MONTH:
+        return '1 mês após a entrega';
+    }
+  }
+}
+
 class PreferencesNotifier with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
   Language language = Language.PORTUGUESE;
+  bool _isActivePin = false;
   bool _biometricsAuthentication = false;
   bool _permissions = false;
   bool _localization = false;
   bool _notifications = false;
+  bool _inventoryManagement = false;
+  bool _receiptsByEmail = false;
+  String _receiptMessage = "";
+  bool _pushNotifications = true;
+  bool _emailNotifications = true;
+  bool _recomendations = true;
+  bool _productsUpdates = true;
+  ReturnPolicy _returnPolicy = ReturnPolicy.THREE_DAYS;
+
+  bool get receiptsByEmail => _receiptsByEmail;
+  void setReceiptsByEmail(bool value) {
+    if (_receiptsByEmail != value) {
+      _receiptsByEmail = value;
+      notifyListeners();
+    }
+  }
+
+  String get receiptMessage => _receiptMessage;
+  void setReceiptMessage(String value) {
+    if (_receiptMessage != value) {
+      _receiptMessage = value;
+      notifyListeners();
+    }
+  }
+
+  bool get pushNotifications => _pushNotifications;
+  void setPushNotifications(bool value) {
+    if (_pushNotifications != value) {
+      _pushNotifications = value;
+      notifyListeners();
+    }
+  }
+
+  bool get emailNotifications => _emailNotifications;
+  void setEmailNotifications(bool value) {
+    if (_emailNotifications != value) {
+      _emailNotifications = value;
+      notifyListeners();
+    }
+  }
+
+  bool get recomendations => _recomendations;
+  void setRecomendations(bool value) {
+    if (_recomendations != value) {
+      _recomendations = value;
+      notifyListeners();
+    }
+  }
+
+  bool get productsUpdates => _productsUpdates;
+  void setProductsUpdates(bool value) {
+    if (_productsUpdates != value) {
+      _productsUpdates = value;
+      notifyListeners();
+    }
+  }
+
+  ReturnPolicy get returnPolicy => _returnPolicy;
+  void setReturnPolicy(ReturnPolicy value) {
+    if (_returnPolicy != value) {
+      _returnPolicy = value;
+      notifyListeners();
+    }
+  }
+
+  bool get inventoryManagement => _inventoryManagement;
+  void setInventoryManagement(bool value) {
+    if (_inventoryManagement != value) {
+      _inventoryManagement = value;
+      notifyListeners();
+    }
+  }
+
+  bool get isActivePin => _isActivePin;
+  void setActivePin(bool value) {
+    if (_isActivePin != value) {
+      _isActivePin = value;
+      notifyListeners();
+    }
+  }
+
+  bool get biometricsAuthentication => _biometricsAuthentication;
+  void setBiometricsAuthentication(bool value) {
+    if (_biometricsAuthentication != value) {
+      _biometricsAuthentication = value;
+      notifyListeners();
+    }
+  }
+
+  bool get permissions => _permissions;
+  void setPermissions(bool value) {
+    if (_permissions != value) {
+      _permissions = value;
+      notifyListeners();
+    }
+  }
+
+  bool get localization => _localization;
+  void setLocalization(bool value) {
+    if (_localization != value) {
+      _localization = value;
+      notifyListeners();
+    }
+  }
+
+  bool get notifications => _notifications;
+  void setNotifications(bool value) {
+    if (_notifications != value) {
+      _notifications = value;
+      notifyListeners();
+    }
+  }
 
   final String conditions = '''
 Termos e Condições de Utilização

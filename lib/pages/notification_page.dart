@@ -1,52 +1,56 @@
-import 'package:provider/provider.dart' show Provider;
-
-import '../core/notification/chat_notification_service.dart';
+// Modelo de dados para notificação
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 
-class NotificationPage extends StatelessWidget {
-  const NotificationPage({super.key});
+import '../core/models/notification.dart';
+
+class NotificationsPage extends StatefulWidget {
+  const NotificationsPage({super.key});
+
+  @override
+  State<NotificationsPage> createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  final notifications = AuthService().currentUser!.store!.notifications;
 
   @override
   Widget build(BuildContext context) {
-    final service = Provider.of<ChatNotificationService>(context);
-    final items = service.items;
     return Scaffold(
-      appBar: AppBar(title: Text("Notificações")),
-      body:
-          items.length == 0
-              ? Center(child: Text("Sem notificações!"))
-              : ListView.builder(
-                itemCount: items.length,
-                itemBuilder:
-                    (ctx, i) => ListTile(
-                      title: Text(items[i].title),
-                      subtitle: Text(items[i].body),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.check),
-                            color: Colors.green,
-                            onPressed: () {
-                              // Ação para aceitar a notificação
-                              // service.accept(i);
-                              print("Entrou no grupo com sucesso!");
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.close),
-                            color: Colors.red,
-                            onPressed: () {
-                              // Ação para recusar a notificação
-                              print("Pedido recusado!");
-                              service.remove(i);
-                            },
-                          ),
-                        ],
-                      ),
-                      onTap: () => service.remove(i),
-                    ),
+      appBar: AppBar(title: const Text('Notificações')),
+      body: ListView.builder(
+        itemCount: notifications!.length,
+        itemBuilder: (context, index) {
+          final notification = notifications![index];
+          return Dismissible(
+            key: Key(notification.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            onDismissed: (_) {
+              setState(() {
+                notifications!.removeAt(index);
+              });
+            },
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: notification.type.color,
+                child: Icon(notification.type.icon, color: Colors.white),
               ),
+              title: Text(notification.title),
+              subtitle: Text(notification.description),
+              trailing: Text(
+                '${notification.dateTime.day}/${notification.dateTime.month} ${notification.dateTime.hour}:${notification.dateTime.minute.toString().padLeft(2, '0')}',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import '../pages/new_chat_page.dart';
 import '../pages/notification_page.dart';
 
 import 'components/consumer/favorites_page.dart';
+import 'components/producer/store_page.dart';
 import 'core/notification/chat_notification_service.dart';
 import '../pages/auth_or_app_page.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ import 'pages/settings_page.dart';
 import 'utils/app_routes.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'utils/preferences_notifier.dart';
+import 'core/services/other/preferences_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
@@ -169,9 +170,10 @@ class MyApp extends StatelessWidget {
         AppRoutes.SETTINGS_PAGE: (ctx) => SettingsPage(),
         AppRoutes.CHAT_SETTINGS_PAGE: (ctx) => ChatSettingsPage(),
         AppRoutes.NEW_CHAT_PAGE: (ctx) => NewChatPage(),
-        AppRoutes.NOTIFICATION_PAGE: (ctx) => NotificationPage(),
+        AppRoutes.NOTIFICATION_PAGE: (ctx) => NotificationsPage(),
         AppRoutes.PROFILE_PAGE: (ctx) => ProfilePage(),
         AppRoutes.FAVORITES_PAGE: (ctx) => FavoritesPage(),
+        AppRoutes.STORE_PAGE: (ctx) => StorePage(),
       },
     );
   }

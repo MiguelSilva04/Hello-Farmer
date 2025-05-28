@@ -239,7 +239,6 @@ class _ProfilePageState extends State<ProfilePage> {
     //   );
 
     if (_isEditingEmail) {
-      print("Cheguei aqui!");
       _showAlert(
         "Verificação necessária",
         "Um e-mail de confirmação irá ser enviado para ${user!.recoveryEmail}. A sua sessão irá depois disso expirar.",
@@ -370,6 +369,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                       _backgroundImage == null
                                           ? "Definir imagem"
                                           : "Mudar imagem",
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.tertiaryFixed,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -656,16 +661,13 @@ class _ProfilePageState extends State<ProfilePage> {
               Column(
                 children:
                     purchases.map((purchase) {
-                      AuthService().users.forEach((u) => print(u.id));
-                      print(purchase.producerId);
                       final ClientUser? producerUser =
                           AuthService().users
                               .where((u) => u.id == purchase.producerId)
                               .first;
-                      print(producerUser!.id.isEmpty);
 
                       final producerName =
-                          '${producerUser.firstName} ${producerUser.lastName}';
+                          '${producerUser!.firstName} ${producerUser.lastName}';
                       final producerImage = producerUser.imageUrl;
 
                       return Card(
@@ -727,7 +729,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ),
 
-                              // Se o utilizador logado (user) não for produtor, mostra o produtor da compra
                               if (user != null && !user!.isProducer!)
                                 Flexible(
                                   flex: 3,

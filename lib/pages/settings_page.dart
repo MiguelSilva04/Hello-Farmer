@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/settings/account_page.dart';
 import 'package:harvestly/components/settings/billing_page.dart';
-import 'package:harvestly/components/settings/logistics_page.dart';
 import 'package:harvestly/components/settings/notifications_page.dart';
 import 'package:harvestly/components/settings/payment_page.dart';
-import 'package:provider/provider.dart';
 
 import '../components/settings/main_page.dart';
-import '../core/services/auth/auth_service.dart';
-import '../core/services/chat/chat_list_notifier.dart';
-import '../utils/app_routes.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -48,7 +43,6 @@ class _SettingsPageState extends State<SettingsPage> {
       {"Definições": getMain(context)},
       {"Geral": MainPage()},
       {"Métodos de pagamento": PaymentPage()},
-      {"Logística": LogisticsPage()},
       {"Faturação": BillingPage()},
       {"Notificações": NotificationsPage()},
       {"Conta": AccountPage()},
@@ -97,24 +91,19 @@ class _SettingsPageState extends State<SettingsPage> {
               onTap: () => setState(() => _selectedIndex = 2),
             ),
             _buildSettingsTile(
-              icon: Icons.cases_rounded,
-              title: "Logística",
-              onTap: () => setState(() => _selectedIndex = 3),
-            ),
-            _buildSettingsTile(
               icon: Icons.receipt,
               title: "Faturação",
-              onTap: () => setState(() => _selectedIndex = 4),
+              onTap: () => setState(() => _selectedIndex = 3),
             ),
             _buildSettingsTile(
               icon: Icons.notifications,
               title: "Notificações",
-              onTap: () => setState(() => _selectedIndex = 5),
+              onTap: () => setState(() => _selectedIndex = 4),
             ),
             _buildSettingsTile(
               icon: Icons.person,
               title: "Conta",
-              onTap: () => setState(() => _selectedIndex = 6),
+              onTap: () => setState(() => _selectedIndex = 5),
             ),
           ],
         ),

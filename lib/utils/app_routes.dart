@@ -9,4 +9,5 @@ class AppRoutes {
   static const NOTIFICATION_PAGE = '/notification-page';
   static const PROFILE_PAGE = '/profile-page';
   static const FAVORITES_PAGE = '/favorites-page';
+  static const STORE_PAGE = '/store-page';
 }

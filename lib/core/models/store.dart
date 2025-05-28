@@ -1,3 +1,5 @@
+import 'package:harvestly/core/models/notification.dart';
+
 import 'basket.dart';
 import 'order.dart';
 import 'product_ad.dart';
@@ -36,6 +38,7 @@ class Store {
   List<DeliveryMethod>? preferredDeliveryMethod;
   List<Basket>? baskets;
   List<Map<DateTime, String>>? viewsByUserDateTime;
+  List<NotificationItem>? notifications = [];
 
   Store({
     required this.createdAt,
@@ -52,6 +55,7 @@ class Store {
     this.orders,
     this.preferredDeliveryMethod,
     this.baskets,
-    this.viewsByUserDateTime
+    this.viewsByUserDateTime,
+    this.notifications,
   }) : id = (_idCounter++).toString();
 }

@@ -12,7 +12,7 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  final notifications = AuthService().currentUser!.store!.notifications;
+  final notifications = AuthService().currentUser!.notifications;
 
   @override
   Widget build(BuildContext context) {

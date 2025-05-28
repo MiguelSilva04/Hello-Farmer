@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/settings/account_page.dart';
+import 'package:harvestly/components/settings/billing_page.dart';
+import 'package:harvestly/components/settings/logistics_page.dart';
+import 'package:harvestly/components/settings/notifications_page.dart';
+import 'package:harvestly/components/settings/payment_page.dart';
 import 'package:provider/provider.dart';
 
+import '../components/settings/main_page.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../utils/app_routes.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  int _selectedIndex = 0;
 
   Future<void> _confirmLogout(BuildContext context) async {
     final shouldLogout = await showDialog<bool>(
@@ -64,9 +77,36 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      {"Definições": getMain(context)},
+      {"Geral": MainPage()},
+      {"Métodos de pagamento": PaymentPage()},
+      {"Logística": LogisticsPage()},
+      {"Faturação": BillingPage()},
+      {"Notificações": NotificationsPage()},
+      {"Conta": AccountPage()},
+    ];
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Definições"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (_selectedIndex == 0) {
+              Navigator.of(context).pop();
+            } else {
+              setState(() {
+                _selectedIndex = 0;
+              });
+            }
+          },
+        ),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            pages[_selectedIndex].entries.first.key,
+            style: const TextStyle(fontSize: 40),
+          ),
+        ),
         actions: [
           IconButton(
             onPressed: () => _confirmLogout(context),
@@ -74,44 +114,48 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            children: [
-              const Divider(),
-              _buildSettingsTile(
-                icon: Icons.settings,
-                title: "Geral",
-                onTap: () {},
-              ),
-              _buildSettingsTile(
-                icon: Icons.credit_card,
-                title: "Métodos de pagamento",
-                onTap: () {},
-              ),
-              _buildSettingsTile(
-                icon: Icons.cases_rounded,
-                title: "Logística",
-                onTap: () {},
-              ),
-              _buildSettingsTile(
-                icon: Icons.receipt,
-                title: "Faturação",
-                onTap: () {},
-              ),
-              _buildSettingsTile(
-                icon: Icons.notifications,
-                title: "Notificações",
-                onTap: () {},
-              ),
-              _buildSettingsTile(
-                icon: Icons.person,
-                title: "Conta",
-                onTap: () {},
-              ),
-            ],
-          ),
+      body: pages[_selectedIndex].entries.first.value,
+    );
+  }
+
+  Widget getMain(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          children: [
+            const Divider(),
+            _buildSettingsTile(
+              icon: Icons.settings,
+              title: "Geral",
+              onTap: () => setState(() => _selectedIndex = 1),
+            ),
+            _buildSettingsTile(
+              icon: Icons.credit_card,
+              title: "Métodos de pagamento",
+              onTap: () => setState(() => _selectedIndex = 2),
+            ),
+            _buildSettingsTile(
+              icon: Icons.cases_rounded,
+              title: "Logística",
+              onTap: () => setState(() => _selectedIndex = 3),
+            ),
+            _buildSettingsTile(
+              icon: Icons.receipt,
+              title: "Faturação",
+              onTap: () => setState(() => _selectedIndex = 4),
+            ),
+            _buildSettingsTile(
+              icon: Icons.notifications,
+              title: "Notificações",
+              onTap: () => setState(() => _selectedIndex = 5),
+            ),
+            _buildSettingsTile(
+              icon: Icons.person,
+              title: "Conta",
+              onTap: () => setState(() => _selectedIndex = 6),
+            ),
+          ],
         ),
       ),
     );

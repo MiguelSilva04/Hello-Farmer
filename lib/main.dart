@@ -21,7 +21,7 @@ import 'pages/settings_page.dart';
 import 'utils/app_routes.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'utils/theme_notifier.dart';
+import 'utils/preferences_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
@@ -39,7 +39,7 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (_) => BottomNavigationNotifier()),
         ChangeNotifierProvider(create: (_) => ManageSectionNotifier()),
-        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
       ],
       child: const MyApp(),
     ),
@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final themeNotifier = Provider.of<PreferencesNotifier>(context);
     return MaterialApp(
       title: 'Harvestly',
 

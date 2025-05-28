@@ -203,7 +203,7 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Profile",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Icon(
                               Icons.person,
@@ -217,7 +217,7 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Store",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Icon(
                               FontAwesomeIcons.buildingUser,
@@ -231,7 +231,7 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Notifications",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Badge.count(
                               count: 1,
@@ -251,7 +251,7 @@ class _MainMenuState extends State<MainMenu>
                         PopupMenuItem(
                           value: "Favorites",
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Icon(
                                 FontAwesomeIcons.heart,
@@ -267,7 +267,7 @@ class _MainMenuState extends State<MainMenu>
                       PopupMenuItem(
                         value: "Settings",
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Icon(
                               Icons.settings,

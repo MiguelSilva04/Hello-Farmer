@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/preferences_notifier.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +9,7 @@ class BillingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = AuthService().currentUser!;
+    final currentUser = AuthService().currentUser! as ProducerUser;
     final notifier = Provider.of<PreferencesNotifier>(context, listen: false);
     return SingleChildScrollView(
       padding: EdgeInsets.all(20),

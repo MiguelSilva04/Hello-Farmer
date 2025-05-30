@@ -4,7 +4,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:harvestly/core/models/chat.dart';
 import 'package:harvestly/core/models/chat_message.dart';
-import 'package:harvestly/core/models/client_user.dart';
+import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
 
 class ChatMockService implements ChatService {
@@ -22,7 +22,7 @@ class ChatMockService implements ChatService {
   }
 
   @override
-  Future<ChatMessage> save(String text, ClientUser user, String chatId) async {
+  Future<ChatMessage> save(String text, AppUser user, String chatId) async {
     final newMessage = ChatMessage(
       id: Random().nextDouble().toString(),
       text: text,
@@ -71,10 +71,10 @@ class ChatMockService implements ChatService {
 
   @override
   // TODO: implement currentUsers
-  List<ClientUser> get currentUsers => throw UnimplementedError();
+  List<AppUser> get currentUsers => throw UnimplementedError();
 
   @override
-  void updateCurrentUsers(List<ClientUser> newUsers) {
+  void updateCurrentUsers(List<AppUser> newUsers) {
     // TODO: implement updateCurrentUsers
   }
 

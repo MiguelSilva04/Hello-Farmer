@@ -57,4 +57,20 @@ class Basket {
       products: products ?? this.products,
     );
   }
+
+  factory Basket.fromMap(Map<String, dynamic> map) {
+    return Basket(
+      name: map['name'] as String,
+      price: (map['price'] as num).toDouble(),
+      deliveryDate: DeliveryDate.values.firstWhere(
+        (e) =>
+            e.toString().split('.').last.toUpperCase() ==
+            (map['deliveryDate'] as String).toUpperCase(),
+      ),
+      products:
+          (map['products'] as List)
+              .map((item) => Product.fromMap(item as Map<String, dynamic>))
+              .toList(),
+    );
+  }
 }

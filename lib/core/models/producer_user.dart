@@ -1,103 +1,30 @@
-import 'package:harvestly/core/models/notification.dart';
-import 'package:harvestly/core/models/store.dart';
+import 'package:harvestly/core/models/product.dart';
 
+import 'app_user.dart';
 import 'basket.dart';
 import 'order.dart';
-import 'product.dart';
 import 'product_ad.dart';
+import 'store.dart';
 import 'store_review.dart';
 
-class ClientUser {
-  final String id;
-  String firstName;
-  String lastName;
-  String email;
-  String gender;
-  String phone;
-  String recoveryEmail;
-  String dateOfBirth;
-  String imageUrl;
-  String? backgroundUrl;
-  String? nickname;
-  String? aboutMe;
-  String? status;
-  String? iconStatus;
-  String? customStatus;
-  String? customIconStatus;
-  List<String>? friendsIds;
-  bool? isProducer;
-  Store? store;
-  int? taxpayerNumber;
-  String? address;
-  String? iban;
-  String? billingAddress;
-  List<NotificationItem>? notifications = null;
+class ProducerUser extends AppUser {
+  final Store store;
+  final String? billingAddress;
+  final List<Basket> baskets;
 
-  ClientUser({
-    required this.gender,
-    required this.phone,
-    required this.recoveryEmail,
-    required this.id,
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.imageUrl,
-    required this.dateOfBirth,
-    required this.isProducer,
-    this.backgroundUrl,
-    this.nickname,
-    this.aboutMe,
-    this.status,
-    this.iconStatus,
-    this.customStatus,
-    this.customIconStatus,
-    this.friendsIds,
-  }) : taxpayerNumber = 12345678910111213, 
-  iban = "PT50 0085 9837 8776 7846 4789",
-  address = "Rua Central, 458\n1100-145 Lisboa, Portugal",
-  billingAddress = "Rua Principal, 458\n2000-789 Santarém, Portugal",
-  notifications = [
-         NotificationItem(
-           id: '1',
-           title: 'Encomenda enviada',
-           description:
-               'Encomenda de Alfaces Biológicas enviada para Ana Loures.',
-           dateTime: DateTime.now().subtract(Duration(hours: 2)),
-           type: NotificationType.orderSent,
-         ),
-         NotificationItem(
-           id: '2',
-           title: 'Entrega agendada',
-           description:
-               'Encomenda de Cenouras será recolhida a 17/04 até às 10:00.',
-           dateTime: DateTime.now().subtract(Duration(hours: 5)),
-           type: NotificationType.deliveryScheduled,
-         ),
-         NotificationItem(
-           id: '3',
-           title: 'Anúncio publicado',
-           description:
-               'O seu anúncio de "Compota de abóbora" foi publicado com sucesso!',
-           dateTime: DateTime.now().subtract(Duration(days: 1)),
-           type: NotificationType.adPublished,
-         ),
-         NotificationItem(
-           id: '4',
-           title: 'Nova avaliação',
-           description:
-               'O consumidor Pedro Alves deixou uma avaliação no seu perfil!',
-           dateTime: DateTime.now().subtract(Duration(days: 2)),
-           type: NotificationType.newReview,
-         ),
-         NotificationItem(
-           id: '5',
-           title: 'Nova mensagem',
-           description:
-               'O cliente Rúbem Sousa enviou uma mensagem sobre "Cenouras Biológicas".',
-           dateTime: DateTime.now().subtract(Duration(days: 3)),
-           type: NotificationType.newMessage,
-         ),
-       ],
+  ProducerUser({
+    required super.id,
+    required super.email,
+    required super.firstName,
+    required super.lastName,
+    required super.isProducer,
+    required super.phone,
+    required super.gender,
+    required super.imageUrl,
+    super.recoveryEmail,
+    super.dateOfBirth,
+    required this.baskets,
+  }) : billingAddress = "Rua Principal, 458\n2000-789 Santarém, Portugal",
        store = Store(
          createdAt: DateTime(2025, 1, 1),
          name: "Quinta Sol Nascente",
@@ -1031,45 +958,42 @@ class ClientUser {
            ),
          ],
        );
-
-  factory ClientUser.fromMap(Map<String, dynamic> map) {
-    return ClientUser(
-      id: map['id'] ?? '',
-      firstName: map['firstName'] ?? '',
-      lastName: map['lastName'] ?? '',
-      email: map['email'] ?? '',
-      gender: map['gender'] ?? '',
-      phone: map['phone'] ?? '',
-      recoveryEmail: map['recoverEmail'] ?? '',
-      dateOfBirth: map['dateOfBirth'] ?? '',
-      imageUrl: map['imageUrl'] ?? '',
-      isProducer: map['isProducer'] ?? '',
+  factory ProducerUser.fromMap(Map<String, dynamic> map) {
+    return ProducerUser(
+      id: map['id'] as String,
+      email: map['email'] as String,
+      firstName: map['firstName'] as String,
+      lastName: map['lastName'] as String,
+      isProducer: map['isProducer'] as bool,
+      phone: map['phone'] as String,
+      gender: map['gender'] as String,
+      imageUrl: map['imageUrl'] as String,
+      recoveryEmail: map['recoveryEmail'] as String?,
+      dateOfBirth: map['dateOfBirth'] as String?,
+      baskets:
+          (map['baskets'] as List<dynamic>?)
+              ?.map((e) => Basket.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
-  factory ClientUser.fromJson(Map<String, dynamic> json) {
-    return ClientUser(
-      id: json['id'] ?? '',
-      firstName: json['firstName'] ?? '',
-      lastName: json['lastName'] ?? '',
-      email: json['email'] ?? '',
-      gender: json['gender'] ?? '',
-      phone: json['phone'] ?? '',
-      recoveryEmail: json['recoveryEmail'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-      dateOfBirth: json['dateOfBirth'] ?? '',
-      isProducer: json['isProducer'] ?? false,
-      // Adiciona outros campos conforme necessários:
-      // store: json['store'] != null ? Store.fromJson(json['store']) : null,
-      // taxpayerNumber: json['taxpayerNumber'],
-      // address: json['address'],
-      // billingAddress: json['billingAddress'],
-      // etc.
+  factory ProducerUser.fromJson(Map<String, dynamic> json) {
+    return ProducerUser(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      firstName: json['firstName'] as String,
+      lastName: json['lastName'] as String,
+      isProducer: json['isProducer'] as bool,
+      phone: json['phone'] as String,
+      gender: json['gender'] as String,
+      imageUrl: json['imageUrl'] as String,
+      recoveryEmail: json['recoveryEmail'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      baskets: (json['baskets'] as List<dynamic>?)
+              ?.map((e) => Basket.fromMap(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
-  }
-
-  @override
-  String toString() {
-    return 'ClientUser(id: $id, firstName: $firstName, lastName: $lastName, email: $email, gender: $gender, phone: $phone, recoveryEmail: $recoveryEmail, dateOfBirth: $dateOfBirth, imageUrl: $imageUrl, backgroundUrl: $backgroundUrl, nickname: $nickname, aboutMe: $aboutMe, status: $status, iconStatus: $iconStatus, customStatus: $customStatus, customIconStatus: $customIconStatus, friendsIds: $friendsIds, isProducer: $isProducer, store: $store, taxpayerNumber: $taxpayerNumber, address: $address, iban: $iban, billingAddress: $billingAddress, notifications: $notifications)';
   }
 }

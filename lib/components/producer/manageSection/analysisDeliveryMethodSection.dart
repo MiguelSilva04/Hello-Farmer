@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
 import '../../../core/models/order.dart';
+import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
 import '../../../core/models/store.dart';
 
 class AnalysisDeliveryMethodSection extends StatelessWidget {
   AnalysisDeliveryMethodSection({Key? key}) : super(key: key);
-  final List<Order> orders = AuthService().currentUser!.store!.orders ?? [];
+  final List<Order> orders = (AuthService().currentUser! as ProducerUser).store.orders ?? [];
   static List<Map<String, dynamic>> _calculateChannelData(List<Order> orders) {
-    final currentStore = AuthService().currentUser!.store!;
+    final currentStore = (AuthService().currentUser! as ProducerUser).store;
     final List<Order> orders = currentStore.orders ?? [];
     final deliveryMethods = [
       {

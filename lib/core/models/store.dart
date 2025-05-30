@@ -1,5 +1,3 @@
-import 'package:harvestly/core/models/notification.dart';
-
 import 'basket.dart';
 import 'order.dart';
 import 'product_ad.dart';

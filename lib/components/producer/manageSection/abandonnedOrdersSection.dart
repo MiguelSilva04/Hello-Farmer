@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/models/order.dart';
+import '../../../core/models/producer_user.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class AbandonedOrdersPage extends StatelessWidget {
@@ -9,7 +10,7 @@ class AbandonedOrdersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentStore = AuthService().currentUser!.store!;
+    final currentStore = (AuthService().currentUser! as ProducerUser).store;
     final orders = currentStore.orders!;
 
     final abandonedOrders =

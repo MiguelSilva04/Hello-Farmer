@@ -3,14 +3,14 @@ import '../components/country_state_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../core/models/client_user.dart';
+import '../core/models/app_user.dart';
 import '../core/models/purchase.dart';
 import '../core/services/auth/auth_service.dart';
 import '../utils/app_routes.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ProfilePage extends StatefulWidget {
-  final ClientUser? user;
+  final AppUser? user;
   ProfilePage([this.user]);
 
   @override
@@ -45,7 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _textController = TextEditingController();
   // final _lastNameTextController = TextEditingController();
 
-  ClientUser? user;
+  AppUser? user;
 
   final List<Purchase> purchases = [
     Purchase(
@@ -661,7 +661,7 @@ class _ProfilePageState extends State<ProfilePage> {
               Column(
                 children:
                     purchases.map((purchase) {
-                      final ClientUser? producerUser =
+                      final AppUser? producerUser =
                           AuthService().users
                               .where((u) => u.id == purchase.producerId)
                               .first;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/models/producer_user.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class AnalysisFinancesSection extends StatefulWidget {
@@ -17,8 +18,8 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
 
   @override
   Widget build(BuildContext context) {
-    final user = AuthService().currentUser;
-    final orders = user!.store!.orders;
+    final user = (AuthService().currentUser! as ProducerUser);
+    final orders = user.store.orders;
 
     final now = DateTime.now();
 

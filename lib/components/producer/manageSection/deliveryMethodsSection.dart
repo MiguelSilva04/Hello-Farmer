@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/store.dart';
 
+import '../../../core/models/producer_user.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class DeliveryMethodsSection extends StatefulWidget {
@@ -16,7 +17,7 @@ class _DeliveryMethodsSectionState extends State<DeliveryMethodsSection> {
   @override
   Widget build(BuildContext context) {
     final deliverOptions =
-        AuthService().currentUser!.store!.preferredDeliveryMethod!;
+        (AuthService().currentUser! as ProducerUser).store.preferredDeliveryMethod!;
 
     final List<Map<IconData, DeliveryMethod>> deliveryMethodsList = [
       {Icons.local_shipping: DeliveryMethod.COURIER},

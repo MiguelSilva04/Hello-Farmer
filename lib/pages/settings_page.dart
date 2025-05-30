@@ -5,6 +5,8 @@ import 'package:harvestly/components/settings/notifications_page.dart';
 import 'package:harvestly/components/settings/payment_page.dart';
 
 import '../components/settings/main_page.dart';
+import '../core/models/app_user.dart';
+import '../core/services/auth/auth_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -39,8 +41,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = AuthService().currentUser!;
     final pages = [
-      {"Definições": getMain(context)},
+      {"Definições": getMain(context, user)},
       {"Geral": MainPage()},
       {"Métodos de pagamento": PaymentPage()},
       {"Faturação": BillingPage()},
@@ -73,7 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget getMain(BuildContext context) {
+  Widget getMain(BuildContext context, AppUser user) {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -90,11 +93,12 @@ class _SettingsPageState extends State<SettingsPage> {
               title: "Métodos de pagamento",
               onTap: () => setState(() => _selectedIndex = 2),
             ),
-            _buildSettingsTile(
-              icon: Icons.receipt,
-              title: "Faturação",
-              onTap: () => setState(() => _selectedIndex = 3),
-            ),
+            if (user.isProducer!)
+              _buildSettingsTile(
+                icon: Icons.receipt,
+                title: "Faturação",
+                onTap: () => setState(() => _selectedIndex = 3),
+              ),
             _buildSettingsTile(
               icon: Icons.notifications,
               title: "Notificações",

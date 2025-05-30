@@ -1,16 +1,16 @@
 import 'dart:io';
 
 import 'package:harvestly/core/models/chat_message.dart';
-import 'package:harvestly/core/models/client_user.dart';
+import 'package:harvestly/core/models/app_user.dart';
 import 'package:flutter/material.dart';
 import '../../models/chat.dart';
 import 'chat_firebase_service.dart';
 
 abstract class ChatService extends ChangeNotifier {
   Chat? get currentChat;
-  List<ClientUser>? get currentUsers;
+  List<AppUser>? get currentUsers;
   Stream<List<ChatMessage>> messagesStream(String chatId);
-  Future<ChatMessage?> save(String texto, ClientUser user, String chatId);
+  Future<ChatMessage?> save(String texto, AppUser user, String chatId);
   Future<Chat> createChat(
     String name,
     String description,
@@ -23,7 +23,7 @@ abstract class ChatService extends ChangeNotifier {
 
   void updateCurrentChat(Chat newChat);
 
-  void updateCurrentUsers(List<ClientUser> newUsers);
+  void updateCurrentUsers(List<AppUser> newUsers);
 
   Future<void> addMemberToChat(String userId);
 

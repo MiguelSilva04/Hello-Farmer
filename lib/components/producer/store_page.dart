@@ -5,6 +5,7 @@ import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/models/producer_user.dart';
 import '../../core/models/product_ad.dart';
 import '../../core/models/store.dart';
 import '../../core/services/other/manage_section_notifier.dart';
@@ -20,7 +21,7 @@ class StorePage extends StatefulWidget {
 class _StorePageState extends State<StorePage> {
   bool showBanca = true;
 
-  final Store myStore = AuthService().currentUser!.store!;
+  final Store myStore = (AuthService().currentUser! as ProducerUser).store;
 
   @override
   Widget build(BuildContext context) {

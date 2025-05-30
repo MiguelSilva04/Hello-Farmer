@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
 import '../../../core/models/order.dart';
+import '../../../core/models/producer_user.dart';
 
 enum DateFilter {
   TODAY,
@@ -50,7 +51,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final currentStore = AuthService().currentUser!.store;
+    final currentStore = (AuthService().currentUser! as ProducerUser).store;
 
     if (currentStore == null) {
       return const Center(

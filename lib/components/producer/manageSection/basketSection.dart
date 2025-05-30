@@ -3,6 +3,8 @@ import 'package:harvestly/core/models/basket.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
+import '../../../core/models/producer_user.dart';
+
 class BasketSection extends StatefulWidget {
   const BasketSection({Key? key}) : super(key: key);
 
@@ -11,7 +13,7 @@ class BasketSection extends StatefulWidget {
 }
 
 class _BasketSectionState extends State<BasketSection> {
-  List<Basket> baskets = AuthService().currentUser!.store!.baskets!;
+  List<Basket> baskets = (AuthService().currentUser! as ProducerUser).store.baskets!;
   Basket? _editingBasket = null;
 
   void startEdit(Basket basket) {

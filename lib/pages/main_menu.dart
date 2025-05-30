@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/models/client_user.dart';
-import 'package:harvestly/core/services/auth/auth_firebase_service.dart';
+import 'package:harvestly/components/consumer/offers_page.dart';
+import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
@@ -18,7 +18,6 @@ import '../components/producer/store_page.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'chat_list_page.dart';
-import 'loading_page.dart';
 import 'new_chat_page.dart';
 import 'profile_page.dart';
 
@@ -35,13 +34,12 @@ class _MainMenuState extends State<MainMenu>
   String _profileImageUrl = "";
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
-  late ClientUser user;
+  late AppUser user;
 
   @override
   void initState() {
     super.initState();
-    user =
-        Provider.of<AuthFirebaseService>(context, listen: false).currentUser!;
+    user = AuthService().currentUser!;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -113,6 +111,7 @@ class _MainMenuState extends State<MainMenu>
       ExplorePage(),
       ChatListPage(),
       MapPage(),
+      OffersPage(),
     ];
 
     return Scaffold(
@@ -132,7 +131,7 @@ class _MainMenuState extends State<MainMenu>
               ),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: Image.asset("assets/images/logo_android2.png", height: 45),
+              child: Image.asset("assets/images/logo_android2.png", height: 50),
             ),
           ],
         ),
@@ -148,7 +147,7 @@ class _MainMenuState extends State<MainMenu>
                       key: const ValueKey(1),
                       padding: const EdgeInsets.all(8),
                       child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.65,
+                        width: MediaQuery.of(context).size.width * 0.60,
                         child: SearchBar(
                           autoFocus: true,
                           hintText: "Procurar...",
@@ -195,7 +194,7 @@ class _MainMenuState extends State<MainMenu>
                 case "Notifications":
                   Navigator.of(context).pushNamed(AppRoutes.NOTIFICATION_PAGE);
                   break;
-                case "Store":
+                case "Alt":
                   Provider.of<BottomNavigationNotifier>(
                     context,
                     listen: false,
@@ -229,16 +228,16 @@ class _MainMenuState extends State<MainMenu>
                     ),
                   ),
                   PopupMenuItem(
-                    value: "Store",
+                    value: "Alt",
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Icon(
-                          FontAwesomeIcons.buildingUser,
+                          FontAwesomeIcons.gift,
                           color: Theme.of(context).colorScheme.tertiaryFixed,
                         ),
                         SizedBox(width: 10),
-                        Text("Banca"),
+                        Text(user.isProducer! ? "Banca" : "Ofertas"),
                       ],
                     ),
                   ),

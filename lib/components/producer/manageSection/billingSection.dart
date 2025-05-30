@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -52,7 +53,7 @@ class _BillingSectionState extends State<BillingSection> {
   DateRangeOption _getRangeFromDate(DateTime? date) {
     if (date == null) return DateRangeOption.none;
     final now = DateTime.now();
-    final createdAt = AuthService().currentUser!.store!.createdAt;
+    final createdAt = (AuthService().currentUser! as ProducerUser).store.createdAt;
     if (date.isAtSameMomentAs(createdAt)) return DateRangeOption.none;
     if (date.isAtSameMomentAs(
       now
@@ -90,11 +91,11 @@ class _BillingSectionState extends State<BillingSection> {
     return DateRangeOption.none;
   }
 
-  final List<Order> _orders = AuthService().currentUser!.store!.orders!;
+  final List<Order> _orders = (AuthService().currentUser! as ProducerUser).store.orders!;
 
   List<Order> get _filteredOrders {
     if (provider.billingFromDate ==
-        AuthService().currentUser!.store!.createdAt) {
+        (AuthService().currentUser! as ProducerUser).store.createdAt) {
       return _orders
           .where((order) => order.state == OrderState.Entregue)
           .toList();
@@ -159,7 +160,7 @@ class _BillingSectionState extends State<BillingSection> {
           break;
         default:
           provider.setBillingFromDate(
-            AuthService().currentUser!.store!.createdAt,
+            (AuthService().currentUser! as ProducerUser).store.createdAt,
           );
       }
     });
@@ -230,7 +231,7 @@ class _BillingSectionState extends State<BillingSection> {
                                   context,
                                   listen: false,
                                 ).billingFromDate !=
-                                AuthService().currentUser!.store!.createdAt
+                                (AuthService().currentUser! as ProducerUser).store.createdAt
                             ? DateFormat.yMMMd().format(
                               Provider.of<ManageSectionNotifier>(
                                 context,

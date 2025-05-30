@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
+import '../../core/models/producer_user.dart';
 import '../../core/models/store.dart';
 
 class SellPage extends StatefulWidget {
@@ -548,9 +549,8 @@ class SellPageState extends State<SellPage> {
                     children: [
                       Text(method.toDisplayString()),
                       Checkbox(
-                        value: AuthService()
-                            .currentUser!
-                            .store!
+                        value: (AuthService().currentUser! as ProducerUser)
+                            .store
                             .preferredDeliveryMethod!
                             .contains(method),
                         onChanged: (value) {},

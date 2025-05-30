@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
 class ManageSectionNotifier extends ChangeNotifier {
   int _currentIndex = 0;
-  DateTime _billingFromDate = AuthService().currentUser!.store!.createdAt;
+  DateTime _billingFromDate = (AuthService().currentUser! as ProducerUser).store.createdAt;
 
   DateTime get billingFromDate => _billingFromDate;
 

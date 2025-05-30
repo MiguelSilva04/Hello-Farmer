@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
+import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
 
 // Define the ProductStats class
@@ -161,7 +162,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<ProductStats> calculateProductStats() {
-      final currentStore = AuthService().currentUser!.store!;
+      final currentStore = (AuthService().currentUser! as ProducerUser).store!;
       final orders = currentStore.orders!;
       final Map<String, ProductStats> statsMap = {};
 

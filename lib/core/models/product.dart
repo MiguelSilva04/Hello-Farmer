@@ -67,4 +67,32 @@ class Product {
       // Adicione outros campos conforme necessário
     );
   }
+
+  static Product fromMap(Map<String, dynamic> map) {
+    return Product(
+      name: map['name'] ?? '',
+      imageUrl: map['imageUrl'] != null ? List<String>.from(map['imageUrl']) : [],
+      category: map['category'] ?? '',
+      minAmount: map['minAmount'] is int
+          ? map['minAmount']
+          : (map['minAmount'] ?? 0).toInt(),
+      unit: map['unit'] != null
+          ? Unit.values.firstWhere(
+              (u) => u.toString() == 'Unit.${map['unit']}',
+              orElse: () => Unit.KG,
+            )
+          : Unit.KG,
+      price: map['price'] is double
+          ? map['price']
+          : (map['price'] ?? 0).toDouble(),
+      stock: map['stock'] is int
+          ? map['stock']
+          : (map['stock'] ?? 0).toInt(),
+      amount: map['amount'] != null
+          ? (map['amount'] is double
+              ? map['amount']
+              : (map['amount'] ?? 0).toDouble())
+          : null,
+    );
+  }
 }

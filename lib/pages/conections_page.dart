@@ -1,4 +1,4 @@
-import 'package:harvestly/core/models/client_user.dart';
+import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -12,8 +12,8 @@ class ConectionsPage extends StatefulWidget {
 
 class _ConectionsPageState extends State<ConectionsPage> {
   final currentUser = AuthService().currentUser!;
-  List<ClientUser> allUsers = [];
-  List<ClientUser> friends = [];
+  List<AppUser> allUsers = [];
+  List<AppUser> friends = [];
   String searchQuery = '';
   bool _isSearching = false;
   final searchBoxController = TextEditingController();
@@ -22,13 +22,13 @@ class _ConectionsPageState extends State<ConectionsPage> {
   void initState() {
     super.initState();
     allUsers = AuthService().users;
-    if (currentUser.friendsIds != null)
-      friends =
-          allUsers
-              .where((user) => currentUser.friendsIds!.contains(user.id))
-              .toList();
-    else
-      friends = [];
+    // if (currentUser.friendsIds != null)
+    //   friends =
+    //       allUsers
+    //           .where((user) => currentUser.friendsIds!.contains(user.id))
+    //           .toList();
+    // else
+    friends = [];
   }
 
   @override
@@ -86,19 +86,19 @@ class _ConectionsPageState extends State<ConectionsPage> {
                           backgroundImage: NetworkImage(user.imageUrl),
                         ),
                         title: Text(user.firstName),
-                        trailing:
-                            currentUser.friendsIds!.contains(user.id)
-                                ? Icon(Icons.check, color: Colors.green)
-                                : IconButton(
-                                  icon: Icon(Icons.person_add),
-                                  onPressed: () async {
-                                    await AuthService().addFriend(user.id);
-                                    setState(() {
-                                      currentUser.friendsIds!.add(user.id);
-                                      friends.add(user);
-                                    });
-                                  },
-                                ),
+                        trailing: Icon(Icons.change_circle),
+                        // currentUser.friendsIds!.contains(user.id)
+                        //     ? Icon(Icons.check, color: Colors.green)
+                        //     : IconButton(
+                        //       icon: Icon(Icons.person_add),
+                        //       onPressed: () async {
+                        //         await AuthService().addFriend(user.id);
+                        //         setState(() {
+                        //           currentUser.friendsIds!.add(user.id);
+                        //           friends.add(user);
+                        //         });
+                        //       },
+                        //     ),
                       ),
                     );
                   }).toList(),
@@ -128,7 +128,8 @@ class _ConectionsPageState extends State<ConectionsPage> {
               itemBuilder: (context, index) {
                 friends.sort((a, b) => a.firstName.compareTo(b.firstName));
                 final friend = friends[index];
-                final followsBack = friend.friendsIds!.contains(currentUser.id);
+                // final followsBack = friend.friendsIds!.contains(currentUser.id);
+                final followsBack = true;
 
                 return ListTile(
                   onTap:

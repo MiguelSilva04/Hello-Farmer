@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:math';
-import 'package:harvestly/core/models/client_user.dart';
+import 'package:harvestly/core/models/app_user.dart';
+import 'package:harvestly/core/models/consumer_user.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
 class AuthMockService implements AuthService {
-  static var _defaultUser = ClientUser(
+  static var _defaultUser = ConsumerUser(
     id: '456',
     firstName: 'Ana',
     lastName: 'Santos',
@@ -19,23 +21,21 @@ class AuthMockService implements AuthService {
     isProducer: false,
   );
 
-  static final Map<String, ClientUser> _users = {
-    _defaultUser.email: _defaultUser,
-  };
-  static ClientUser? _currentUser;
-  static MultiStreamController<ClientUser?>? _controller;
-  static final _userStream = Stream<ClientUser?>.multi((controller) {
+  static final Map<String, AppUser> _users = {_defaultUser.email: _defaultUser};
+  static AppUser? _currentUser;
+  static MultiStreamController<AppUser?>? _controller;
+  static final _userStream = Stream<AppUser?>.multi((controller) {
     _controller = controller;
     _updateUser(_defaultUser);
   });
 
   @override
-  ClientUser? get currentUser {
+  AppUser? get currentUser {
     return _currentUser;
   }
 
   @override
-  Stream<ClientUser?> get userChanges {
+  Stream<AppUser?> get userChanges {
     return _userStream;
   }
 
@@ -51,7 +51,7 @@ class AuthMockService implements AuthService {
     String recoverEmail,
     String dateOfBirth,
   ) async {
-    final newUser = ClientUser(
+    final newUser = ConsumerUser(
       id: Random().nextDouble().toString(),
       firstName: firstName,
       lastName: lastName,
@@ -78,14 +78,14 @@ class AuthMockService implements AuthService {
     _updateUser(null);
   }
 
-  static void _updateUser(ClientUser? user) {
+  static void _updateUser(AppUser? user) {
     _currentUser = user;
     _controller?.add(_currentUser);
   }
 
   @override
   // TODO: implement users
-  List<ClientUser> get users => throw UnimplementedError();
+  List<AppUser> get users => throw UnimplementedError();
 
   @override
   Future<void> recoverPassword(String email) {
@@ -164,7 +164,7 @@ class AuthMockService implements AuthService {
   }
 
   @override
-  Future<ClientUser?> getCurrentUser() {
+  Future<AppUser?> getCurrentUser() {
     // TODO: implement getCurrentUser
     throw UnimplementedError();
   }

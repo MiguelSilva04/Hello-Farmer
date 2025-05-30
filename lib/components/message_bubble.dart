@@ -47,10 +47,11 @@ class MessageBubble extends StatelessWidget {
         children: [
           BubbleSpecialThree(
             senderName:
-                user.nickname!.isEmpty
-                    ? message.userName
-                    : "~${user.nickname!}",
-            isNickname: !user.nickname!.isEmpty,
+                // user.nickname!.isEmpty
+                //     ? message.userName
+                //     : "~${user.nickname!}",
+                "Sem nick, codigo",
+            // isNickname: !user.nickname!.isEmpty,
             avatarImage: _getImageProvider(message.userImageUrl),
             hourSent: hourSent,
             text: "${message.text}",

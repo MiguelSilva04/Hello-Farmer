@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:harvestly/core/models/client_user.dart' as client_user;
+import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,17 +9,19 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
-import '../../models/client_user.dart';
+import '../../models/app_user.dart';
+import '../../models/consumer_user.dart';
+import '../../models/producer_user.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
 
-class AuthFirebaseService extends ChangeNotifier implements AuthService {
+class AuthFirebaseService implements AuthService {
   static bool? _isLoggingIn;
   static bool? _isProducer;
-  static ClientUser? _currentUser;
-  static final List<client_user.ClientUser> _users = [];
+  static AppUser? _currentUser;
+  static final List<AppUser> _users = [];
   static StreamSubscription? _userChangesSubscription;
-  static final _userStream = Stream<ClientUser?>.multi((controller) async {
+  static final _userStream = Stream<AppUser?>.multi((controller) async {
     final authChanges = FirebaseAuth.instance.authStateChanges();
 
     await for (final user in authChanges) {
@@ -36,10 +37,19 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
 
         if (doc.exists) {
           final data = doc.data()!;
-          _currentUser = ClientUser.fromJson(data);
+          if (data['isProducer'] == true) {
+            _currentUser = ProducerUser.fromJson({
+              ...data,
+              'id': user.uid,
+            });
+          } else {
+            _currentUser = ConsumerUser.fromJson({
+              ...data,
+              'id': user.uid,
+            });
+          }
         } else {
-          _currentUser = _toClientUser(user);
-          _currentUser!.taxpayerNumber = 10104903809739;
+          _currentUser = _toAppUser(user);
         }
 
         controller.add(_currentUser);
@@ -54,7 +64,7 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
   }
 
   @override
-  Future<ClientUser?> getCurrentUser() async {
+  Future<AppUser?> getCurrentUser() async {
     if (_currentUser != null) {
       return _currentUser;
     }
@@ -70,88 +80,40 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
         .listen((snapshot) async {
           _users.clear();
           for (var doc in snapshot.docs) {
-            _users.add(
-              client_user.ClientUser(
-                id: doc.id,
-                firstName: doc['firstName'],
-                lastName: doc['lastName'],
-                email: doc['email'],
-                gender: doc['gender'],
-                phone: doc['phone'],
-                recoveryEmail: doc['recoveryEmail'],
-                imageUrl:
-                    doc.data().containsKey('imageUrl') ? doc['imageUrl'] : '',
-                backgroundUrl:
-                    doc.data().containsKey('backgroundImageUrl')
-                        ? doc['backgroundImageUrl']
-                        : '',
-                nickname:
-                    doc.data().containsKey('nickname') ? doc['nickname'] : '',
-                status: doc.data().containsKey('status') ? doc['status'] : '',
-                iconStatus:
-                    doc.data().containsKey('iconStatus')
-                        ? doc['iconStatus']
-                        : '',
-                aboutMe:
-                    doc.data().containsKey('aboutMe') ? doc['aboutMe'] : '',
-                customIconStatus:
-                    doc.data().containsKey('customIconStatus')
-                        ? doc['customIconStatus']
-                        : '',
-                friendsIds:
-                    doc.data().containsKey('friendsIds') &&
-                            doc['friendsIds'] is List
-                        ? List<String>.from(doc['friendsIds'])
-                        : [],
-                dateOfBirth: doc['dateOfBirth'],
-                isProducer: doc['isProducer'],
-              ),
-            );
-            if (_currentUser != null) {
-              if (_currentUser!.id == doc.id) {
-                _currentUser!.isProducer = doc['isProducer'];
-                _currentUser!.gender = doc['gender'];
-                _currentUser!.phone = doc['phone'];
-                _currentUser!.recoveryEmail = doc['recoveryEmail'];
-                if (doc.data().containsKey('backgroundImageUrl') &&
-                    doc['backgroundImageUrl'] != null)
-                  _currentUser!.backgroundUrl = doc['backgroundImageUrl'];
-                if (doc.data().containsKey('isProducer') &&
-                    doc['isProducer'] != null)
-                  _currentUser!.isProducer = doc['isProducer'];
-                if (doc.data().containsKey('nickname') &&
-                    doc['nickname'] != null)
-                  _currentUser!.nickname = doc['nickname'];
-                if (doc.data().containsKey('status') && doc['status'] != null)
-                  _currentUser!.status = doc['status'];
-                if (doc.data().containsKey('customStatus') &&
-                    doc['customStatus'] != null)
-                  _currentUser!.customStatus = doc['customStatus'];
-                if (doc.data().containsKey('customIconStatus') &&
-                    doc['customIconStatus'] != null)
-                  _currentUser!.customIconStatus = doc['customIconStatus'];
-                if (doc.data().containsKey('dateOfBirth') &&
-                    doc['dateOfBirth'] != null)
-                  _currentUser!.dateOfBirth = doc['dateOfBirth'];
-                if (doc.data().containsKey('aboutMe') && doc['aboutMe'] != null)
-                  _currentUser!.aboutMe = doc['aboutMe'];
-                if (doc.data().containsKey('friendsIds') &&
-                    doc['friendsIds'] != null)
-                  _currentUser!.friendsIds = List<String>.from(
-                    doc['friendsIds'],
-                  );
-              }
+            final data = doc.data();
+            if (data['isProducer'] == true) {
+              _users.add(ProducerUser.fromJson({
+                ...data,
+                'id': doc.id,
+              }));
+            } else {
+              _users.add(ConsumerUser.fromJson({
+                ...data,
+                'id': doc.id,
+              }));
+            }
+            if (_currentUser != null && _currentUser!.id == doc.id) {
+              // Atualiza campos mutáveis do usuário atual
+              _currentUser!.firstName = data['firstName'];
+              _currentUser!.lastName = data['lastName'];
+              _currentUser!.gender = data['gender'];
+              _currentUser!.phone = data['phone'];
+              _currentUser!.recoveryEmail = data['recoveryEmail'];
+              _currentUser!.imageUrl = data['imageUrl'];
+              _currentUser!.backgroundUrl = data['backgroundImageUrl'];
+              _currentUser!.dateOfBirth = data['dateOfBirth'];
+              _currentUser!.aboutMe = data['aboutMe'];
+              _currentUser!.isProducer = data['isProducer'];
             }
           }
         });
-    notifyListeners();
   }
 
   @override
-  List<ClientUser> get users => _users;
+  List<AppUser> get users => _users;
 
   @override
-  bool get isLoggingIn => _isLoggingIn!;
+  bool get isLoggingIn => _isLoggingIn ?? false;
 
   @override
   Store getMyStore() => _myStore!;
@@ -163,17 +125,12 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
   void setLoggingInState(bool state) => _isLoggingIn = state;
 
   @override
-  ClientUser? get currentUser {
+  AppUser? get currentUser {
     return _currentUser;
   }
 
-  void setCurrentUser(ClientUser user) {
-    _currentUser = user;
-    notifyListeners();
-  }
-
   @override
-  Stream<ClientUser?> get userChanges {
+  Stream<AppUser?> get userChanges {
     return _userStream;
   }
 
@@ -202,20 +159,16 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
     );
 
     if (credential.user != null) {
-      // 1. Upload da foto do usuário
       final imageName = '${credential.user!.uid}_profile.jpg';
       final imageUrl = await _uploadUserImage(image, imageName);
 
-      // 2. Atualizar os atributos do usuário
       final fullName = '$firstName $lastName';
       await credential.user?.updateDisplayName(fullName);
       await credential.user?.updatePhotoURL(imageUrl);
 
-      // 2.5 Fazer o login do usuário
       await login(email, password, "Normal");
 
-      // 3. Guardar o utilizador na base de dados (opcional)
-      _currentUser = _toClientUser(
+      _currentUser = _toAppUser(
         credential.user!,
         firstName,
         lastName,
@@ -224,11 +177,10 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
         recoveryEmail,
         imageUrl,
         dateOfBirth,
-        _isProducer,
+        _isProducer ?? false,
       );
-      await _saveClientUser(_currentUser!);
+      await _saveAppUser(_currentUser!);
 
-      // 4. Salvar primeiro e último nome no Firestore
       final store = FirebaseFirestore.instance;
       final docRef = store.collection('users').doc(credential.user!.uid);
       await docRef.update({'firstName': firstName, 'lastName': lastName});
@@ -261,14 +213,11 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
         print('exception->$e');
       }
     else if (typeOfLogin == "Facebook") {
-      // Trigger the sign-in flow
       final LoginResult loginResult = await FacebookAuth.instance.login();
 
-      // Create a credential from the access token
       final OAuthCredential facebookAuthCredential =
           FacebookAuthProvider.credential(loginResult.accessToken!.tokenString);
 
-      // Once signed in, return the UserCredential
       await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
     }
     ChatListNotifier.instance.listenToChats();
@@ -286,15 +235,13 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
     _currentUser = null;
     _users.clear();
 
-    // ChatListNotifier().clearChats();
-
     await auth.signOut();
   }
 
   @override
   Future<void> recoverPassword(String email) async {
     final auth = FirebaseAuth.instance;
-    auth.sendPasswordResetEmail(email: email);
+    await auth.sendPasswordResetEmail(email: email);
   }
 
   Future<void> updateProfileImage(File? profileImage) async {
@@ -349,15 +296,15 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
     String? lastName,
     String? email,
     String? phone,
-    String? nickname,
-    String? status,
-    String? iconStatus,
     String? aboutMe,
     String? dateOfBirth,
-    String? customStatus,
-    String? customIconStatus,
     String? gender,
     String? recoveryEmail,
+    String? customIconStatus,
+    String? customStatus,
+    String? iconStatus,
+    String? nickname,
+    String? status,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -366,13 +313,13 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
     final docRef = store.collection('users').doc(user.uid);
 
     if (firstName != null) {
-      await user.updateDisplayName("${firstName} ${lastName}");
+      await user.updateDisplayName("${firstName} ${lastName ?? _currentUser?.lastName ?? ''}");
       await docRef.update({'firstName': firstName});
       _currentUser!.firstName = firstName;
     }
 
     if (lastName != null) {
-      await user.updateDisplayName("${firstName} ${lastName}");
+      await user.updateDisplayName("${firstName ?? _currentUser?.firstName ?? ''} ${lastName}");
       await docRef.update({'lastName': lastName});
       _currentUser!.lastName = lastName;
     }
@@ -386,18 +333,6 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
       _currentUser!.phone = phone;
     }
 
-    if (nickname != null) {
-      await docRef.update({'nickname': nickname});
-      _currentUser!.nickname = nickname;
-    }
-    if (status != null) {
-      await docRef.update({'status': status});
-      _currentUser!.status = status;
-    }
-    if (iconStatus != null) {
-      await docRef.update({'iconStatus': iconStatus});
-      _currentUser!.iconStatus = iconStatus;
-    }
     if (aboutMe != null) {
       await docRef.update({'aboutMe': aboutMe});
       _currentUser!.aboutMe = aboutMe;
@@ -406,14 +341,6 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
       await docRef.update({'dateOfBirth': dateOfBirth});
       _currentUser!.dateOfBirth = dateOfBirth;
     }
-    if (customStatus != null) {
-      await docRef.update({'customStatus': customStatus});
-      _currentUser!.customStatus = customStatus;
-    }
-    if (customIconStatus != null) {
-      await docRef.update({'customIconStatus': customIconStatus});
-      _currentUser!.customIconStatus = customIconStatus;
-    }
     if (gender != null) {
       await docRef.update({'gender': gender});
       _currentUser!.gender = gender;
@@ -421,6 +348,26 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
     if (recoveryEmail != null) {
       await docRef.update({'recoveryEmail': recoveryEmail});
       _currentUser!.recoveryEmail = recoveryEmail;
+    }
+    if (customIconStatus != null) {
+      await docRef.update({'customIconStatus': customIconStatus});
+      // Optionally update _currentUser if this field exists
+    }
+    if (customStatus != null) {
+      await docRef.update({'customStatus': customStatus});
+      // Optionally update _currentUser if this field exists
+    }
+    if (iconStatus != null) {
+      await docRef.update({'iconStatus': iconStatus});
+      // Optionally update _currentUser if this field exists
+    }
+    if (nickname != null) {
+      await docRef.update({'nickname': nickname});
+      // Optionally update _currentUser if this field exists
+    }
+    if (status != null) {
+      await docRef.update({'status': status});
+      // Optionally update _currentUser if this field exists
     }
   }
 
@@ -447,7 +394,7 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
     }
   }
 
-  Future<void> _saveClientUser(ClientUser user) async {
+  Future<void> _saveAppUser(AppUser user) async {
     final store = FirebaseFirestore.instance;
     final docRef = store.collection('users').doc(user.id);
 
@@ -461,10 +408,12 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
       'imageUrl': user.imageUrl,
       'dateOfBirth': user.dateOfBirth,
       'isProducer': user.isProducer,
+      'aboutMe': user.aboutMe,
+      'backgroundImageUrl': user.backgroundUrl,
     });
   }
 
-  static ClientUser _toClientUser(
+  static AppUser _toAppUser(
     User user, [
     String? firstName,
     String? lastName,
@@ -475,48 +424,46 @@ class AuthFirebaseService extends ChangeNotifier implements AuthService {
     String? dateOfBirth,
     bool? isProducer,
   ]) {
-    return ClientUser(
-      id: user.uid,
-      firstName:
-          firstName ??
-          user.displayName?.split(' ')[0] ??
-          user.email!.split('@')[0],
-      lastName:
-          lastName ??
-          (user.displayName!.split(' ').length > 1
-              ? user.displayName?.split(' ')[1]
-              : "") ??
-          "",
-      email: user.email!,
-      gender: gender ?? '',
-      phone: phone ?? '',
-      recoveryEmail: recoveryEmail ?? '',
-      // gender: gender != null ? gender : curUser.gender,
-      // phone: phone != null ? phone : curUser.phone,
-      // recoveryEmail: recoveryEmail != null ? recoveryEmail : curUser.recoveryEmail,
-      imageUrl: imageUrl ?? user.photoURL ?? 'assets/images/avatar.png',
-      dateOfBirth: dateOfBirth ?? '',
-      isProducer: isProducer,
-    );
+    final bool producer = isProducer ?? false;
+    if (producer) {
+      return ProducerUser(
+        id: user.uid,
+        email: user.email!,
+        firstName: firstName ?? user.displayName?.split(' ')[0] ?? user.email!.split('@')[0],
+        lastName: lastName ?? (((user.displayName?.split(' ').length ?? 0) > 1) ? user.displayName?.split(' ')[1] : "") ?? "",
+        isProducer: true,
+        phone: phone ?? '',
+        gender: gender ?? '',
+        imageUrl: imageUrl ?? user.photoURL ?? 'assets/images/avatar.png',
+        recoveryEmail: recoveryEmail ?? '',
+        dateOfBirth: dateOfBirth ?? '',
+        baskets: [],
+      );
+    } else {
+      return ConsumerUser(
+        id: user.uid,
+        email: user.email!,
+        firstName: firstName ?? user.displayName?.split(' ')[0] ?? user.email!.split('@')[0],
+        lastName: lastName ?? ((user.displayName?.split(' ').length ?? 0) > 1 ? user.displayName?.split(' ')[1] : "") ?? "",
+        isProducer: false,
+        phone: phone ?? '',
+        gender: gender ?? '',
+        imageUrl: imageUrl ?? user.photoURL ?? 'assets/images/avatar.png',
+        recoveryEmail: recoveryEmail ?? '',
+        dateOfBirth: dateOfBirth ?? '',
+      );
+    }
   }
 
   @override
-  Future<void> addFriend(String userId) {
-    final store = FirebaseFirestore.instance;
-    if (_currentUser == null) throw Exception("No current user selected.");
-    final chatDoc = store.collection('users').doc(_currentUser!.id);
-    return chatDoc.update({
-      'friendsIds': FieldValue.arrayUnion([userId]),
-    });
+  Future<void> addFriend(String userId) async {
+    // Não implementado pois não existe mais friendsIds na nova estrutura
+    throw UnimplementedError('addFriend não faz parte da nova estrutura de AppUser');
   }
 
   @override
-  Future<void> removeFriend(String userId) {
-    final store = FirebaseFirestore.instance;
-    if (_currentUser == null) throw Exception("No current user selected.");
-    final chatDoc = store.collection('users').doc(_currentUser!.id);
-    return chatDoc.update({
-      'friendsIds': FieldValue.arrayRemove([userId]),
-    });
+  Future<void> removeFriend(String userId) async {
+    // Não implementado pois não existe mais friendsIds na nova estrutura
+    throw UnimplementedError('removeFriend não faz parte da nova estrutura de AppUser');
   }
 }

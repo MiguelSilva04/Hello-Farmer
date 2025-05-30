@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import '../core/models/chat.dart';
-import '../core/models/client_user.dart';
+import '../core/models/app_user.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../utils/app_routes.dart';
 import 'package:intl/intl.dart';
@@ -124,7 +124,7 @@ class _ChatListPageState extends State<ChatListPage> {
             Provider.of<ChatService>(
               context,
               listen: false,
-            ).updateCurrentUsers(_getListClientUsers(chat));
+            ).updateCurrentUsers(_getListAppUsers(chat));
             await Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
           },
           leading: CircleAvatar(
@@ -184,7 +184,7 @@ class _ChatListPageState extends State<ChatListPage> {
     return DateFormat("d MMM y", "pt_PT").format(time);
   }
 
-  List<ClientUser> _getListClientUsers(Chat chat) {
+  List<AppUser> _getListAppUsers(Chat chat) {
     return AuthService().users
         .where((u) => chat.membersIds.contains(u.id))
         .toList();

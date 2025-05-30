@@ -5,6 +5,7 @@ import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
 import '../../../core/models/product_ad.dart';
 import '../../../core/models/store.dart';
@@ -18,7 +19,7 @@ class MainPageSection extends StatefulWidget {
 }
 
 class _MainPageSectionState extends State<MainPageSection> {
-  final store = AuthService().currentUser!.store!;
+  final store = (AuthService().currentUser! as ProducerUser).store;
   bool _isEditingAd = false;
   ProductAd? _currentAd;
 

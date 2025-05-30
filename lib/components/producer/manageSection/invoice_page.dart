@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -25,7 +26,7 @@ class InvoicePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final GlobalKey previewContainer = GlobalKey();
-    final store = AuthService().currentUser!.store!;
+    final store = (AuthService().currentUser! as ProducerUser).store;
     final currencyFormatter = NumberFormat.currency(
       locale: 'pt_PT',
       symbol: '€',

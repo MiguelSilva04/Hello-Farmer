@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../core/models/client_user.dart';
+import '../../../core/models/app_user.dart';
 import '../../../core/models/order.dart';
+import '../../../core/models/producer_user.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class ClientsSection extends StatefulWidget {
@@ -14,16 +15,16 @@ class ClientsSection extends StatefulWidget {
 
 class _ClientsSectionState extends State<ClientsSection> {
   late final List<Order> _orders;
-  late final List<ClientUser> _consumers;
+  late final List<AppUser> _consumers;
   late final Map<String, List<Order>> _ordersByConsumer;
 
   @override
   void initState() {
     super.initState();
-    final currentUser = AuthService().currentUser!;
+    final currentUser = (AuthService().currentUser! as ProducerUser);
     final users = AuthService().users;
     _orders =
-        currentUser.store?.orders
+        currentUser.store.orders
             ?.where((o) => o.producerId == currentUser.id)
             .toList() ??
         [];

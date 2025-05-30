@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
 
@@ -43,7 +44,7 @@ class AccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = AuthService().currentUser!;
+    final currentUser = AuthService().currentUser! as ConsumerUser;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),

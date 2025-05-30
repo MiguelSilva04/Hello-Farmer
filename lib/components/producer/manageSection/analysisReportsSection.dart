@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/order.dart';
+import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
 import '../../../core/services/auth/auth_service.dart';
 
@@ -9,7 +10,7 @@ class AnalysisReportsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentStore = AuthService().currentUser!.store!;
+    final currentStore = (AuthService().currentUser! as ProducerUser).store!;
     double calcularDiasRestantesDeStock({
       required List<Product> products,
       required List<Order> orders,
@@ -41,8 +42,9 @@ class AnalysisReportsSection extends StatelessWidget {
       return diasRestantes;
     }
 
-    final orders = AuthService().currentUser!.store!.orders!;
-    final productAds = AuthService().currentUser!.store!.productsAds!;
+    final curUserStore = (AuthService().currentUser! as ProducerUser).store;
+    final orders = curUserStore.orders!;
+    final productAds = curUserStore.productsAds!;
     final todosProdutos = <Product>[];
     final nomesProdutos = <String>{};
 
@@ -276,8 +278,8 @@ class AnalysisReportsSection extends StatelessWidget {
   }
 
   Widget _buildInventoryTable(BuildContext context) {
-    final productAds = AuthService().currentUser!.store!.productsAds!;
-    final orders = AuthService().currentUser!.store!.orders!;
+    final productAds = (AuthService().currentUser! as ProducerUser).store.productsAds!;
+    final orders = (AuthService().currentUser! as ProducerUser).store.orders!;
 
     final uniqueProducts = <String, Product>{};
     for (var ad in productAds) {
@@ -297,7 +299,7 @@ class AnalysisReportsSection extends StatelessWidget {
       for (var order in orders) {
         final hasProduct = order.productsAds.any((p) {
           final finalProductAd =
-              AuthService().currentUser!.store!.productsAds!
+              (AuthService().currentUser! as ProducerUser).store.productsAds!
                   .where((pr) => pr.id == p.produtctAdId)
                   .first;
           return finalProductAd.product.name == productName;

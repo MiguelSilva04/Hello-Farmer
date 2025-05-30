@@ -1,15 +1,15 @@
-import 'package:harvestly/core/models/client_user.dart';
+import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:harvestly/pages/profile_page.dart';
 
 class FriendsGroupList extends StatefulWidget {
-  final List<ClientUser> users;
-  final void Function(ClientUser) inviteUser;
-  final void Function(ClientUser)? removeUser;
-  final void Function(ClientUser)? makeUserAdmin;
+  final List<AppUser> users;
+  final void Function(AppUser) inviteUser;
+  final void Function(AppUser)? removeUser;
+  final void Function(AppUser)? makeUserAdmin;
   final bool isJustListingUsers;
-  final List<ClientUser>? admins;
+  final List<AppUser>? admins;
 
   FriendsGroupList({
     required this.inviteUser,
@@ -44,7 +44,7 @@ class _FriendsGroupListState extends State<FriendsGroupList> {
   Widget build(BuildContext context) {
     final isAdmin =
         (widget.makeUserAdmin != null) && (widget.removeUser != null);
-    final List<ClientUser> usersList = widget.users;
+    final List<AppUser> usersList = widget.users;
     return SingleChildScrollView(
       child: Card(
         color: Colors.grey[350],

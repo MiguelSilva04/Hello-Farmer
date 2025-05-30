@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/preferences_notifier.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +16,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     final notifier = Provider.of<PreferencesNotifier>(context, listen: false);
+    final user = AuthService().currentUser!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Stack(
@@ -263,115 +265,122 @@ class _MainPageState extends State<MainPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.inventory_2,
-                          color: Theme.of(context).colorScheme.tertiaryFixed,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "Gestão de Inventário",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ],
-                    ),
-                    Switch(
-                      value: notifier.inventoryManagement,
-                      onChanged: (val) => notifier.setInventoryManagement(val),
-                      inactiveThumbColor:
-                          Theme.of(context).colorScheme.secondary,
-                      inactiveTrackColor: Theme.of(
-                        context,
-                      ).colorScheme.secondary.withAlpha(3),
-                      activeColor: Theme.of(context).colorScheme.secondary,
-                      activeTrackColor: Theme.of(context).colorScheme.surface,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () async {
-                    final selected = await showDialog<ReturnPolicy>(
-                      context: context,
-                      builder: (context) {
-                        return SimpleDialog(
-                          title: Text(
-                            "Selecione a política de devoluções",
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).colorScheme.tertiaryFixed,
-                              fontSize: 24,
-                            ),
-                          ),
-                          children: [
-                            SimpleDialogOption(
-                              onPressed:
-                                  () =>
-                                      Navigator.pop(context, ReturnPolicy.NONE),
-                              child: Text('Sem devolução'),
-                            ),
-                            SimpleDialogOption(
-                              onPressed:
-                                  () => Navigator.pop(
-                                    context,
-                                    ReturnPolicy.THREE_DAYS,
-                                  ),
-                              child: Text('3 dias após a entrega'),
-                            ),
-                            SimpleDialogOption(
-                              onPressed:
-                                  () =>
-                                      Navigator.pop(context, ReturnPolicy.WEEK),
-                              child: Text('1 semana após a entrega'),
-                            ),
-                            SimpleDialogOption(
-                              onPressed:
-                                  () => Navigator.pop(
-                                    context,
-                                    ReturnPolicy.MONTH,
-                                  ),
-                              child: Text('1 mês após a entrega'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                    if (selected != null) {
-                      notifier.setReturnPolicy(selected);
-                    }
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                if (user.isProducer!) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Política de devoluções",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
                       Row(
                         children: [
-                          Text(
-                            notifier.returnPolicy.toDisplayString(),
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
-                            ),
+                          Icon(
+                            Icons.inventory_2,
+                            color: Theme.of(context).colorScheme.tertiaryFixed,
                           ),
                           const SizedBox(width: 8),
-                          Icon(Icons.arrow_drop_down),
+                          Text(
+                            "Gestão de Inventário",
+                            style: TextStyle(fontSize: 18),
+                          ),
                         ],
+                      ),
+                      Switch(
+                        value: notifier.inventoryManagement,
+                        onChanged:
+                            (val) => notifier.setInventoryManagement(val),
+                        inactiveThumbColor:
+                            Theme.of(context).colorScheme.secondary,
+                        inactiveTrackColor: Theme.of(
+                          context,
+                        ).colorScheme.secondary.withAlpha(3),
+                        activeColor: Theme.of(context).colorScheme.secondary,
+                        activeTrackColor: Theme.of(context).colorScheme.surface,
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 12),
+                  GestureDetector(
+                    onTap: () async {
+                      final selected = await showDialog<ReturnPolicy>(
+                        context: context,
+                        builder: (context) {
+                          return SimpleDialog(
+                            title: Text(
+                              "Selecione a política de devoluções",
+                              style: TextStyle(
+                                color:
+                                    Theme.of(context).colorScheme.tertiaryFixed,
+                                fontSize: 24,
+                              ),
+                            ),
+                            children: [
+                              SimpleDialogOption(
+                                onPressed:
+                                    () => Navigator.pop(
+                                      context,
+                                      ReturnPolicy.NONE,
+                                    ),
+                                child: Text('Sem devolução'),
+                              ),
+                              SimpleDialogOption(
+                                onPressed:
+                                    () => Navigator.pop(
+                                      context,
+                                      ReturnPolicy.THREE_DAYS,
+                                    ),
+                                child: Text('3 dias após a entrega'),
+                              ),
+                              SimpleDialogOption(
+                                onPressed:
+                                    () => Navigator.pop(
+                                      context,
+                                      ReturnPolicy.WEEK,
+                                    ),
+                                child: Text('1 semana após a entrega'),
+                              ),
+                              SimpleDialogOption(
+                                onPressed:
+                                    () => Navigator.pop(
+                                      context,
+                                      ReturnPolicy.MONTH,
+                                    ),
+                                child: Text('1 mês após a entrega'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (selected != null) {
+                        notifier.setReturnPolicy(selected);
+                      }
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Política de devoluções",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            Text(
+                              notifier.returnPolicy.toDisplayString(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.arrow_drop_down),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
                 Center(
                   child: TextButton(
                     onPressed: () => setState(() => _isOnContractMode = true),

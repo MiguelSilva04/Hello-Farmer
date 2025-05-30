@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 
@@ -19,7 +20,7 @@ class _SellsPageState extends State<SellsPage>
 
   late final TabController _tabController;
 
-  final List<Order> orders = AuthService().currentUser!.store!.orders!;
+  final orders = (AuthService().currentUser! as ProducerUser).store.orders!;
 
   @override
   void initState() {

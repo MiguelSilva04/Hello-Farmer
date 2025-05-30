@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:io';
 import 'package:harvestly/core/models/chat.dart';
 import 'package:harvestly/core/models/chat_message.dart';
-import 'package:harvestly/core/models/client_user.dart';
+import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
 import 'package:harvestly/encryption/encryption_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+
+import '../../models/consumer_user.dart';
+import '../../models/producer_user.dart';
 
 class ChatFirebaseService with ChangeNotifier implements ChatService {
   static final ChatFirebaseService _instance = ChatFirebaseService._internal();
@@ -19,7 +22,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
   ChatFirebaseService._internal();
 
   Chat? _currentChat;
-  List<ClientUser> _currentUsers = [];
+  List<AppUser> _currentUsers = [];
 
   @override
   Chat? get currentChat => _currentChat;
@@ -74,14 +77,14 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
         .update({'text': encryptedText});
   }
 
-  Stream<List<ClientUser>> membersStream(String chatId) {
+  Stream<List<AppUser>> membersStream(String chatId) {
     return FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('members')
         .snapshots()
         .asyncMap((snapshot) async {
-          List<ClientUser> members = [];
+          List<AppUser> members = [];
           for (var doc in snapshot.docs) {
             final userDoc =
                 await FirebaseFirestore.instance
@@ -89,7 +92,13 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
                     .doc(doc.id)
                     .get();
             if (userDoc.exists) {
-              members.add(ClientUser.fromMap(userDoc.data()!));
+              
+                final userData = userDoc.data()!;
+                if (userData['isProducer'] == true) {
+                members.add(ProducerUser.fromMap(userData));
+                } else {
+                members.add(ConsumerUser.fromMap(userData));
+                }
             }
           }
           return members;
@@ -145,10 +154,10 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
   }
 
   @override
-  List<ClientUser>? get currentUsers => _currentUsers;
+  List<AppUser>? get currentUsers => _currentUsers;
 
   @override
-  void updateCurrentUsers(List<ClientUser> newUsers) {
+  void updateCurrentUsers(List<AppUser> newUsers) {
     _currentUsers = newUsers;
     notifyListeners();
   }
@@ -401,10 +410,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
   Stream<List<Chat>> getMembersChats(String userId) {
     return FirebaseFirestore.instance
         .collection('chats')
-        .where(
-          'membersIds',
-          arrayContains: userId,
-        )
+        .where('membersIds', arrayContains: userId)
         .snapshots()
         .map((querySnapshot) {
           return querySnapshot.docs.map((doc) {
@@ -507,7 +513,7 @@ class ChatFirebaseService with ChangeNotifier implements ChatService {
   }
 
   @override
-  Future<ChatMessage?> save(String text, ClientUser user, String chatId) async {
+  Future<ChatMessage?> save(String text, AppUser user, String chatId) async {
     final store = FirebaseFirestore.instance;
 
     String encryptedText = EncryptionService.encryptMessage(text);

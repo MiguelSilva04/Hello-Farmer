@@ -3,7 +3,7 @@ import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/models/chat.dart';
-import '../core/models/client_user.dart';
+import '../core/models/app_user.dart';
 import '../core/services/chat/chat_service.dart';
 import 'friends_group_list.dart';
 import 'user_image_picker.dart';
@@ -21,10 +21,10 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
   final _formKey = GlobalKey<FormState>();
   final _chatData = Chat();
   late Chat currentChat;
-  late List<ClientUser> users;
-  List<ClientUser> usersInTheChat = [];
-  List<ClientUser> usersNotInTheChat = [];
-  List<ClientUser> usersAdmins = [];
+  late List<AppUser> users;
+  List<AppUser> usersInTheChat = [];
+  List<AppUser> usersNotInTheChat = [];
+  List<AppUser> usersAdmins = [];
 
   bool _showInviteUsers = false;
   bool _isLoading = false;
@@ -67,7 +67,7 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
     Navigator.of(context).pop();
   }
 
-  void inviteFriend(ClientUser user) {
+  void inviteFriend(AppUser user) {
     provider!.addMemberToChat(user.id);
     setState(() {
       usersInTheChat.add(user);
@@ -76,7 +76,7 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
     provider!.updateCurrentUsers(usersInTheChat);
   }
 
-  void removeUser(ClientUser user) {
+  void removeUser(AppUser user) {
     provider!.removeMemberFromChat(user.id, currentChat.id);
     setState(() {
       usersInTheChat.remove(user);
@@ -85,7 +85,7 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
     provider!.updateCurrentUsers(usersInTheChat);
   }
 
-  void makeUserAdmin(ClientUser user) async {
+  void makeUserAdmin(AppUser user) async {
     await provider!.makeUserAdmin(user.id);
     setState(() {
       usersAdmins.add(user);
@@ -107,7 +107,8 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
             provider!.currentChat!.adminIds!
                 .map((id) => users.firstWhere((user) => user.id == id))
                 .toList();
-        final curUserFriendsList = AuthService().currentUser?.friendsIds;
+        // final curUserFriendsList = AuthService().currentUser?.friendsIds ?? [];
+        final curUserFriendsList = [];
 
         if (curUserFriendsList != null) {
           usersNotInTheChat =

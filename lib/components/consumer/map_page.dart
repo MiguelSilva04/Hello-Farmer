@@ -21,7 +21,6 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _determinePosition() async {
-    // Pede permissão
     var status = await Permission.location.request();
 
     if (status.isGranted) {
@@ -32,7 +31,6 @@ class _MapPageState extends State<MapPage> {
         _currentPosition = LatLng(position.latitude, position.longitude);
       });
     } else {
-      // Permissão negada
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Permissão de localização negada.')),
       );

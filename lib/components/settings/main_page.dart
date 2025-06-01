@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/preferences_notifier.dart';
 import 'package:provider/provider.dart';
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -122,28 +123,31 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: notifier.themeMode == ThemeMode.light,
-                              onChanged: (value) => notifier.toggleTheme(false),
-                            ),
-                            Text("Claro"),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: notifier.themeMode == ThemeMode.dark,
-                              onChanged: (value) => notifier.toggleTheme(true),
-                            ),
-                            Text("Escuro"),
-                          ],
-                        ),
-                      ],
+                    AnimatedToggleSwitch<ThemeMode>.rolling(
+                      current: notifier.themeMode,
+                      values: const [ThemeMode.light, ThemeMode.dark],
+                      iconBuilder: (mode, isSelected) {
+                        return Icon(
+                          mode == ThemeMode.dark
+                              ? Icons.nights_stay
+                              : Icons.wb_sunny,
+                          color: isSelected ? Colors.white : Colors.grey[500],
+                        );
+                      },
+                      height: 40,
+                      spacing: 2.0,
+                      style: ToggleStyle(
+                        borderColor: Colors.transparent,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.secondary.withAlpha(80),
+                        indicatorColor: Theme.of(context).colorScheme.primary,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      onChanged: (mode) {
+                        final isDark = mode == ThemeMode.dark;
+                        notifier.toggleTheme(isDark);
+                      },
                     ),
                   ],
                 ),

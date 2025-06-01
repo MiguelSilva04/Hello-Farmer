@@ -1,4 +1,19 @@
-enum OrderState { Entregue, Pendente, Enviada, Abandonada }
+enum OrderState { Delivered, Pendent, Sent, Abandonned }
+
+extension OrderStateExtension on OrderState {
+  String toDisplayString() {
+    switch (this) {
+      case OrderState.Delivered:
+        return "Entregue";
+      case OrderState.Pendent:
+        return "Pendente";
+      case OrderState.Sent:
+        return "Enviada";
+      case OrderState.Abandonned:
+        return "Abandonada";
+    }
+  }
+}
 
 class OrderItem {
   final String produtctAdId;
@@ -6,7 +21,6 @@ class OrderItem {
 
   OrderItem({required this.produtctAdId, required this.qty});
 }
-
 
 class Order {
   final String id;

@@ -44,7 +44,7 @@ class AccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = AuthService().currentUser! as ConsumerUser;
+    final currentUser = AuthService().currentUser!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),

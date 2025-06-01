@@ -30,6 +30,9 @@ void main() async {
   await initializeDateFormatting('pt_PT', null);
   await Firebase.initializeApp();
 
+  final preferencesNotifier = PreferencesNotifier();
+  await preferencesNotifier.loadPreferences();
+
   runApp(
     MultiProvider(
       providers: [
@@ -52,9 +55,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeNotifier = Provider.of<PreferencesNotifier>(context);
+    final preferences = Provider.of<PreferencesNotifier>(context);
     return MaterialApp(
       title: 'Harvestly',
-
+      locale: preferences.currentLocale,
       theme: ThemeData(
         brightness: Brightness.light,
         fontFamily: 'Poppins',
@@ -84,7 +88,6 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           primary: const Color.fromRGBO(66, 139, 109, 1),
           surface: const Color.fromRGBO(42, 129, 94, 1),
-          // surfaceContainerLow: const Color.fromRGBO(221, 247, 237, 1),
           surfaceDim: const Color(0xFFDEF2EA),
           secondary: Colors.white,
           scrim: Colors.yellow,
@@ -102,6 +105,7 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.purple,
           outline: Colors.orange.shade50,
           surfaceContainerLowest: const Color.fromRGBO(168, 218, 184, 1),
+          surfaceContainerLow: const Color.fromRGBO(222, 246, 228, 1)
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromRGBO(42, 129, 94, 1),

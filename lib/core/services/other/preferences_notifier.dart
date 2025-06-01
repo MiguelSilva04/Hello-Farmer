@@ -37,6 +37,16 @@ class PreferencesNotifier with ChangeNotifier {
   bool _productsUpdates = true;
   ReturnPolicy _returnPolicy = ReturnPolicy.THREE_DAYS;
 
+  Locale get currentLocale {
+    switch (language) {
+      case Language.ENGLISH:
+        return const Locale('en');
+      case Language.PORTUGUESE:
+      default:
+        return const Locale('pt');
+    }
+  }
+
   bool get receiptsByEmail => _receiptsByEmail;
   void setReceiptsByEmail(bool value) {
     if (_receiptsByEmail != value) {
@@ -139,6 +149,31 @@ class PreferencesNotifier with ChangeNotifier {
       _notifications = value;
       notifyListeners();
     }
+  }
+
+  Future<void> setLanguage(Language lang) async {
+    if (language != lang) {
+      language = lang;
+      notifyListeners();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('language', lang.toString());
+    }
+  }
+
+  Future<void> loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Carregar linguagem
+    final langString = prefs.getString('language');
+    if (langString != null) {
+      language = Language.values.firstWhere(
+        (e) => e.toString() == langString,
+        orElse: () => Language.PORTUGUESE,
+      );
+    }
+
+    notifyListeners();
   }
 
   final String conditions = '''

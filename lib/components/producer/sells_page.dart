@@ -163,9 +163,9 @@ class _SellsPageState extends State<SellsPage>
               controller: _tabController,
               children: [
                 Center(child: getAllFilter()),
-                Center(child: getAllFilter(OrderState.Pendente)),
-                Center(child: getAllFilter(OrderState.Enviada)),
-                Center(child: getAllFilter(OrderState.Entregue)),
+                Center(child: getAllFilter(OrderState.Pendent)),
+                Center(child: getAllFilter(OrderState.Sent)),
+                Center(child: getAllFilter(OrderState.Delivered)),
               ],
             ),
           ),

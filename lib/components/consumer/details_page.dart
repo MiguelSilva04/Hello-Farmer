@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
-class OrderDetailsPage extends StatelessWidget {
-  final Map<String, String> order;
+import '../../core/models/app_user.dart';
+import '../../core/models/order.dart';
+import '../../core/models/product_ad.dart';
 
-  const OrderDetailsPage({super.key, required this.order});
+class OrderDetailsPage extends StatelessWidget {
+  final Order order;
+  final ads;
+  final AppUser producer;
+
+  const OrderDetailsPage({super.key, required this.order, required this.ads, required this.producer});
 
   @override
   Widget build(BuildContext context) {
@@ -19,28 +25,36 @@ class OrderDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Image.asset(
-              order['imagePath']!,
+              ads.first.product.imageUrl.first,
               height: 180,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
             const SizedBox(height: 20),
-            Text('Encomenda N°${order['orderNumber']}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
+            Text(
+              'Encomenda #${order.id}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
-            Text('Produtor: ${order['producer']}',
-                style: const TextStyle(fontSize: 18)),
+            Text(
+              'Produtor: ${producer.firstName} ${producer.lastName}',
+              style: const TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 8),
-            Text('Valor: ${order['price']}',
-                style: const TextStyle(fontSize: 18)),
+            Text(
+              'Valor: ${order.totalPrice}',
+              style: const TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 8),
-            Text('Tipo de entrega: ${order['delivery']}',
-                style: const TextStyle(fontSize: 18)),
+            Text(
+              order.state.toString(),
+              style: const TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 8),
-            Text('Data: ${order['date']}',
-                style: const TextStyle(fontSize: 18)),
+            Text(
+              order.deliveryDate!.toIso8601String(),
+              style: const TextStyle(fontSize: 18),
+            ),
           ],
         ),
       ),

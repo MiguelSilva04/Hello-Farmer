@@ -30,7 +30,7 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
       },
     ];
 
-    final deliveredOrders = orders.where((o) => o.state == OrderState.Entregue);
+    final deliveredOrders = orders.where((o) => o.state == OrderState.Delivered);
 
     List<Map<String, dynamic>> result = [];
     double totalSalesAll = 0;

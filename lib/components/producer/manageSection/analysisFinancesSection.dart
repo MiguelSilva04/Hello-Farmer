@@ -56,7 +56,7 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
     double totalReceitas = 0;
 
     for (var order in ordersFiltrados) {
-      if (order.state == OrderState.Entregue) {
+      if (order.state == OrderState.Delivered) {
         final date = order.deliveryDate!;
         int index = date.difference(startDate).inDays;
         if (index >= 0 && index < receitasPorDia.length) {

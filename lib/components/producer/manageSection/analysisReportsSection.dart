@@ -306,7 +306,7 @@ class AnalysisReportsSection extends StatelessWidget {
         });
         if (hasProduct) {
           totalOrders++;
-          if (order.state == OrderState.Entregue) {
+          if (order.state == OrderState.Delivered) {
             deliveredOrders++;
           }
           final orderDate = order.deliveryDate ?? order.pickupDate;

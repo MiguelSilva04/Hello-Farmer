@@ -70,7 +70,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
 
     final filteredOrders =
         (currentStore.orders ?? []).where((o) {
-          if (o.state != OrderState.Entregue) return false;
+          if (o.state != OrderState.Delivered) return false;
           if (o.deliveryDate == null) return false;
           final deliveredAt = o.deliveryDate!;
           final now = DateTime.now();

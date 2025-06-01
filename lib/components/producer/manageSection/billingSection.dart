@@ -53,7 +53,8 @@ class _BillingSectionState extends State<BillingSection> {
   DateRangeOption _getRangeFromDate(DateTime? date) {
     if (date == null) return DateRangeOption.none;
     final now = DateTime.now();
-    final createdAt = (AuthService().currentUser! as ProducerUser).store.createdAt;
+    final createdAt =
+        (AuthService().currentUser! as ProducerUser).store.createdAt;
     if (date.isAtSameMomentAs(createdAt)) return DateRangeOption.none;
     if (date.isAtSameMomentAs(
       now
@@ -91,20 +92,21 @@ class _BillingSectionState extends State<BillingSection> {
     return DateRangeOption.none;
   }
 
-  final List<Order> _orders = (AuthService().currentUser! as ProducerUser).store.orders!;
+  final List<Order> _orders =
+      (AuthService().currentUser! as ProducerUser).store.orders!;
 
   List<Order> get _filteredOrders {
     if (provider.billingFromDate ==
         (AuthService().currentUser! as ProducerUser).store.createdAt) {
       return _orders
-          .where((order) => order.state == OrderState.Entregue)
+          .where((order) => order.state == OrderState.Delivered)
           .toList();
     }
     return _orders
         .where(
           (order) =>
               order.pickupDate.isAfter(provider.billingFromDate) &&
-              order.state == OrderState.Entregue,
+              order.state == OrderState.Delivered,
         )
         .toList();
   }
@@ -231,7 +233,9 @@ class _BillingSectionState extends State<BillingSection> {
                                   context,
                                   listen: false,
                                 ).billingFromDate !=
-                                (AuthService().currentUser! as ProducerUser).store.createdAt
+                                (AuthService().currentUser! as ProducerUser)
+                                    .store
+                                    .createdAt
                             ? DateFormat.yMMMd().format(
                               Provider.of<ManageSectionNotifier>(
                                 context,

@@ -64,7 +64,6 @@ class Product {
               )
               : Unit.KG,
       price: (json['price'] ?? 0).toDouble(),
-      // Adicione outros campos conforme necessário
     );
   }
 

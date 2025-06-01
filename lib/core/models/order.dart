@@ -31,6 +31,7 @@ class Order {
   final List<OrderItem> productsAds;
   final double totalPrice;
   final String consumerId;
+  final String deliveryAddress;
   final String producerId;
 
   Order({
@@ -43,5 +44,6 @@ class Order {
     required this.totalPrice,
     required this.consumerId,
     required this.producerId,
+    required this.deliveryAddress,
   });
 }

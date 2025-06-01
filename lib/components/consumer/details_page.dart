@@ -9,7 +9,12 @@ class OrderDetailsPage extends StatelessWidget {
   final ads;
   final AppUser producer;
 
-  const OrderDetailsPage({super.key, required this.order, required this.ads, required this.producer});
+  const OrderDetailsPage({
+    super.key,
+    required this.order,
+    required this.ads,
+    required this.producer,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +51,12 @@ class OrderDetailsPage extends StatelessWidget {
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 8),
-            Text(
-              order.state.toString(),
-              style: const TextStyle(fontSize: 18),
-            ),
+            Text(order.state.toString(), style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 8),
             Text(
-              order.deliveryDate!.toIso8601String(),
+              order.deliveryDate != null
+                  ? "${order.deliveryDate!.day}/${order.deliveryDate!.month}/${order.deliveryDate!.year}"
+                  : "Sem entrega",
               style: const TextStyle(fontSize: 18),
             ),
           ],

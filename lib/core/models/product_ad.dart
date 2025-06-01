@@ -68,26 +68,42 @@ class ProductAd {
     return ProductAd(
       id: json['id'] ?? '',
       product: Product.fromJson(json['product']),
-      preferredDeliveryMethods: (json['preferredDeliveryMethods'] as List<dynamic>?)
-          ?.map((e) => DeliveryMethod.values.firstWhere((dm) => dm.toString() == e))
-          .toList() ?? [],
+      preferredDeliveryMethods:
+          (json['preferredDeliveryMethods'] as List<dynamic>?)
+              ?.map(
+                (e) => DeliveryMethod.values.firstWhere(
+                  (dm) => dm.toString() == e,
+                ),
+              )
+              .toList() ??
+          [],
       description: json['description'],
       price: json['price']?.toString(),
       highlight: json['highlight'],
-      highlightDate: json['highlightDate'] != null ? DateTime.parse(json['highlightDate']) : null,
-      visibility: json['visibility'] != null
-          ? AdVisibility.values.firstWhere((v) => v.toString() == json['visibility'])
-          : null,
-      highlightType: json['highlightType'] != null
-          ? HighlightType.values.firstWhere((h) => h.toString() == json['highlightType'])
-          : null,
-      viewsByUserDateTime: json['viewsByUserDateTime'] != null
-          ? (json['viewsByUserDateTime'] as List)
-              .map<Map<DateTime, String>>((item) => {
-                    DateTime.parse(item['date']): item['user']
-                  })
-              .toList()
-          : null,
+      highlightDate:
+          json['highlightDate'] != null
+              ? DateTime.parse(json['highlightDate'])
+              : null,
+      visibility:
+          json['visibility'] != null
+              ? AdVisibility.values.firstWhere(
+                (v) => v.toString() == json['visibility'],
+              )
+              : null,
+      highlightType:
+          json['highlightType'] != null
+              ? HighlightType.values.firstWhere(
+                (h) => h.toString() == json['highlightType'],
+              )
+              : null,
+      viewsByUserDateTime:
+          json['viewsByUserDateTime'] != null
+              ? (json['viewsByUserDateTime'] as List)
+                  .map<Map<DateTime, String>>(
+                    (item) => {DateTime.parse(item['date']): item['user']},
+                  )
+                  .toList()
+              : null,
     );
   }
 }

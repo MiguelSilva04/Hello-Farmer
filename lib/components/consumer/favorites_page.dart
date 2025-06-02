@@ -36,20 +36,16 @@ class _FavoritesPageState extends State<FavoritesPage> {
   void removeItem(int index) {
     final removedItem = favorites[index];
 
-    _listKey.currentState?.removeItem(
-      index,
-      (context, animation) {
-        return SizeTransition(
-          sizeFactor: animation,
-          axis: Axis.vertical,
-          child: FadeTransition(
-            opacity: animation,
-            child: buildListItem(context, removedItem, index, animate: false),
-          ),
-        );
-      },
-      duration: const Duration(milliseconds: 300),
-    );
+    _listKey.currentState?.removeItem(index, (context, animation) {
+      return SizeTransition(
+        sizeFactor: animation,
+        axis: Axis.vertical,
+        child: FadeTransition(
+          opacity: animation,
+          child: buildListItem(context, removedItem, index, animate: false),
+        ),
+      );
+    }, duration: const Duration(milliseconds: 300));
 
     setState(() {
       favorites.removeAt(index);
@@ -58,11 +54,18 @@ class _FavoritesPageState extends State<FavoritesPage> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${removedItem['product']} removido dos favoritos')),
+      SnackBar(
+        content: Text('${removedItem['product']} removido dos favoritos'),
+      ),
     );
   }
 
-  Widget buildListItem(BuildContext context, Map<String, String> item, int index, {bool animate = true}) {
+  Widget buildListItem(
+    BuildContext context,
+    Map<String, String> item,
+    int index, {
+    bool animate = true,
+  }) {
     return Column(
       key: ValueKey(item['product']),
       children: [
@@ -74,11 +77,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ProductDetailPage(
-                    product: item['product']!,
-                    seller: item['seller']!,
-                    imagePath: item['imagePath']!,
-                  ),
+                  builder:
+                      (context) => ProductDetailPage(
+                        product: item['product']!,
+                        seller: item['seller']!,
+                        imagePath: item['imagePath']!,
+                      ),
                 ),
               );
             },
@@ -113,10 +117,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       const SizedBox(height: 4),
                       Text(
                         item['seller']!,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
                   ),
@@ -125,20 +126,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 const SizedBox(width: 8),
 
                 // Botão favorito animado
-                FavoriteButton(
-                  onPressed: () => removeItem(index),
-                ),
+                FavoriteButton(onPressed: () => removeItem(index)),
               ],
             ),
           ),
         ),
 
         if (index < favorites.length - 1)
-          const Divider(
-            height: 1,
-            thickness: 0.5,
-            color: Colors.grey,
-          ),
+          const Divider(height: 1, thickness: 0.5, color: Colors.grey),
       ],
     );
   }
@@ -146,10 +141,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Favoritos'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Favoritos'), centerTitle: true),
       body: AnimatedList(
         key: _listKey,
         padding: const EdgeInsets.all(12),
@@ -174,7 +166,8 @@ class FavoriteButton extends StatefulWidget {
   State<FavoriteButton> createState() => _FavoriteButtonState();
 }
 
-class _FavoriteButtonState extends State<FavoriteButton> with SingleTickerProviderStateMixin {
+class _FavoriteButtonState extends State<FavoriteButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -188,11 +181,17 @@ class _FavoriteButtonState extends State<FavoriteButton> with SingleTickerProvid
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 1.3).chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 1.0,
+          end: 1.3,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.3, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween(
+          begin: 1.3,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 50,
       ),
     ]).animate(_controller);
@@ -215,7 +214,10 @@ class _FavoriteButtonState extends State<FavoriteButton> with SingleTickerProvid
     return ScaleTransition(
       scale: _scaleAnimation,
       child: IconButton(
-        icon: const Icon(Icons.favorite, color: Color.fromRGBO(76, 153, 120, 1)),
+        icon: const Icon(
+          Icons.favorite,
+          color: Color.fromRGBO(76, 153, 120, 1),
+        ),
         onPressed: _handleTap,
       ),
     );

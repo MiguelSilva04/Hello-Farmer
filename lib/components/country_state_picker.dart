@@ -31,9 +31,9 @@ class SelectState extends StatefulWidget {
 
 class _SelectStateState extends State<SelectState> {
   List<String> _cities = ["Escolha uma Cidade"];
-  List<String> _country = ["Portugal"];
+  List<String> _country = ["Escolha um País"];
   String _selectedCity = "Escolha uma Cidade";
-  String _selectedCountry = "Portugal";
+  String _selectedCountry = "Escolha um País";
   String _selectedState = "Escolha uma Região";
   List<String> _states = ["Escolha uma Região"];
   var responses;
@@ -110,7 +110,6 @@ class _SelectStateState extends State<SelectState> {
       setState(() {
         var name = f.map((item) => item.name).toList();
         for (var statename in name) {
-
           _states.add(statename.toString());
         }
       });
@@ -138,7 +137,6 @@ class _SelectStateState extends State<SelectState> {
         setState(() {
           var citiesname = ci.map((item) => item.name).toList();
           for (var citynames in citiesname) {
-
             _cities.add(citynames.toString());
           }
         });

@@ -10,6 +10,9 @@ abstract class AppUser {
   String gender;
   String imageUrl;
   String address;
+  String country;
+  String region;
+  String city;
   final int? taxpayerNumber;
   String? backgroundUrl;
   String? recoveryEmail;
@@ -34,6 +37,9 @@ abstract class AppUser {
   }) : taxpayerNumber = 12345678910111213,
        iban = "PT50 0085 9837 8776 7846 4789",
        address = "Rua Central, 458\n1100-145 Lisboa, Portugal",
+       country = "Portugal",
+       region = "Alentejo",
+       city = "Évora",
        notifications = [
          NotificationItem(
            id: '1',

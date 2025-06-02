@@ -6,8 +6,6 @@ import '../../core/models/product_ad.dart';
 import '../../core/services/auth/auth_service.dart';
 import 'details_page.dart';
 
-enum FilterState { ALL, PENDENT, SENT, DELIVERED, ABANDONNED }
-
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
 
@@ -19,7 +17,7 @@ class _OrdersPageState extends State<OrdersPage> {
   late final String? currentUserId;
   late final List<Order> orders;
   late final List<ProductAd> allAds;
-  FilterState state = FilterState.ALL;
+  OrderState? state = null;
 
   @override
   void initState() {
@@ -38,7 +36,11 @@ class _OrdersPageState extends State<OrdersPage> {
         users
             .whereType<ProducerUser>()
             .expand((p) => p.store.orders ?? [])
-            .where((order) => order.consumerId == currentUserId)
+            .where(
+              (order) =>
+                  (state == null || order.state == state) &&
+                  order.consumerId == currentUserId,
+            )
             .fold<Map<String, Order>>({}, (map, order) {
               map[order.id] = order;
               return map;
@@ -49,6 +51,8 @@ class _OrdersPageState extends State<OrdersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredOrders =
+        orders.where((order) => state == null || order.state == state).toList();
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -58,11 +62,11 @@ class _OrdersPageState extends State<OrdersPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 InkWell(
-                  onTap: () => setState(() => state = FilterState.ALL),
+                  onTap: () => setState(() => state = null),
                   child: Container(
                     decoration: BoxDecoration(
                       color:
-                          state == FilterState.ALL
+                          state == null
                               ? Theme.of(context).colorScheme.tertiary
                               : Theme.of(context).colorScheme.inverseSurface,
                       borderRadius: BorderRadius.circular(10),
@@ -75,7 +79,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color:
-                              state != FilterState.ALL
+                              state != null
                                   ? Theme.of(context).colorScheme.tertiary
                                   : Theme.of(
                                     context,
@@ -86,11 +90,11 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () => setState(() => state = FilterState.PENDENT),
+                  onTap: () => setState(() => state = OrderState.Pendent),
                   child: Container(
                     decoration: BoxDecoration(
                       color:
-                          state == FilterState.PENDENT
+                          state == OrderState.Pendent
                               ? Theme.of(context).colorScheme.tertiary
                               : Theme.of(context).colorScheme.inverseSurface,
                       borderRadius: BorderRadius.circular(10),
@@ -103,7 +107,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color:
-                              state != FilterState.PENDENT
+                              state != OrderState.Pendent
                                   ? Theme.of(context).colorScheme.tertiary
                                   : Theme.of(
                                     context,
@@ -114,11 +118,11 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () => setState(() => state = FilterState.SENT),
+                  onTap: () => setState(() => state = OrderState.Sent),
                   child: Container(
                     decoration: BoxDecoration(
                       color:
-                          state == FilterState.SENT
+                          state == OrderState.Sent
                               ? Theme.of(context).colorScheme.tertiary
                               : Theme.of(context).colorScheme.inverseSurface,
                       borderRadius: BorderRadius.circular(10),
@@ -131,7 +135,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color:
-                              state != FilterState.SENT
+                              state != OrderState.Sent
                                   ? Theme.of(context).colorScheme.tertiary
                                   : Theme.of(
                                     context,
@@ -142,11 +146,11 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () => setState(() => state = FilterState.DELIVERED),
+                  onTap: () => setState(() => state = OrderState.Delivered),
                   child: Container(
                     decoration: BoxDecoration(
                       color:
-                          state == FilterState.DELIVERED
+                          state == OrderState.Delivered
                               ? Theme.of(context).colorScheme.tertiary
                               : Theme.of(context).colorScheme.inverseSurface,
                       borderRadius: BorderRadius.circular(10),
@@ -159,7 +163,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color:
-                              state != FilterState.DELIVERED
+                              state != OrderState.Delivered
                                   ? Theme.of(context).colorScheme.tertiary
                                   : Theme.of(
                                     context,
@@ -170,11 +174,11 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () => setState(() => state = FilterState.ABANDONNED),
+                  onTap: () => setState(() => state = OrderState.Abandonned),
                   child: Container(
                     decoration: BoxDecoration(
                       color:
-                          state == FilterState.ABANDONNED
+                          state == OrderState.Abandonned
                               ? Theme.of(context).colorScheme.tertiary
                               : Theme.of(context).colorScheme.inverseSurface,
                       borderRadius: BorderRadius.circular(10),
@@ -187,7 +191,7 @@ class _OrdersPageState extends State<OrdersPage> {
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color:
-                              state != FilterState.ABANDONNED
+                              state != OrderState.Abandonned
                                   ? Theme.of(context).colorScheme.tertiary
                                   : Theme.of(
                                     context,
@@ -204,9 +208,9 @@ class _OrdersPageState extends State<OrdersPage> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(12),
-            itemCount: orders.length,
+            itemCount: filteredOrders.length,
             itemBuilder: (context, index) {
-              final Order order = orders[index];
+              final Order order = filteredOrders[index];
               final ordersAds =
                   order.productsAds
                       .map(
@@ -331,7 +335,9 @@ class OrderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (order.deliveryDate == null)
+                    if (order.deliveryDate == null &&
+                        order.state != OrderState.Abandonned &&
+                        order.state != OrderState.Delivered)
                       Text(
                         "Data prevista de entrega:",
                         style: const TextStyle(
@@ -339,17 +345,26 @@ class OrderCard extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                    Text(
-                      order.deliveryDate != null
-                          ? DateFormat.yMMMEd(
-                            'pt_PT',
-                          ).format(order.deliveryDate!)
-                          : "quinta, 7/06/2025",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                    if (order.state == OrderState.Abandonned)
+                      Text(
+                        "Sem entrega",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    if (order.state != OrderState.Abandonned)
+                      Text(
+                        order.deliveryDate != null
+                            ? DateFormat.yMMMEd(
+                              'pt_PT',
+                            ).format(order.deliveryDate!)
+                            : "quinta, 7/06/2025",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     const SizedBox(height: 4),
                     Row(
                       children: [

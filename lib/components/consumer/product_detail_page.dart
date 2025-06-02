@@ -18,7 +18,6 @@ class ProductDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Produto"),
         backgroundColor: const Color.fromRGBO(59, 126, 98, 1),
         foregroundColor: Colors.white,
       ),

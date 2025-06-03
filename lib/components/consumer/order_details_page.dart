@@ -1,165 +1,352 @@
+// order_detail_page.dart
+
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/models/order.dart';
+import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/models/product.dart';
+import 'package:harvestly/core/models/product_ad.dart';
+import 'package:harvestly/core/models/store.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:intl/intl.dart';
 
 class OrderDetailsPage extends StatelessWidget {
-  final Map<String, String> order;
+  final Order order;
+  final ProducerUser producer;
 
-  const OrderDetailsPage({super.key, required this.order});
+  const OrderDetailsPage({
+    super.key,
+    required this.order,
+    required this.producer,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final date =
+        order.deliveryDate != null
+            ? DateFormat.yMMMEd('pt_PT').format(order.deliveryDate!)
+            : null;
+    final products = order.productsAds;
+    final deliveryMethod =
+        (AuthService().users
+                    .whereType<ProducerUser>()
+                    .expand((p) => p.store.productsAds ?? [])
+                    .firstWhere(
+                      (ad) => ad.id == products.first.produtctAdId,
+                      orElse:
+                          () => throw Exception("ProductAd não encontrado."),
+                    )
+                as ProductAd)
+            .preferredDeliveryMethods
+            .first;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalhes'),
-        backgroundColor: const Color.fromRGBO(59, 126, 98, 1),
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /* Image.asset(
-                order['imagePath']!,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ), */
-              const SizedBox(height: 20),
-              Text('Encomenda N°${order['orderNumber']}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  )),
-              const SizedBox(height: 20),
-              Text('Produtor: ${order['producer']}',
-                  style: const TextStyle(fontSize: 18)),
-              const SizedBox(height: 8),
-              Text('Valor: ${order['price']}',
-                  style: const TextStyle(fontSize: 18)),
-              const SizedBox(height: 8),
-              Text('Tipo de entrega: ${order['delivery']}',
-                  style: const TextStyle(fontSize: 18)),
-              const SizedBox(height: 8),
-              Text('Data: ${order['date']}',
-                  style: const TextStyle(fontSize: 18)),
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 10),
-              const Text(
-                'Produtos comprados',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
+      appBar: AppBar(title: const Text("Encomenda")),
 
-              // Lista de produtos
-              ..._buildProductList(order),  
-              const SizedBox(height: 80), // espaço extra para não ficar colado ao botão
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Lógica para contactar o vendedor
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Contactar vendedor...')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(59, 126, 98, 1),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+            Row(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 25),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (date != null) ...[
+                          Text(
+                            "Data da encomenda: ",
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            date,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                        if (date == null) ...[
+                          Text(
+                            "Abandonada desde: ",
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            DateFormat.yMMMd('pt_PT').format(order.pickupDate),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                 ),
-                child: const Text('Contactar Vendedor'),
+                const SizedBox(width: 5),
+                Row(
+                  children: [
+                    const Icon(Icons.inventory, size: 25),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Encomenda Nº ",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        Text(
+                          "${order.id}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.home, size: 25),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("Morada de entrega: ", style: TextStyle(fontSize: 16)),
+                    Text(
+                      order.address,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Remetente",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundImage:
+                        producer.store.imageUrl != null
+                            ? AssetImage(producer.store.imageUrl!)
+                            : null,
+                    child:
+                        producer.store.imageUrl == null
+                            ? const Icon(Icons.store, size: 30)
+                            : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          producer.store.name!,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        if (producer.store.location != null)
+                          Row(
+                            children: [
+                              Icon(Icons.pin_drop_rounded),
+                              Text(
+                                producer.store.location!,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryFixed,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chat),
+                    onPressed: () {},
+                    tooltip: "Contactar produtor",
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Lógica para ver fatura
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ver fatura...')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[700],
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text("Estado: ", style: const TextStyle(fontSize: 16)),
+                Text(
+                  order.state.toDisplayString(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
-                child: const Text('Ver Fatura'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text("Valor: ", style: const TextStyle(fontSize: 16)),
+                Text(
+                  "${order.totalPrice.toStringAsFixed(2)} €",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text.rich(
+              TextSpan(
+                text: "Entrega: ",
+                style: TextStyle(fontSize: 16),
+                children: [
+                  TextSpan(
+                    text: deliveryMethod.toDisplayString(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const Text(
+              "Produtos Encomendados",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+
+            /// Lista de produtos
+            Expanded(
+              child: ListView.separated(
+                itemCount: products.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final item = products[index];
+                  final ad =
+                      AuthService().users
+                              .whereType<ProducerUser>()
+                              .expand((p) => p.store.productsAds ?? [])
+                              .firstWhere(
+                                (ad) => ad.id == item.produtctAdId,
+                                orElse:
+                                    () =>
+                                        throw Exception(
+                                          "ProductAd não encontrado.",
+                                        ),
+                              )
+                          as ProductAd;
+
+                  final product = ad.product;
+                  final quantityText =
+                      product.unit == Unit.KG
+                          ? "${item.qty}${product.unit.toDisplayString()}"
+                          : "x${item.qty.toStringAsFixed(0)}";
+
+                  return Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            product.imageUrl.first,
+                            height: 80,
+                            width: 80,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "$quantityText ${product.name}",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "${product.price.toStringAsFixed(2)}€/${product.unit.toDisplayString()}",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryFixed,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      // lógica de repetir compra
+                                    },
+                                    icon: const Icon(
+                                      Icons.shopping_cart_checkout,
+                                    ),
+                                    label: const Text("Comprar novamente"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            const Text(
+              "Para mais detalhes sobre a entrega, contacta o vendedor.",
+              style: TextStyle(fontSize: 12),
+            ),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  // lógica de ver fatura
+                },
+                child: const Text("Ver fatura"),
+              ),
+            ),
+            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
-
-
-List<Widget> _buildProductList(Map<String, String> order) {
-  final products = order['products']!.split(', ');
-  final quantities = order['quantities']!.split(', ');
-
-  return List.generate(products.length, (index) {
-    final product = products[index];
-    final quantity = quantities[index];
-    final unitPrice = 2.50; // preço por unidade simulado
-    final total = (int.parse(quantity) * unitPrice).toStringAsFixed(2);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                order['imagePath']!,
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(product,
-                      style:
-                          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  Text('Quantidade: $quantity'),
-                  Text('Preço/unidade: ${unitPrice.toStringAsFixed(2)} €'),
-                  Text('Subtotal: $total €'),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: () {
-                // lógica de comprar novamente
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromRGBO(198, 220, 211, 1),
-                foregroundColor: const Color.fromRGBO(59, 126, 98, 1),
-              ),
-              child: const Text('Comprar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  });
-}
-
-
-
 }

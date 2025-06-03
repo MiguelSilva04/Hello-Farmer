@@ -17,7 +17,7 @@ class Product {
   final String name;
   final List<String> imageUrl;
   String category;
-  double? price;
+  double price;
   int? stock = 0;
   int? minAmount = 0;
   Unit unit;

@@ -648,19 +648,17 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 20.34,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
              id: '0078',
              pickupDate: DateTime(2025, 5, 19),
-             deliveryDate: null,
+             deliveryDate: DateTime(2025, 5, 23),
              address: 'Rua do Pedido #0078',
              state: OrderState.Pendent,
              productsAds: [OrderItem(produtctAdId: "idAlfaceRomana", qty: 10)],
              totalPrice: 25.12,
              consumerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -672,13 +670,12 @@ class ProducerUser extends AppUser {
              productsAds: [OrderItem(produtctAdId: "idTomateCherry", qty: 25)],
              totalPrice: 30.59,
              consumerId: "cEK6hsmFrZO8N3G7AqltGVZtMYs2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
              id: '3627',
              pickupDate: DateTime(2025, 5, 21),
-             deliveryDate: null,
+             deliveryDate: DateTime(2025, 5, 24),
              address: 'Rua do Pedido #3627',
              state: OrderState.Pendent,
              productsAds: [
@@ -687,8 +684,21 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 17.36,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
+           ),
+           Order(
+             id: '798747',
+             pickupDate: DateTime(2025, 6, 1),
+             deliveryDate: DateTime(2025, 6, 4),
+             address: 'Rua do Pedido #3627',
+             state: OrderState.Pendent,
+             productsAds: [
+               OrderItem(produtctAdId: "idCenourasBaby", qty: 10),
+               OrderItem(produtctAdId: "idOvos", qty: 12),
+             ],
+             totalPrice: 13.99,
+             consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
+             producerId: "IyxNeUyr6QNA3lwSALZBHsV75ap2",
            ),
            Order(
              id: '1938',
@@ -699,7 +709,6 @@ class ProducerUser extends AppUser {
              productsAds: [OrderItem(produtctAdId: "idAlfaceRomana", qty: 10)],
              totalPrice: 13.84,
              consumerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -711,7 +720,6 @@ class ProducerUser extends AppUser {
              productsAds: [OrderItem(produtctAdId: "idCenourasBaby", qty: 10)],
              totalPrice: 69.11,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -729,7 +737,6 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 69.11,
              consumerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -747,13 +754,12 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 69.11,
              consumerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
              id: '1252',
              pickupDate: DateTime(2025, 5, 24),
-             deliveryDate: null,
+             deliveryDate: DateTime(2025, 5, 27),
              address: 'Rua do Pedido #9809',
              state: OrderState.Sent,
              productsAds: [
@@ -765,7 +771,6 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 69.11,
              consumerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -780,25 +785,23 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 26.0,
              consumerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
              id: '2002',
              pickupDate: DateTime(2025, 5, 22),
-             deliveryDate: null,
+             deliveryDate: DateTime(2025, 5, 29),
              address: 'Rua do Pedido #1398',
              state: OrderState.Sent,
              productsAds: [OrderItem(produtctAdId: "idCenteio", qty: 5)],
              totalPrice: 26.0,
              consumerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
              id: '2003',
              pickupDate: DateTime(2025, 5, 22),
-             deliveryDate: null,
+             deliveryDate: DateTime(2025, 5, 24),
              address: 'Rua do Pedido #2003',
              state: OrderState.Sent,
              productsAds: [
@@ -807,7 +810,6 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 14.2,
              consumerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -819,7 +821,6 @@ class ProducerUser extends AppUser {
              productsAds: [OrderItem(produtctAdId: "idTomateCherry", qty: 25)],
              totalPrice: 87.5,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -834,7 +835,6 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 35.3,
              consumerId: "cEK6hsmFrZO8N3G7AqltGVZtMYs2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -846,7 +846,6 @@ class ProducerUser extends AppUser {
              productsAds: [OrderItem(produtctAdId: "idTrigo", qty: 15)],
              totalPrice: 5.10,
              consumerId: "cEK6hsmFrZO8N3G7AqltGVZtMYs2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -858,7 +857,6 @@ class ProducerUser extends AppUser {
              productsAds: [OrderItem(produtctAdId: "idAlfaceRomana", qty: 10)],
              totalPrice: 7.99,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -873,7 +871,6 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 29.99,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
            Order(
@@ -888,7 +885,6 @@ class ProducerUser extends AppUser {
              ],
              totalPrice: 15.99,
              consumerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-             deliveryAddress: "Rua X",
              producerId: "MkqAbSP1zbQZqTbFlyiUawKNslo1",
            ),
          ],

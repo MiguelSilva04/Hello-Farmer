@@ -5,7 +5,6 @@ import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 
 class InvoicePageConsumer extends StatelessWidget {
@@ -45,7 +44,6 @@ class InvoicePageConsumer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabeçalho
               Row(
                 children: [
                   const Text(
@@ -83,7 +81,6 @@ class InvoicePageConsumer extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Cliente + Data
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -123,7 +120,6 @@ class InvoicePageConsumer extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Tabela
               Table(
                 border: TableBorder.all(color: Colors.grey),
                 columnWidths: const {
@@ -214,7 +210,6 @@ class InvoicePageConsumer extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Totais
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 child: Column(
@@ -283,22 +278,25 @@ class InvoicePageConsumer extends StatelessWidget {
               const Divider(thickness: 1.2),
               const SizedBox(height: 24),
 
-              // Morada
               const Text(
-                "Morada de Faturação:",
+                "Morada de Entrega:",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 8),
-              Text(
-                producer.billingAddress ?? "Não definido.",
-                style: const TextStyle(fontSize: 16),
-              ),
+              Text(order.address, style: const TextStyle(fontSize: 16)),
               const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.download),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      foregroundColor: Theme.of(context).colorScheme.secondary,
+                    ),
+                    icon: Icon(
+                      Icons.download,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                     label: const Text("Descarregar"),
                     onPressed: () async {
                       final pdf = await generateInvoicePdf(
@@ -312,7 +310,14 @@ class InvoicePageConsumer extends StatelessWidget {
                     },
                   ),
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.share),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      foregroundColor: Theme.of(context).colorScheme.secondary,
+                    ),
+                    icon: Icon(
+                      Icons.share,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                     label: const Text("Encaminhar"),
                     onPressed: () async {
                       final pdf = await generateInvoicePdf(

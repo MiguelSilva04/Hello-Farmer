@@ -402,13 +402,12 @@ class OrderCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_horiz), // Os 3 pontos
+                    icon: const Icon(Icons.more_horiz),
                     onSelected: (value) {
-                      // Lógica ao selecionar a opção
                       if (value == 'ver') {
-                        // Faz algo
+
                       } else if (value == 'remover') {
-                        // Faz outra coisa
+
                       }
                     },
                     itemBuilder:

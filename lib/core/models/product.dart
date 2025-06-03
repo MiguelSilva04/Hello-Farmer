@@ -6,7 +6,7 @@ extension UnitExtension on Unit {
       case Unit.KG:
         return "Kg";
       case Unit.UNIT:
-        return "Unidade(s)";
+        return "Un.";
     }
   }
 }

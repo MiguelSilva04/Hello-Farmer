@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/order_details_page.dart';
+import 'package:harvestly/components/consumer/shopping_cart.dart';
+import 'package:harvestly/core/models/shopping_cart.dart';
 import 'package:intl/intl.dart';
 import '../../core/models/order.dart';
 import '../../core/models/producer_user.dart';
@@ -423,7 +425,14 @@ class OrderCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(10),
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          //So para teste, abre o ShoppingCart
+                          Navigator.push(context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ShoppingCartPage(cart: ShoppingCart())
+                              ));
+                        },
                         child: Text(
                           "Devolução",
                           style: TextStyle(

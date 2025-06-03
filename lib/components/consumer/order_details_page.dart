@@ -1,6 +1,7 @@
 // order_detail_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/consumer/invoice_page.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
@@ -357,7 +358,10 @@ class OrderDetailsPage extends StatelessWidget {
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   foregroundColor: Theme.of(context).colorScheme.secondary,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => InvoicePageConsumer(order: order, producer: producer)));
+                },
                 icon: Icon(
                   Icons.receipt,
                   size: 30,

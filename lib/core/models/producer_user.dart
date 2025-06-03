@@ -376,7 +376,7 @@ class ProducerUser extends AppUser {
                stock: 10,
                minAmount: 5,
                unit: Unit.KG,
-               price: 13.5,
+               price: 1.14,
              ),
              highlightType: HighlightType.HOME,
              preferredDeliveryMethods: [
@@ -404,7 +404,7 @@ class ProducerUser extends AppUser {
                stock: 20,
                minAmount: 10,
                unit: Unit.KG,
-               price: 12.5,
+               price: 0.78,
              ),
              highlightType: HighlightType.SEARCH,
              preferredDeliveryMethods: [DeliveryMethod.COURIER],
@@ -427,7 +427,7 @@ class ProducerUser extends AppUser {
                stock: 30,
                minAmount: 10,
                unit: Unit.KG,
-               price: 7.99,
+               price: 0.88,
              ),
              preferredDeliveryMethods: [DeliveryMethod.PICKUP],
              description:
@@ -452,7 +452,7 @@ class ProducerUser extends AppUser {
                stock: 25,
                minAmount: 5,
                unit: Unit.KG,
-               price: 2.8,
+               price: 1.56,
              ),
              highlightType: HighlightType.HOME,
              preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
@@ -495,7 +495,7 @@ class ProducerUser extends AppUser {
                stock: 15,
                minAmount: 25,
                unit: Unit.KG,
-               price: 3.5,
+               price: 2.2,
              ),
              preferredDeliveryMethods: [
                DeliveryMethod.COURIER,
@@ -546,7 +546,7 @@ class ProducerUser extends AppUser {
                stock: 50,
                minAmount: 6,
                unit: Unit.UNIT,
-               price: 2.0,
+               price: 2.05,
              ),
              preferredDeliveryMethods: [
                DeliveryMethod.COURIER,

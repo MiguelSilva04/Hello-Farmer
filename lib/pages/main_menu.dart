@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/offers_page.dart';
+import 'package:harvestly/components/consumer/shopping_cart_page.dart';
 import 'package:harvestly/core/models/app_user.dart';
+import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
@@ -93,7 +95,7 @@ class _MainMenuState extends State<MainMenu>
 
   @override
   Widget build(BuildContext context) {
-    final bool isProducer = user.isProducer ?? false;
+    final bool isProducer = user.isProducer;
     _profileImageUrl = user.imageUrl;
 
     final List<Widget> _producerPages = [
@@ -129,10 +131,14 @@ class _MainMenuState extends State<MainMenu>
                     ).setIndex(0),
                 child: const Icon(Icons.arrow_back),
               ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Image.asset("assets/images/logo_android2.png", height: 50),
-            ),
+            if (!_isSearching)
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Image.asset(
+                  "assets/images/logo_android2.png",
+                  height: 50,
+                ),
+              ),
           ],
         ),
         actions: [
@@ -147,7 +153,7 @@ class _MainMenuState extends State<MainMenu>
                       key: const ValueKey(1),
                       padding: const EdgeInsets.all(8),
                       child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.60,
+                        width: MediaQuery.of(context).size.width * 0.70,
                         child: SearchBar(
                           autoFocus: true,
                           hintText: "Procurar...",
@@ -237,7 +243,7 @@ class _MainMenuState extends State<MainMenu>
                           color: Theme.of(context).colorScheme.tertiaryFixed,
                         ),
                         SizedBox(width: 10),
-                        Text(user.isProducer! ? "Banca" : "Ofertas"),
+                        Text(user.isProducer ? "Banca" : "Ofertas"),
                       ],
                     ),
                   ),
@@ -258,7 +264,7 @@ class _MainMenuState extends State<MainMenu>
                       ],
                     ),
                   ),
-                  if (!(user.isProducer ?? false))
+                  if (!user.isProducer)
                     PopupMenuItem(
                       value: "Favorites",
                       child: Row(
@@ -289,6 +295,22 @@ class _MainMenuState extends State<MainMenu>
                   ),
                 ],
           ),
+          if (!user.isProducer)
+            InkWell(
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ShoppingCartPage())),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Badge.count(
+                  count:
+                      (user as ConsumerUser).shoppingCart.productsQty?.length ??
+                      0,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Icon(Icons.shopping_cart_rounded),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       body: FadeTransition(

@@ -44,7 +44,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
 
     _scrollController = ScrollController();
 
-    _scrollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _scrollTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (_scrollController.hasClients) {
         final maxScroll = _scrollController.position.maxScrollExtent;
         final current = _scrollController.offset;

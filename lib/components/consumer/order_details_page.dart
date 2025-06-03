@@ -55,15 +55,31 @@ class OrderDetailsPage extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (date != null) ...[
+                        if (date != null &&
+                            order.state == OrderState.Delivered) ...[
                           Text(
-                            "Data da encomenda: ",
-                            style: const TextStyle(fontSize: 16),
+                            "Data da entrega: ",
+                            style: const TextStyle(fontSize: 15),
                           ),
                           Text(
                             date,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                        if (date != null &&
+                            (order.state == OrderState.Pendent ||
+                                order.state == OrderState.Sent)) ...[
+                          Text(
+                            "Entrega prevista para: ",
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          Text(
+                            date,
+                            style: const TextStyle(
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -71,13 +87,13 @@ class OrderDetailsPage extends StatelessWidget {
                         if (date == null) ...[
                           Text(
                             "Abandonada desde: ",
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 15),
                           ),
                           Text(
                             DateFormat.yMMMd('pt_PT').format(order.pickupDate),
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                              fontSize: 15,
                             ),
                           ),
                         ],
@@ -95,13 +111,13 @@ class OrderDetailsPage extends StatelessWidget {
                       children: [
                         Text(
                           "Encomenda Nº ",
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 15),
                         ),
                         Text(
                           "${order.id}",
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
                         ),
                       ],
@@ -119,12 +135,12 @@ class OrderDetailsPage extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text("Morada de entrega: ", style: TextStyle(fontSize: 16)),
+                    Text("Morada de entrega: ", style: TextStyle(fontSize: 15)),
                     Text(
                       order.address,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: 15,
                       ),
                     ),
                   ],

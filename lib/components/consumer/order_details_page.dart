@@ -336,11 +336,21 @@ class OrderDetailsPage extends StatelessWidget {
               style: TextStyle(fontSize: 12),
             ),
             Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // lógica de ver fatura
-                },
-                child: const Text("Ver fatura"),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  foregroundColor: Theme.of(context).colorScheme.secondary,
+                ),
+                onPressed: () {},
+                icon: Icon(
+                  Icons.receipt,
+                  size: 30,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                label: const Text(
+                  "Consultar fatura",
+                  style: TextStyle(fontSize: 20),
+                ),
               ),
             ),
             const SizedBox(height: 10),

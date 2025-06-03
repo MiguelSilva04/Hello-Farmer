@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/basket.dart';
 import 'package:harvestly/core/models/product.dart';
+import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 
 import '../../../core/models/producer_user.dart';
@@ -13,7 +14,8 @@ class BasketSection extends StatefulWidget {
 }
 
 class _BasketSectionState extends State<BasketSection> {
-  List<Basket> baskets = (AuthService().currentUser! as ProducerUser).store.baskets!;
+  List<Basket> baskets =
+      (AuthService().currentUser! as ProducerUser).store.baskets!;
   Basket? _editingBasket = null;
 
   void startEdit(Basket basket) {
@@ -145,8 +147,27 @@ class BasketCard extends StatelessWidget {
             ),
             Divider(),
             Text("Contém:", style: TextStyle(fontWeight: FontWeight.w500)),
-            ...basket.products.map(
-              (p) => Padding(
+            ...basket.productsAmounts.map((p) {
+              final productId = p.keys.first;
+              final quantity = p.values.first;
+              ProductAd? matchedProductAd;
+
+              for (final user in AuthService().users) {
+                if (user is ProducerUser) {
+                  for (final ad in (user).store.productsAds ?? []) {
+                    if (ad.product.id == productId) {
+                      matchedProductAd = ad;
+                      break;
+                    }
+                  }
+                }
+                if (matchedProductAd != null) break;
+              }
+
+              if (matchedProductAd == null) {
+                return Text("Produto não encontrado ($productId)");
+              }
+              return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -159,20 +180,23 @@ class BasketCard extends StatelessWidget {
                           color: Theme.of(context).colorScheme.surface,
                         ),
                         SizedBox(width: 8),
-                        Text(p.name, style: TextStyle(fontSize: 15)),
+                        Text(
+                          matchedProductAd.product.name,
+                          style: TextStyle(fontSize: 15),
+                        ),
                         SizedBox(width: 8),
                         Text(
-                          "(${p.unit == Unit.UNIT ? p.amount!.toStringAsFixed(0) : p.amount!.toStringAsFixed(2)} ",
+                          "(${matchedProductAd.product.unit == Unit.UNIT ? quantity.toStringAsFixed(0) : quantity.toStringAsFixed(2)} ",
                           style: TextStyle(fontSize: 15),
                         ),
                         Text(
-                          "${p.unit.toDisplayString()})",
+                          "${matchedProductAd.product.unit.toDisplayString()})",
                           style: TextStyle(fontSize: 15),
                         ),
                       ],
                     ),
                     Text(
-                      "${p.price!.toStringAsFixed(2)}€",
+                      "${matchedProductAd.product.price.toStringAsFixed(2)}€",
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -180,8 +204,8 @@ class BasketCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-            ),
+              );
+            }),
           ],
         ),
       ),
@@ -207,7 +231,7 @@ class AddBasketButton extends StatelessWidget {
                 name: '',
                 price: 0,
                 deliveryDate: DeliveryDate.values.first,
-                products: [],
+                productsAmounts: [],
               );
               return Dialog(
                 insetPadding: EdgeInsets.all(30),
@@ -266,8 +290,9 @@ class BasketEditAddPage extends StatefulWidget {
 class _BasketEditAddPageState extends State<BasketEditAddPage> {
   late TextEditingController nameController;
   late TextEditingController priceController;
+  late TextEditingController amountController;
   late DeliveryDate selectedDeliveryDate;
-  late List<Product> editableProducts;
+  late List<Map<String, int>> editableProducts;
 
   @override
   void initState() {
@@ -277,7 +302,9 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
       text: widget.basket.price.toString(),
     );
     selectedDeliveryDate = widget.basket.deliveryDate;
-    editableProducts = List<Product>.from(widget.basket.products);
+    editableProducts = List<Map<String, int>>.from(
+      widget.basket.productsAmounts,
+    );
   }
 
   @override
@@ -297,7 +324,7 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
     widget.onSave(updated);
   }
 
-  void addProduct(Product product) {
+  void addProduct(Map<String, int> product) {
     setState(() {
       editableProducts.add(product);
     });
@@ -332,7 +359,7 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
               TextField(
-                controller: amountCtrl,
+                controller: amountController,
                 decoration: InputDecoration(labelText: 'Quantidade'),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
@@ -379,10 +406,10 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
                     context,
                     Product(
                       name: nameCtrl.text,
+                      season: Season.ALL,
                       imageUrl: [],
                       category: '',
                       price: double.tryParse(priceCtrl.text) ?? 0,
-                      amount: double.tryParse(amountCtrl.text) ?? 1,
                       unit: selectedUnit,
                     ),
                   );
@@ -395,7 +422,9 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
       },
     );
     if (newProduct != null) {
-      addProduct(newProduct);
+      addProduct({
+        newProduct.id: double.tryParse(amountController.text)?.toInt() ?? 0,
+      });
     }
   }
 
@@ -472,16 +501,35 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
               itemCount: editableProducts.length,
               itemBuilder: (context, index) {
                 final p = editableProducts[index];
+                final productId = p.keys.first;
+                final quantity = p.values.first;
+                ProductAd? matchedProductAd;
+
+                for (final user in AuthService().users) {
+                  if (user is ProducerUser) {
+                    for (final ad in (user).store.productsAds ?? []) {
+                      if (ad.product.id == productId) {
+                        matchedProductAd = ad;
+                        break;
+                      }
+                    }
+                  }
+                  if (matchedProductAd != null) break;
+                }
+
+                if (matchedProductAd == null) {
+                  return Text("Produto não encontrado ($productId)");
+                }
                 return Card(
                   margin: EdgeInsets.symmetric(vertical: 4),
                   child: ListTile(
-                    title: Text(p.name),
+                    title: Text(matchedProductAd.product.name),
                     subtitle: Text(
-                      "${p.unit == Unit.UNIT ? p.amount!.toStringAsFixed(0) : p.amount!.toStringAsFixed(2)} ${p.unit.toDisplayString()} - ${p.price!.toStringAsFixed(2)}€",
+                      "${matchedProductAd.product.unit == Unit.UNIT ? quantity.toStringAsFixed(0) : quantity.toStringAsFixed(2)} ${matchedProductAd.product.unit.toDisplayString()} - ${matchedProductAd.product.price!.toStringAsFixed(2)}€",
                     ),
                     trailing: IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => removeProduct(p),
+                      onPressed: () => removeProduct(matchedProductAd!.product),
                     ),
                   ),
                 );

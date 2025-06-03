@@ -73,6 +73,7 @@ dependencies:
   geolocator: ^10.1.0
   permission_handler: ^11.3.0
   animated_toggle_switch: ^0.8.5
+  lucide_icons: ^0.257.0
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:

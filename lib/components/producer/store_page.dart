@@ -12,7 +12,9 @@ import '../../core/services/other/manage_section_notifier.dart';
 import '../../pages/profile_page.dart';
 
 class StorePage extends StatefulWidget {
-  const StorePage({super.key});
+  Store? store;
+
+  StorePage({super.key, this.store});
 
   @override
   State<StorePage> createState() => _StorePageState();
@@ -21,11 +23,21 @@ class StorePage extends StatefulWidget {
 class _StorePageState extends State<StorePage> {
   bool showBanca = true;
 
-  final Store myStore = (AuthService().currentUser! as ProducerUser).store;
+  late Store myStore;
+
+  @override
+  void initState() {
+    super.initState();
+    myStore =
+        widget.store != null
+            ? widget.store!
+            : (AuthService().currentUser! as ProducerUser).store;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: widget.store != null ? AppBar() : null,
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
@@ -131,39 +143,50 @@ class _StorePageState extends State<StorePage> {
                     Expanded(
                       flex: 3,
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             myStore.name ?? "Sem nome",
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          if (widget.store != null) const SizedBox(height: 8),
+                          Text(
+                            myStore.subName ?? "",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w400,
                               fontSize: 16,
                             ),
                           ),
-                          Text(myStore.subName ?? ""),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () {
-                              Provider.of<BottomNavigationNotifier>(
-                                context,
-                                listen: false,
-                              ).setIndex(4);
-                              Provider.of<ManageSectionNotifier>(
-                                context,
-                                listen: false,
-                              ).setIndex(1);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                            ),
-                            child: Text(
-                              "Editar banca",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
+                          if (widget.store == null) ...[
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                Provider.of<BottomNavigationNotifier>(
+                                  context,
+                                  listen: false,
+                                ).setIndex(4);
+                                Provider.of<ManageSectionNotifier>(
+                                  context,
+                                  listen: false,
+                                ).setIndex(1);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                              ),
+                              child: Text(
+                                "Editar banca",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -174,24 +197,26 @@ class _StorePageState extends State<StorePage> {
 
                 const Text(
                   "Descrição",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 4),
-                Text(myStore.description ?? "Sem descrição"),
-
+                Text(
+                  myStore.description ?? "Sem descrição",
+                  style: TextStyle(fontSize: 16),
+                ),
                 const SizedBox(height: 16),
-
                 const Text(
                   "Detalhes",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.place, color: Colors.red, size: 18),
+                    Icon(Icons.place, color: Colors.red, size: 20),
                     SizedBox(width: 4),
                     Text(
                       "Localização: ${myStore.city ?? "Sem localização"}",
+                      style: TextStyle(fontSize: 16),
                     ),
                   ],
                 ),
@@ -200,10 +225,13 @@ class _StorePageState extends State<StorePage> {
                     Icon(
                       Icons.home,
                       color: Theme.of(context).colorScheme.primary,
-                      size: 18,
+                      size: 20,
                     ),
                     SizedBox(width: 4),
-                    Text("Morada: ${myStore.address}"),
+                    Text(
+                      "Morada: ${myStore.address}",
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ],
                 ),
 
@@ -212,14 +240,16 @@ class _StorePageState extends State<StorePage> {
                 if (myStore.preferredMarkets != null) ...[
                   Text(
                     "Mercados Habituais",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   SizedBox(height: 4),
                   for (var mercado in myStore.preferredMarkets!)
                     Row(
                       children: [
                         const Text("• "),
-                        Expanded(child: Text(mercado)),
+                        Expanded(
+                          child: Text(mercado, style: TextStyle(fontSize: 16)),
+                        ),
                       ],
                     ),
                 ],
@@ -246,7 +276,7 @@ class _StorePageState extends State<StorePage> {
                           "Anúncios publicados",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            fontSize: 16,
+                            fontSize: 20,
                           ),
                         ),
                       ),
@@ -362,7 +392,7 @@ class _StorePageState extends State<StorePage> {
                                 children: [
                                   Text(
                                     myStore.storeReviews![i].description!,
-                                    style: TextStyle(fontSize: 14),
+                                    style: TextStyle(fontSize: 16),
                                   ),
                                 ],
                               ),
@@ -432,7 +462,7 @@ class _StorePageState extends State<StorePage> {
                                                   .first
                                                   .lastName,
                                           overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 14),
+                                          style: TextStyle(fontSize: 16),
                                         ),
                                       ),
                                       RatingBarIndicator(
@@ -479,7 +509,7 @@ class _StorePageState extends State<StorePage> {
                                     child: Text(
                                       "Responder",
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 14,
                                         color:
                                             Theme.of(
                                               context,
@@ -493,7 +523,7 @@ class _StorePageState extends State<StorePage> {
                                     child: Text(
                                       "Reportar",
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 14,
                                         color:
                                             Theme.of(
                                               context,
@@ -549,35 +579,42 @@ class _StorePageState extends State<StorePage> {
               children: [
                 Text(
                   productAd.product.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
-                Text(productAd.price),
-                Text(productAd.product.category),
+                Text(productAd.price, style: TextStyle(fontSize: 16)),
+                Text(
+                  productAd.product.category,
+                  style: TextStyle(fontSize: 16),
+                ),
                 Text(
                   productAd.highlight,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],
             ),
           ),
-          Column(
-            children: [
-              IconButton(
-                onPressed: () => _onEdit(context),
-                icon: Icon(
-                  Icons.edit,
-                  color: Theme.of(context).colorScheme.primary,
+          if (widget.store == null)
+            Column(
+              children: [
+                IconButton(
+                  onPressed: () => _onEdit(context),
+                  icon: Icon(
+                    Icons.edit,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: () => _onDelete(context),
-                icon: const Icon(Icons.delete, color: Colors.red),
-              ),
-            ],
-          ),
+                IconButton(
+                  onPressed: () => _onDelete(context),
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                ),
+              ],
+            ),
         ],
       ),
     );

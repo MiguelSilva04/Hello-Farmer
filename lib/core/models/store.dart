@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import 'basket.dart';
 import 'order.dart';
 import 'product_ad.dart';
@@ -54,6 +56,17 @@ class Store {
     this.baskets,
     this.viewsByUserDateTime,
   }) : id = (_idCounter++).toString();
+
+  IconData deliveryIcon(DeliveryMethod method) {
+    switch (method) {
+      case DeliveryMethod.COURIER:
+        return Icons.local_shipping;
+      case DeliveryMethod.HOME_DELIVERY:
+        return Icons.home;
+      case DeliveryMethod.PICKUP:
+        return Icons.storefront;
+    }
+  }
 
   double get averageRating {
     if (storeReviews == null || storeReviews!.isEmpty) return 0.0;

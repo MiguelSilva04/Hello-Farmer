@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/keywords.dart';
 
 // ignore: must_be_immutable
@@ -17,13 +19,27 @@ class ProductAdDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store =
-        AuthService().users
-            .whereType<ProducerUser>()
-            .firstWhere(
-              (p) => p.store.productsAds?.any((a) => a.id == ad.id) ?? false,
-            )
-            .store;
+    final deliveryMethods = [
+      {
+        'method': DeliveryMethod.HOME_DELIVERY.toDisplayString(),
+        'icon': Icons.home,
+        'type': DeliveryMethod.HOME_DELIVERY,
+      },
+      {
+        'method': DeliveryMethod.COURIER.toDisplayString(),
+        'icon': Icons.local_shipping,
+        'type': DeliveryMethod.COURIER,
+      },
+      {
+        'method': DeliveryMethod.PICKUP.toDisplayString(),
+        'icon': Icons.storefront,
+        'type': DeliveryMethod.PICKUP,
+      },
+    ];
+    final producer = AuthService().users.whereType<ProducerUser>().firstWhere(
+      (p) => p.store.productsAds?.any((a) => a.id == ad.id) ?? false,
+    );
+    final store = producer.store;
 
     final keywordMap = {for (var k in Keywords.keywords) k.name: k.icon};
 
@@ -132,11 +148,24 @@ class ProductAdDetailScreen extends StatelessWidget {
                     children:
                         ad.preferredDeliveryMethods.map((method) {
                           return Chip(
-                            label: Text(
-                              method.toDisplayString().split('.').last,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
-                              ),
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  store.deliveryIcon(method),
+                                  size: 16,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  method.toDisplayString().split('.').last,
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -147,73 +176,114 @@ class ProductAdDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: Image.asset(
-                          store.imageUrl!,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
+                  InkWell(
+                    onTap:
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => ProfilePage(producer),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "${store.name}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: Image.network(
+                            producer.imageUrl,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.cover,
                           ),
-                          Row(
-                            children: [
-                              RatingBarIndicator(
-                                rating: store.averageRating,
-                                itemBuilder:
-                                    (context, index) => Icon(
-                                      Icons.star,
-                                      color: Colors.amber.shade700,
-                                    ),
-                                itemCount: 5,
-                                itemSize: 24.0,
-                                direction: Axis.horizontal,
-                              ),
-                              Text(
-                                "(${store.averageRating.toStringAsFixed(2)}) ",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.secondaryFixed,
-                                ),
-                              ),
-                              Text(
-                                "• ${store.city ?? ''}",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.secondaryFixed,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(width: 5),
+                        Text("${producer.firstName} ${producer.lastName}"),
+                      ],
+                    ),
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.message_rounded),
+                  InkWell(
+                    onTap:
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => StorePage(store: store),
+                          ),
+                        ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: Image.asset(
+                                store.imageUrl!,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${store.name}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        RatingBarIndicator(
+                                          rating: store.averageRating,
+                                          itemBuilder:
+                                              (context, index) => Icon(
+                                                Icons.star,
+                                                color: Colors.amber.shade700,
+                                              ),
+                                          itemCount: 5,
+                                          itemSize: 24.0,
+                                          direction: Axis.horizontal,
+                                        ),
+                                        Text(
+                                          "(${store.averageRating.toStringAsFixed(1)}) ",
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.secondaryFixed,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      "📍${store.city ?? ''}",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.secondaryFixed,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          icon: Icon(Icons.message_rounded),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

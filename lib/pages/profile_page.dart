@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:harvestly/core/models/producer_user.dart';
+
 import '../components/country_state_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:flutter/material.dart';
@@ -587,13 +589,22 @@ class _ProfilePageState extends State<ProfilePage> {
             fontStyle: FontStyle.italic,
           ),
         ),
-        if (user!.isProducer!) ...[
+        if (user!.isProducer) ...[
           const SizedBox(height: 10),
           Text("🏪 Bancas", style: TextStyle(fontSize: 20)),
           const SizedBox(height: 5),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Text("Quinta Sol Banca "), Text("• Almeirim")],
+            children: [
+              Text(
+                (user as ProducerUser).store.name!,
+                style: TextStyle(fontSize: 18),
+              ),
+              Text(
+                " 📍 ${(user as ProducerUser).store.city!}",
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
           ),
         ],
         const SizedBox(height: 10),

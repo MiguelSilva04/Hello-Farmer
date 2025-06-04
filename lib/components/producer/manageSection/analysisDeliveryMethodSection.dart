@@ -14,17 +14,17 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
     final List<Order> orders = currentStore.orders ?? [];
     final deliveryMethods = [
       {
-        'method': 'Entrega ao domicílio',
+        'method': DeliveryMethod.HOME_DELIVERY.toDisplayString(),
         'icon': Icons.home,
         'type': DeliveryMethod.HOME_DELIVERY,
       },
       {
-        'method': 'Transportadora',
+        'method': DeliveryMethod.COURIER.toDisplayString(),
         'icon': Icons.local_shipping,
         'type': DeliveryMethod.COURIER,
       },
       {
-        'method': 'Recolha pelo consumidor',
+        'method': DeliveryMethod.PICKUP.toDisplayString(),
         'icon': Icons.storefront,
         'type': DeliveryMethod.PICKUP,
       },

@@ -157,7 +157,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
             right: 0,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Text(
                 'Promoções até 75% em todas a fruta da tua zona!',
                 style: TextStyle(
@@ -263,7 +263,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            user.store.location ?? 'Localização desconhecida',
+            user.store.city ?? 'Cidade desconhecida',
             style: const TextStyle(fontSize: 10),
           ),
           Row(

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'product_detail_page.dart';
+import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/models/product_ad.dart';
+import 'package:harvestly/utils/keywords.dart';
+import 'package:provider/provider.dart';
+
+import '../../core/models/consumer_user.dart';
+import '../../core/services/auth/auth_service.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -10,215 +15,232 @@ class FavoritesPage extends StatefulWidget {
 }
 
 class _FavoritesPageState extends State<FavoritesPage> {
-  // Lista de favoritos fictícia, futuramente substituir por favoritos reais (possivelmente um list de productads chamada favorites)
-  List<Map<String, String>> favorites = [
-    {
-      'product': 'Batata',
-      'seller': 'Banca Zé das Couve',
-      'imagePath': 'assets/images/mock_images/batata.jpg',
-    },
-    {
-      'product': 'Cenoura',
-      'seller': 'Banca Joel Loures',
-      'imagePath': 'assets/images/mock_images/cenoura.jpg',
-    },
-    {
-      'product': 'Tomate',
-      'seller': 'Banca António Silva',
-      'imagePath': 'assets/images/mock_images/tomate.jpg',
-    },
-  ];
+  List<ProductAd> allFavorites = [];
+  List<ProductAd> displayedFavorites = [];
 
-  final currentUser = AuthService().currentUser!;
+  final Set<String> selectedKeywords = {};
 
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
-  void removeItem(int index) {
-    final removedItem = favorites[index];
-
-    _listKey.currentState?.removeItem(index, (context, animation) {
-      return SizeTransition(
-        sizeFactor: animation,
-        axis: Axis.vertical,
-        child: FadeTransition(
-          opacity: animation,
-          child: buildListItem(context, removedItem, index, animate: false),
-        ),
-      );
-    }, duration: const Duration(milliseconds: 300));
-
-    setState(() {
-      favorites.removeAt(index);
-    });
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${removedItem['product']} removido dos favoritos'),
-      ),
-    );
+  /// Sempre atualizada — evita usar uma variável fixa para os favoritos.
+  List<String> get favoritesProductsIds {
+    final consumer = AuthService().currentUser as ConsumerUser;
+    return consumer.favouritesProductsIds ?? [];
   }
 
-  Widget buildListItem(
-    BuildContext context,
-    Map<String, String> item,
-    int index, {
-    bool animate = true,
-  }) {
-    return Column(
-      key: ValueKey(item['product']),
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => ProductDetailPage(
-                        product: item['product']!,
-                        seller: item['seller']!,
-                        imagePath: item['imagePath']!,
-                      ),
-                ),
-              );
-            },
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Imagem
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    item['imagePath']!,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
+  @override
+  void initState() {
+    super.initState();
+    loadFavorites();
+  }
 
-                // Título e vendedor
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item['product']!,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item['seller']!,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ),
+  void loadFavorites() {
+    final favoritesIds = favoritesProductsIds;
 
-                const SizedBox(width: 8),
-
-                // Botão favorito animado
-                FavoriteButton(onPressed: () => removeItem(index)),
-              ],
-            ),
-          ),
-        ),
-
-        if (index < favorites.length - 1)
-          const Divider(height: 1, thickness: 0.5, color: Colors.grey),
-      ],
+    final allAds = AuthService().users.whereType<ProducerUser>().expand(
+      (producer) => producer.store.productsAds ?? [],
     );
+
+    final uniqueFavorites = {
+      for (var ad in allAds)
+        if (favoritesIds.contains(ad.id)) ad.id: ad,
+    };
+
+    setState(() {
+      allFavorites = uniqueFavorites.values.toList().cast<ProductAd>();
+      displayedFavorites = List.from(allFavorites);
+    });
+  }
+
+  void applyFilters() {
+    setState(() {
+      if (selectedKeywords.isEmpty) {
+        displayedFavorites = List.from(allFavorites);
+      } else {
+        displayedFavorites = allFavorites.where((ad) {
+          return ad.keywords?.any((k) => selectedKeywords.contains(k)) ?? false;
+        }).toList();
+      }
+    });
+  }
+
+  void toggleFavorite(ProductAd ad) {
+    final consumer = AuthService().currentUser as ConsumerUser;
+    final favorites = consumer.favouritesProductsIds ?? [];
+
+    setState(() {
+      if (favorites.contains(ad.id)) {
+        favorites.remove(ad.id);
+      } else {
+        favorites.add(ad.id);
+      }
+      consumer.favouritesProductsIds = favorites;
+
+      loadFavorites(); // Atualiza a lista com base nos novos favoritos
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Favoritos'), centerTitle: true),
-      body: AnimatedList(
-        key: _listKey,
-        padding: const EdgeInsets.all(12),
-        initialItemCount: favorites.length,
-        itemBuilder: (context, index, animation) {
-          return SizeTransition(
-            sizeFactor: animation,
-            child: buildListItem(context, favorites[index], index),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class FavoriteButton extends StatefulWidget {
-  final VoidCallback onPressed;
-
-  const FavoriteButton({super.key, required this.onPressed});
-
-  @override
-  State<FavoriteButton> createState() => _FavoriteButtonState();
-}
-
-class _FavoriteButtonState extends State<FavoriteButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-
-    _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(
-          begin: 1.0,
-          end: 1.3,
-        ).chain(CurveTween(curve: Curves.easeOut)),
-        weight: 50,
-      ),
-      TweenSequenceItem(
-        tween: Tween(
-          begin: 1.3,
-          end: 1.0,
-        ).chain(CurveTween(curve: Curves.easeIn)),
-        weight: 50,
-      ),
-    ]).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() async {
-    await _controller.forward();
-    _controller.reset();
-    widget.onPressed();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: IconButton(
-        icon: const Icon(
-          Icons.favorite,
-          color: Color.fromRGBO(76, 153, 120, 1),
+      appBar: AppBar(
+        title: const Text('Favoritos'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
-        onPressed: _handleTap,
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 12),
+
+          // Filtros por palavras-chave
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: Keywords.keywords.map((keywordIcon) {
+                final isSelected = selectedKeywords.contains(keywordIcon.name);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: FilterChip(
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          keywordIcon.icon,
+                          size: 18,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          keywordIcon.name,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          selectedKeywords.add(keywordIcon.name);
+                        } else {
+                          selectedKeywords.remove(keywordIcon.name);
+                        }
+                        applyFilters();
+                      });
+                    },
+                    selectedColor: Theme.of(context).colorScheme.secondaryFixed,
+                    checkmarkColor: Theme.of(context).colorScheme.secondary,
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          Expanded(
+            child: displayedFavorites.isNotEmpty
+                ? ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: displayedFavorites.length,
+                    itemBuilder: (context, index) {
+                      final ad = displayedFavorites[index];
+
+                      ProducerUser? producer;
+                      try {
+                        producer = AuthService().users
+                            .whereType<ProducerUser>()
+                            .firstWhere((u) => u.store.productsAds!.contains(ad));
+                      } catch (_) {
+                        producer = null;
+                      }
+
+                      if (producer == null) return const SizedBox.shrink();
+
+                      return Column(
+                        children: [
+                          ListTile(
+                            contentPadding: const EdgeInsets.all(12),
+                            leading: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset(
+                                    ad.product.imageUrl.first,
+                                    width: 70,
+                                    height: 70,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Positioned(
+                                  top: -6,
+                                  left: -6,
+                                  child: GestureDetector(
+                                    onTap: () => toggleFavorite(ad),
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black26,
+                                            blurRadius: 4,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                      child: Icon(
+                                        favoritesProductsIds.contains(ad.id)
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        size: 16,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            title: Text(
+                              ad.product.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: Image.network(
+                                    producer.imageUrl,
+                                    width: 30,
+                                    height: 30,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text('${producer.firstName} ${producer.lastName}'),
+                              ],
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.shopping_cart_outlined,
+                                color: Theme.of(context).colorScheme.surface,
+                              ),
+                              onPressed: () {},
+                            ),
+                          ),
+                          const Divider(),
+                        ],
+                      );
+                    },
+                  )
+                : const Center(
+                    child: Text("Sem produtos adicionados aos favoritos!"),
+                  ),
+          ),
+        ],
       ),
     );
   }

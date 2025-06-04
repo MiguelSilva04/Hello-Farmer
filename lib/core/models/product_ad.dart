@@ -27,6 +27,7 @@ class ProductAd {
   HighlightType? highlightType;
   List<DeliveryMethod> preferredDeliveryMethods;
   List<Map<DateTime, String>>? viewsByUserDateTime;
+  List<String>? keywords;
   AdVisibility? visibility = AdVisibility.PUBLIC;
   ProductAd({
     required this.id,
@@ -39,6 +40,7 @@ class ProductAd {
     this.highlightDate,
     this.visibility,
     this.highlightType,
+    this.keywords,
   }) : description = description ?? "",
        price =
            price ??

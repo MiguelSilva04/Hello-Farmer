@@ -191,7 +191,7 @@ class _StorePageState extends State<StorePage> {
                     Icon(Icons.place, color: Colors.red, size: 18),
                     SizedBox(width: 4),
                     Text(
-                      "Localização: ${myStore.location ?? "Sem localização"}",
+                      "Localização: ${myStore.city ?? "Sem localização"}",
                     ),
                   ],
                 ),

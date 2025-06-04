@@ -27,7 +27,7 @@ class Store {
   String? name;
   String? subName;
   String? description;
-  String? location;
+  String? city;
   String? address;
   List<String>? preferredMarkets;
   List<ProductAd>? productsAds;
@@ -44,7 +44,7 @@ class Store {
     this.name,
     this.subName,
     this.description,
-    this.location,
+    this.city,
     this.address,
     this.preferredMarkets,
     this.productsAds,
@@ -64,7 +64,7 @@ class Store {
       name: json['name'] ?? '',
       subName: json['subName'] ?? '',
       description: json['description'] ?? '',
-      location: json['location'] ?? '',
+      city: json['city'] ?? '',
       address: json['address'] ?? '',
       imageUrl: json['imageUrl'] ?? '',
       backgroundImageUrl: json['backgroundImageUrl'],

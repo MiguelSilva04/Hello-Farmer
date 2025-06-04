@@ -182,12 +182,12 @@ class OrderDetailsPage extends StatelessWidget {
                             fontSize: 16,
                           ),
                         ),
-                        if (producer.store.location != null)
+                        if (producer.store.city != null)
                           Row(
                             children: [
                               Icon(Icons.pin_drop_rounded),
                               Text(
-                                producer.store.location!,
+                                producer.store.city!,
                                 style: TextStyle(
                                   color:
                                       Theme.of(

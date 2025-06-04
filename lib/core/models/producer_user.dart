@@ -31,7 +31,7 @@ class ProducerUser extends AppUser {
          subName: "Produzimos com foco na sustentabilidade",
          description:
              "Bem-vindo à Quinta Sol Nascente 🙂 | Produzimos com foco na sustentabilidade e bem-estar | Agricultura regenerativa | Do campo diretamente para a sua mesa, com amor e responsabilidade 🌱",
-         location: "Almeirim",
+         city: "Setúbal",
          address: "-8.6235, 39.2081",
          viewsByUserDateTime: [
            {DateTime(2025, 3, 1, 10, 30): "R09rU86ypkTmEpTufS647TfgzRI3"},
@@ -383,6 +383,7 @@ class ProducerUser extends AppUser {
                DeliveryMethod.COURIER,
                DeliveryMethod.HOME_DELIVERY,
              ],
+             keywords: ["Natural", "Fair Trade", "Sem Lactose"],
              description:
                  "Centeio fresco, cultivado de forma sustentável, ideal para pães, farinhas e receitas saudáveis. Rico em fibras e nutrientes, direto do produtor para a sua mesa.",
              highlightDate: DateTime(2025, 5, 22, 12, 0),
@@ -408,6 +409,7 @@ class ProducerUser extends AppUser {
              ),
              highlightType: HighlightType.SEARCH,
              preferredDeliveryMethods: [DeliveryMethod.COURIER],
+             keywords: ["Natural", "Fair Trade", "Sem Lactose", "Sem Glúten"],
              description:
                  "Trigo de alta qualidade, cultivado de forma sustentável, ideal para panificação, massas e receitas saudáveis. Rico em nutrientes e sabor, direto do produtor para a sua mesa.",
              highlightDate: DateTime(2025, 5, 24, 10, 0),
@@ -429,6 +431,7 @@ class ProducerUser extends AppUser {
                unit: Unit.KG,
                price: 0.88,
              ),
+             keywords: ["Natural", "Fair Trade"],
              preferredDeliveryMethods: [DeliveryMethod.PICKUP],
              description:
                  "Alface Romana fresca, crocante e cheia de sabor, perfeita para saladas e sanduíches. Cultivada com práticas sustentáveis para garantir qualidade e frescura até à sua mesa.",
@@ -454,6 +457,7 @@ class ProducerUser extends AppUser {
                unit: Unit.KG,
                price: 1.56,
              ),
+             keywords: ["Biológico"],
              highlightType: HighlightType.HOME,
              preferredDeliveryMethods: [DeliveryMethod.HOME_DELIVERY],
              description:
@@ -502,6 +506,7 @@ class ProducerUser extends AppUser {
                DeliveryMethod.HOME_DELIVERY,
                DeliveryMethod.PICKUP,
              ],
+             keywords: ["Biológico", "Natural"],
              highlightType: HighlightType.SEARCH,
              description:
                  "Tomate Cherry fresco, doce e suculento, perfeito para saladas, snacks e pratos gourmet. Cultivado com práticas sustentáveis para garantir sabor e qualidade excepcionais.",
@@ -551,6 +556,13 @@ class ProducerUser extends AppUser {
              preferredDeliveryMethods: [
                DeliveryMethod.COURIER,
                DeliveryMethod.HOME_DELIVERY,
+             ],
+             keywords: [
+               "Biológico",
+               "Natural",
+               "Fair Trade",
+               "Vegan",
+               "Vegetariano",
              ],
              description:
                  "Ovos frescos de galinhas criadas ao ar livre, ricos em sabor e nutrientes. Ideais para pequenos-almoços, bolos e receitas saudáveis. Direto do produtor para a sua mesa.",

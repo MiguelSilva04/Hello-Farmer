@@ -66,7 +66,7 @@ class InvoicePage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          store.location!,
+                          store.city!,
                           textAlign: TextAlign.start,
                           style: TextStyle(
                             fontWeight: FontWeight.w400,

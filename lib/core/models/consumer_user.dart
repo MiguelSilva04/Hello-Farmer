@@ -1,3 +1,4 @@
+import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/shopping_cart.dart';
 
 import 'app_user.dart';
@@ -6,6 +7,7 @@ import 'offer.dart';
 class ConsumerUser extends AppUser {
   List<Offer>? offers;
   ShoppingCart shoppingCart = ShoppingCart();
+  List<String>? favouritesProductsIds;
 
   ConsumerUser({
     required super.id,
@@ -19,7 +21,8 @@ class ConsumerUser extends AppUser {
     super.recoveryEmail,
     super.dateOfBirth,
     // this.offers,
-  }) : offers = [
+  }) : favouritesProductsIds = ["idCenteio", "idTrigo"],
+       offers = [
          Offer(
            id: 'offer1',
            discountValue: DiscountValue.TEN,

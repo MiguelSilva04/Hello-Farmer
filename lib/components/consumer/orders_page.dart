@@ -250,7 +250,13 @@ class OrderCard extends StatelessWidget {
       onTap:
           () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => OrderDetailsPage(order: order, producer: (producer as ProducerUser))),
+            MaterialPageRoute(
+              builder:
+                  (_) => OrderDetailsPage(
+                    order: order,
+                    producer: (producer as ProducerUser),
+                  ),
+            ),
           ),
       child: Padding(
         padding: const EdgeInsets.all(10),
@@ -405,10 +411,7 @@ class OrderCard extends StatelessWidget {
                     icon: const Icon(Icons.more_horiz),
                     onSelected: (value) {
                       if (value == 'ver') {
-
-                      } else if (value == 'remover') {
-
-                      }
+                      } else if (value == 'remover') {}
                     },
                     itemBuilder:
                         (BuildContext context) => <PopupMenuEntry<String>>[
@@ -424,14 +427,7 @@ class OrderCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.all(10),
                       child: TextButton(
-                        onPressed: () {
-                          //So para teste, abre o ShoppingCart
-                          Navigator.push(context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ShoppingCartPage(cart: ShoppingCart())
-                              ));
-                        },
+                        onPressed: () {},
                         child: Text(
                           "Devolução",
                           style: TextStyle(

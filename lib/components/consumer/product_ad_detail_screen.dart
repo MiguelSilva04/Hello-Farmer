@@ -485,26 +485,48 @@ class ProductAdDetailScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("Comentar:"),
+                              const SizedBox(height: 10),
                               TextFormField(
                                 decoration: InputDecoration(
                                   labelText: 'Comentário',
                                   hintText: 'Escreve o teu comentário...',
 
                                   border: OutlineInputBorder(),
-                                  alignLabelWithHint:
-                                      true, // necessário quando se usa várias linhas
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondaryFixed,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color:
+                                          Theme.of(context).colorScheme.surface,
+                                      width: 0.5,
+                                    ), // cor quando focado
+                                  ),
+                                  alignLabelWithHint: true,
                                 ),
-                                maxLines:
-                                    null, // permite crescer indefinidamente
-                                minLines: 4, // altura mínima: 4 linhas
+                                maxLines: null,
+                                minLines: 4,
                                 keyboardType: TextInputType.multiline,
                               ),
                             ],
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: Text("Publicar"),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {},
+                                child: Text("Publicar"),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

@@ -10,13 +10,13 @@ class CategoryIcon {
 class Categories {
   static List<CategoryIcon> categories = [
     CategoryIcon("Frutas", Icons.apple),
-    CategoryIcon("Legumes e Hortícolas", Icons.spa),
-    CategoryIcon("Verduras e Folhosas", Icons.eco),
-    CategoryIcon("Tubérculos e Raízes", Icons.grass),
+    CategoryIcon("Hortícolas", Icons.spa),
+    CategoryIcon("Folhosas", Icons.eco),
+    CategoryIcon("Tubérculos", Icons.grass),
     CategoryIcon("Ervas Aromáticas", Icons.local_florist),
     CategoryIcon("Cogumelos", Icons.rice_bowl),
-    CategoryIcon("Grãos e Cereais", Icons.spa_outlined),
-    CategoryIcon("Frutos Secos e Sementes", Icons.nature),
+    CategoryIcon("Cereais", Icons.spa_outlined),
+    CategoryIcon("Frutos Secos", Icons.nature),
     CategoryIcon("Ovos", Icons.egg),
     CategoryIcon("Laticínios e Queijos", Icons.icecream),
     CategoryIcon("Carnes e Aves", Icons.set_meal),

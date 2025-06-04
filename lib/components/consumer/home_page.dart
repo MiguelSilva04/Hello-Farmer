@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
+import 'package:harvestly/pages/profile_page.dart';
+import 'package:harvestly/utils/categories.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/producer_user.dart';
 
@@ -174,14 +177,9 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   }
 
   Widget _buildCategories() {
-    final categories = ['Fruta', 'Legumes', 'Ervas', 'Doces', 'Ovos'];
-    final icons = [
-      Icons.apple,
-      Icons.grass,
-      Icons.spa,
-      Icons.cookie,
-      Icons.egg,
-    ];
+    final categories =
+        Categories.categories.map((c) => c.name).take(5).toList();
+    final icons = Categories.categories.map((c) => c.icon).take(5).toList();
 
     return SizedBox(
       height: 100,
@@ -224,60 +222,72 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
 
   Widget _buildProductItem(ProductAd ad) {
     final product = ad.product;
-    return Padding(
-      padding: const EdgeInsets.only(right: 12.0),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 35,
-            backgroundImage: AssetImage(product.imageUrl.first),
+    return InkWell(
+      onTap:
+          () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (ctx) => ProductAdDetailScreen(ad: ad)),
           ),
-          const SizedBox(height: 6),
-          SizedBox(
-            width: 70,
-            child: Text(
-              product.name,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 12.0),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 35,
+              backgroundImage: AssetImage(product.imageUrl.first),
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 70,
+              child: Text(
+                product.name,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildProducerItem(ProducerUser user) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16.0),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundImage: NetworkImage(user.imageUrl),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${user.firstName} ${user.lastName}',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            user.store.city ?? 'Cidade desconhecida',
-            style: const TextStyle(fontSize: 10),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("4.6", style: TextStyle(fontSize: 10)),
-              const Icon(Icons.star, size: 12, color: Colors.amber),
-              Text(
-                '(${user.store.storeReviews?.length ?? 0})',
-                style: const TextStyle(fontSize: 10),
-              ),
-            ],
-          ),
-        ],
+    return InkWell(
+      onTap:
+          () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (ctx) => ProfilePage(user))),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16.0),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: NetworkImage(user.imageUrl),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${user.firstName} ${user.lastName}',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              user.store.city ?? 'Cidade desconhecida',
+              style: const TextStyle(fontSize: 10),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("4.6", style: TextStyle(fontSize: 10)),
+                const Icon(Icons.star, size: 12, color: Colors.amber),
+                Text(
+                  '(${user.store.storeReviews?.length ?? 0})',
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

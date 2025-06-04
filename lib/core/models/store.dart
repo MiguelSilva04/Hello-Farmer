@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'basket.dart';
 import 'order.dart';
 import 'product_ad.dart';
-import 'store_review.dart';
+import 'review.dart';
 
 enum DeliveryMethod { HOME_DELIVERY, COURIER, PICKUP }
 
@@ -33,7 +33,6 @@ class Store {
   String? address;
   List<String>? preferredMarkets;
   List<ProductAd>? productsAds;
-  List<StoreReview>? storeReviews;
   List<Order>? orders;
   List<DeliveryMethod>? preferredDeliveryMethod;
   List<Basket>? baskets;
@@ -50,12 +49,19 @@ class Store {
     this.address,
     this.preferredMarkets,
     this.productsAds,
-    this.storeReviews,
     this.orders,
     this.preferredDeliveryMethod,
     this.baskets,
     this.viewsByUserDateTime,
   }) : id = (_idCounter++).toString();
+
+  List<Review>? get storeReviews {
+    return productsAds
+            ?.expand((ad) => ad.adReviews ?? [])
+            .toList()
+            .cast<Review>() ??
+        null;
+  }
 
   IconData deliveryIcon(DeliveryMethod method) {
     switch (method) {
@@ -98,12 +104,6 @@ class Store {
           json['productsAds'] != null
               ? List<ProductAd>.from(
                 json['productsAds'].map((x) => ProductAd.fromJson(x)),
-              )
-              : [],
-      storeReviews:
-          json['storeReviews'] != null
-              ? List<StoreReview>.from(
-                json['storeReviews'].map((x) => StoreReview.fromJson(x)),
               )
               : [],
       viewsByUserDateTime:

@@ -1,3 +1,4 @@
+import 'package:harvestly/core/models/review.dart';
 import 'package:harvestly/core/models/store.dart';
 
 import 'product.dart';
@@ -29,6 +30,7 @@ class ProductAd {
   List<Map<DateTime, String>>? viewsByUserDateTime;
   List<String>? keywords;
   AdVisibility? visibility = AdVisibility.PUBLIC;
+  List<Review>? adReviews;
   ProductAd({
     required this.id,
     required this.product,
@@ -41,6 +43,7 @@ class ProductAd {
     this.visibility,
     this.highlightType,
     this.keywords,
+    this.adReviews,
   }) : description = description ?? "",
        price =
            price ??

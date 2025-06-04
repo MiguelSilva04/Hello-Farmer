@@ -8,6 +8,7 @@ import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/keywords.dart';
+import 'package:intl/intl.dart';
 
 // ignore: must_be_immutable
 class ProductAdDetailScreen extends StatelessWidget {
@@ -19,29 +20,27 @@ class ProductAdDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deliveryMethods = [
-      {
-        'method': DeliveryMethod.HOME_DELIVERY.toDisplayString(),
-        'icon': Icons.home,
-        'type': DeliveryMethod.HOME_DELIVERY,
-      },
-      {
-        'method': DeliveryMethod.COURIER.toDisplayString(),
-        'icon': Icons.local_shipping,
-        'type': DeliveryMethod.COURIER,
-      },
-      {
-        'method': DeliveryMethod.PICKUP.toDisplayString(),
-        'icon': Icons.storefront,
-        'type': DeliveryMethod.PICKUP,
-      },
-    ];
     final producer = AuthService().users.whereType<ProducerUser>().firstWhere(
       (p) => p.store.productsAds?.any((a) => a.id == ad.id) ?? false,
     );
     final store = producer.store;
 
     final keywordMap = {for (var k in Keywords.keywords) k.name: k.icon};
+
+    String getTimeReviewPosted(DateTime date) {
+      final dateNow = DateTime.now();
+      final difference = dateNow.difference(date);
+
+      if (difference.inSeconds < 60) {
+        return "há ${difference.inSeconds} segundos";
+      } else if (difference.inMinutes < 60) {
+        return "há ${difference.inMinutes} minutos";
+      } else if (difference.inHours < 24) {
+        return "há ${difference.inHours} horas";
+      } else {
+        return DateFormat('dd/MM/y', 'pt_PT').format(date);
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text("")),
@@ -288,7 +287,230 @@ class ProductAdDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            if (ad.adReviews != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        "Comentários:",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: ad.adReviews!.length,
+                          itemBuilder:
+                              (ctx, i) => Column(
+                                children: [
+                                  Column(
+                                    children: [
+                                      ListTile(
+                                        isThreeLine: true,
+                                        subtitle: Column(
+                                          children: [
+                                            Text(
+                                              ad.adReviews![i].description!,
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                          ],
+                                        ),
+                                        title: InkWell(
+                                          onTap:
+                                              () => Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (context) => ProfilePage(
+                                                        AuthService().users
+                                                            .where(
+                                                              (el) =>
+                                                                  el.id ==
+                                                                  ad
+                                                                      .adReviews![i]
+                                                                      .reviewerId,
+                                                            )
+                                                            .first,
+                                                      ),
+                                                ),
+                                              ),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            child: Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  backgroundColor:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.tertiary,
+                                                  backgroundImage: NetworkImage(
+                                                    AuthService().users
+                                                        .where(
+                                                          (el) =>
+                                                              el.id ==
+                                                              ad
+                                                                  .adReviews![i]
+                                                                  .reviewerId,
+                                                        )
+                                                        .first
+                                                        .imageUrl,
+                                                  ),
+                                                  radius: 10,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    AuthService().users
+                                                            .where(
+                                                              (el) =>
+                                                                  el.id ==
+                                                                  ad
+                                                                      .adReviews![i]
+                                                                      .reviewerId,
+                                                            )
+                                                            .first
+                                                            .firstName +
+                                                        " " +
+                                                        AuthService().users
+                                                            .where(
+                                                              (el) =>
+                                                                  el.id ==
+                                                                  ad
+                                                                      .adReviews![i]
+                                                                      .reviewerId,
+                                                            )
+                                                            .first
+                                                            .lastName,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                                RatingBarIndicator(
+                                                  rating:
+                                                      ad.adReviews![i].rating!,
+                                                  itemBuilder:
+                                                      (context, index) => Icon(
+                                                        Icons.star,
+                                                        color:
+                                                            Colors
+                                                                .amber
+                                                                .shade700,
+                                                      ),
+                                                  itemCount: 5,
+                                                  itemSize: 18,
+                                                  direction: Axis.horizontal,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        trailing: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            Text(
+                                              getTimeReviewPosted(
+                                                ad.adReviews![i].dateTime!,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12,
+                                          left: 12,
+                                          right: 12,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            InkWell(
+                                              onTap:
+                                                  () => print(
+                                                    "Respondido com sucesso!",
+                                                  ),
+                                              child: Text(
+                                                "Responder",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.surface,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap:
+                                                  () => print(
+                                                    "Reportado com sucesso!",
+                                                  ),
+                                              child: Text(
+                                                "Reportar",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.surface,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Divider(),
+                                ],
+                              ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Comentar:"),
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  labelText: 'Comentário',
+                                  hintText: 'Escreve o teu comentário...',
+
+                                  border: OutlineInputBorder(),
+                                  alignLabelWithHint:
+                                      true, // necessário quando se usa várias linhas
+                                ),
+                                maxLines:
+                                    null, // permite crescer indefinidamente
+                                minLines: 4, // altura mínima: 4 linhas
+                                keyboardType: TextInputType.multiline,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: Text("Publicar"),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(

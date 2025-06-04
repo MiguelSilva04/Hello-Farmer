@@ -1,4 +1,4 @@
-class StoreReview {
+class Review {
   static int _idCounter = 0;
 
   final String id;
@@ -7,7 +7,7 @@ class StoreReview {
   String? description;
   DateTime? dateTime;
 
-  StoreReview({
+  Review({
     String? id,
     this.reviewerId,
     this.rating,
@@ -15,8 +15,8 @@ class StoreReview {
     this.dateTime,
   }) : id = id ?? (_idCounter++).toString();
 
-  factory StoreReview.fromJson(Map<String, dynamic> json) {
-    return StoreReview(
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
       id: json['id'] ?? '',
       reviewerId: json['reviewerId'] ?? '',
       description: json['description'] ?? '',

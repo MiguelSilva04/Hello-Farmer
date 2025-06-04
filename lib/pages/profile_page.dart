@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 
 import '../components/country_state_picker.dart';
@@ -593,18 +594,27 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 10),
           Text("🏪 Bancas", style: TextStyle(fontSize: 20)),
           const SizedBox(height: 5),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                (user as ProducerUser).store.name!,
-                style: TextStyle(fontSize: 18),
-              ),
-              Text(
-                " 📍 ${(user as ProducerUser).store.city!}",
-                style: TextStyle(fontSize: 18),
-              ),
-            ],
+          InkWell(
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder:
+                        (ctx) => StorePage(store: (user as ProducerUser).store),
+                  ),
+                ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  (user as ProducerUser).store.name!,
+                  style: TextStyle(fontSize: 18),
+                ),
+                Text(
+                  " 📍 ${(user as ProducerUser).store.city!}",
+                  style: TextStyle(fontSize: 18),
+                ),
+              ],
+            ),
           ),
         ],
         const SizedBox(height: 10),

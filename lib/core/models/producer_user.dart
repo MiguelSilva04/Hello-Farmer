@@ -5,7 +5,7 @@ import 'basket.dart';
 import 'order.dart';
 import 'product_ad.dart';
 import 'store.dart';
-import 'store_review.dart';
+import 'review.dart';
 
 class ProducerUser extends AppUser {
   final Store store;
@@ -372,7 +372,7 @@ class ProducerUser extends AppUser {
                season: Season.SUMMER,
                name: 'Centeio',
                imageUrl: ['assets/images/mock_images/centeio.jpg'],
-               category: "Grãos e Cereais",
+               category: "Cereais",
                stock: 10,
                minAmount: 5,
                unit: Unit.KG,
@@ -394,6 +394,21 @@ class ProducerUser extends AppUser {
                {DateTime(2025, 3, 4, 16, 0): "YScblT6Hx2RswFie1JKZX5hgn5F2"},
                {DateTime(2025, 3, 5, 11, 20): "pxgE59JoVgaDHsxbOijA9VKMfKL2"},
              ],
+             adReviews: [
+               Review(
+                 rating: 4.3,
+                 description:
+                     "Entrega em mãos impecável, correu tudo bem e rápido!",
+                 dateTime: DateTime(2025, 4, 1, 11, 45),
+                 reviewerId: "vjjzySrSiIYy1c3QcduZhlKglNh2",
+               ),
+               Review(
+                 rating: 4.5,
+                 description: "Chegou tudo em condições, voltarei a comprar aqui centeio!",
+                 dateTime: DateTime(2025, 5, 6, 09, 05),
+                 reviewerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
+               ),
+             ],
            ),
            ProductAd(
              id: "idTrigo",
@@ -401,7 +416,7 @@ class ProducerUser extends AppUser {
                name: 'Trigo',
                season: Season.SUMMER,
                imageUrl: ['assets/images/mock_images/trigo.jpg'],
-               category: "Grãos e Cereais",
+               category: "Cereais",
                stock: 20,
                minAmount: 10,
                unit: Unit.KG,
@@ -425,7 +440,7 @@ class ProducerUser extends AppUser {
                name: 'Alface Romana',
                season: Season.SPRING,
                imageUrl: ['assets/images/mock_images/alface_romana.jpg'],
-               category: "Legumes e Hortícolas",
+               category: "Hortícolas",
                stock: 30,
                minAmount: 10,
                unit: Unit.KG,
@@ -444,6 +459,22 @@ class ProducerUser extends AppUser {
                {DateTime(2025, 3, 28, 12, 35): "BABXdZ7vwKVFtpIjQQeri4mC71v2"},
                {DateTime(2025, 3, 29, 14, 25): "IyxNeUyr6QNA3lwSALZBHsV75ap2"},
              ],
+             adReviews: [
+               Review(
+                 rating: 3.6,
+                 description:
+                     "Alface muito saborosa, podia ter sido é um pouco mais rápido a chegar...",
+                 dateTime: DateTime(2025, 2, 26, 19, 13),
+                 reviewerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
+               ),
+               Review(
+                 rating: 4.1,
+                 description:
+                     "Entrega no ponto de encontro e alface fresca e boa.",
+                 dateTime: DateTime(2025, 5, 12, 12, 00),
+                 reviewerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
+               ),
+             ],
            ),
            ProductAd(
              id: "idCenourasBaby",
@@ -451,7 +482,7 @@ class ProducerUser extends AppUser {
                name: 'Cenouras Baby',
                season: Season.SPRING,
                imageUrl: ['assets/images/mock_images/baby_carrots.jpg'],
-               category: "Legumes e Hortícolas",
+               category: "Hortícolas",
                stock: 25,
                minAmount: 5,
                unit: Unit.KG,
@@ -495,7 +526,7 @@ class ProducerUser extends AppUser {
                name: 'Tomate Cherry',
                season: Season.SUMMER,
                imageUrl: ['assets/images/mock_images/cherry_tomatoes.jpg'],
-               category: "Legumes e Hortícolas",
+               category: "Hortícolas",
                stock: 15,
                minAmount: 25,
                unit: Unit.KG,
@@ -539,6 +570,27 @@ class ProducerUser extends AppUser {
                {DateTime(2025, 5, 7, 13, 20): "IyxNeUyr6QNA3lwSALZBHsV75ap2"},
                {DateTime(2025, 5, 8, 15, 30): "aO7wPBBHgTY1fc9QCqXtrR5Fc8I2"},
                {DateTime(2025, 5, 9, 17, 40): "cEK6hsmFrZO8N3G7AqltGVZtMYs2"},
+             ],
+             adReviews: [
+               Review(
+                 rating: 4.9,
+                 description:
+                     "Tudo perfeito, tanto o produto como a entrega!",
+                 dateTime: DateTime(2025, 5, 12, 12, 08, 01),
+                 reviewerId: "IyxNeUyr6QNA3lwSALZBHsV75ap2",
+               ),
+               Review(
+                 rating: 4.8,
+                 description: "Tomates excelentes muito frescos e saborosos!",
+                 dateTime: DateTime(2025, 5, 8, 08, 10),
+                 reviewerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
+               ),
+               Review(
+                 rating: 4.1,
+                 description: "Tomates excelentes muito frescos e saborosos!",
+                 dateTime: DateTime(2025, 5, 8, 08, 10),
+                 reviewerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
+               ),
              ],
            ),
            ProductAd(
@@ -611,47 +663,6 @@ class ProducerUser extends AppUser {
                {DateTime(2025, 5, 8, 15, 30): "aO7wPBBHgTY1fc9QCqXtrR5Fc8I2"},
                {DateTime(2025, 5, 9, 17, 40): "cEK6hsmFrZO8N3G7AqltGVZtMYs2"},
              ],
-           ),
-         ],
-         storeReviews: [
-           StoreReview(
-             rating: 4.3,
-             description:
-                 "Entrega em mãos impecável, correu tudo bem e rápido!",
-             dateTime: DateTime(2025, 4, 1, 11, 45),
-             reviewerId: "vjjzySrSiIYy1c3QcduZhlKglNh2",
-           ),
-           StoreReview(
-             rating: 4.5,
-             description: "Chegou tudo em condições e com ótima qualidade!",
-             dateTime: DateTime(2025, 5, 6, 09, 05),
-             reviewerId: "YScblT6Hx2RswFie1JKZX5hgn5F2",
-           ),
-           StoreReview(
-             rating: 3.6,
-             description:
-                 "Em excelente condição podia ter sido é um pouco mais rápido...",
-             dateTime: DateTime(2025, 2, 26, 19, 13),
-             reviewerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
-           ),
-           StoreReview(
-             rating: 4.1,
-             description:
-                 "Entrega no ponto de encontro e produto tudo impecável.",
-             dateTime: DateTime(2025, 5, 12, 12, 00),
-             reviewerId: "BABXdZ7vwKVFtpIjQQeri4mC71v2",
-           ),
-           StoreReview(
-             rating: 4.9,
-             description: "Adorei as cenouras que comprei, é para repetir!!",
-             dateTime: DateTime(2025, 5, 12, 12, 08, 01),
-             reviewerId: "IyxNeUyr6QNA3lwSALZBHsV75ap2",
-           ),
-           StoreReview(
-             rating: 4.8,
-             description: "Comprei beterrabas e eram incriveis, adorei!",
-             dateTime: DateTime(2025, 5, 8, 08, 10),
-             reviewerId: "pxgE59JoVgaDHsxbOijA9VKMfKL2",
            ),
          ],
          orders: [

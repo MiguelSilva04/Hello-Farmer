@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/components/countryCitySelector.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
@@ -98,18 +99,31 @@ class _ExplorePageState extends State<ExplorePage> {
   }
 
   void applyFilters() {
+    final currentSeason = calculateCurrentSeason();
+
     final filtered =
         AuthService().users
             .whereType<ProducerUser>()
             .expand((producer) => producer.store.productsAds ?? [])
             .where((ad) {
               final product = ad.product;
+
+              // Filtro por estação se for esse o modo de pesquisa
+              if (_searchText == "Season") {
+                final isCurrentSeason =
+                    product.season == currentSeason ||
+                    product.season == Season.ALL;
+                return isCurrentSeason;
+              }
+
+              // Filtros normais
               final nameMatch = product.name.toLowerCase().contains(
                 _searchText.toLowerCase(),
               );
               final categoryMatch = product.category.toLowerCase().contains(
                 _categoryText.toLowerCase(),
               );
+
               final keywordMatch =
                   _selectedKeyword == null
                       ? true
@@ -118,6 +132,7 @@ class _ExplorePageState extends State<ExplorePage> {
                               .contains(_selectedKeyword!.toLowerCase()) ??
                           false);
 
+              // Encontrar o produtor do anúncio
               ProducerUser? producer;
               try {
                 producer = AuthService().users
@@ -137,14 +152,12 @@ class _ExplorePageState extends State<ExplorePage> {
                       _selectedCity.trim().toLowerCase());
 
               final priceMatch =
-                  ad.product.price >= _minPrice &&
-                  ad.product.price <= _maxPrice;
-              return (categoryMatch != null)
-                  ? (nameMatch || categoryMatch) &&
-                      keywordMatch &&
-                      cityMatch &&
-                      priceMatch
-                  : nameMatch && keywordMatch && cityMatch && priceMatch;
+                  product.price >= _minPrice && product.price <= _maxPrice;
+
+              return (nameMatch || categoryMatch) &&
+                  keywordMatch &&
+                  cityMatch &&
+                  priceMatch;
             })
             .toList()
             .cast<ProductAd>();
@@ -225,70 +238,67 @@ class _ExplorePageState extends State<ExplorePage> {
                   final keywordMap = {
                     for (var k in Keywords.keywords) k.name: k.icon,
                   };
-                  return Column(
-                    children: [
-                      if (producer != null)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
+                  return GestureDetector(
+                    onTap:
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => ProductAdDetailScreen(ad: ad),
                           ),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  product.imageUrl.first,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
+                        ),
+                    child: Column(
+                      children: [
+                        if (producer != null)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.asset(
+                                    product.imageUrl.first,
+                                    width: 80,
+                                    height: 80,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      product.name,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product.name,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      "${product.price.toStringAsFixed(2)} €/${product.unit.toDisplayString()}",
-                                    ),
-                                    if (ad.keywords != null)
-                                      Container(
-                                        margin: const EdgeInsets.only(top: 4),
-                                        height: 36,
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
-                                            children:
-                                                ad.keywords!
-                                                    .map(
-                                                      (k) => Padding(
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                              right: 6,
-                                                            ),
-                                                        child: Chip(
-                                                          avatar: Icon(
-                                                            keywordMap[k],
-                                                            size: 16,
-                                                            color:
-                                                                Theme.of(
-                                                                      context,
-                                                                    )
-                                                                    .colorScheme
-                                                                    .secondary,
-                                                          ),
-                                                          label: Text(
-                                                            k,
-                                                            style: TextStyle(
-                                                              fontSize: 12,
+                                      Text(
+                                        "${product.price.toStringAsFixed(2)} €/${product.unit.toDisplayString()}",
+                                      ),
+                                      if (ad.keywords != null)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 4),
+                                          height: 36,
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Row(
+                                              children:
+                                                  ad.keywords!
+                                                      .map(
+                                                        (k) => Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                right: 6,
+                                                              ),
+                                                          child: Chip(
+                                                            avatar: Icon(
+                                                              keywordMap[k],
+                                                              size: 16,
                                                               color:
                                                                   Theme.of(
                                                                         context,
@@ -296,39 +306,51 @@ class _ExplorePageState extends State<ExplorePage> {
                                                                       .colorScheme
                                                                       .secondary,
                                                             ),
+                                                            label: Text(
+                                                              k,
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                color:
+                                                                    Theme.of(
+                                                                          context,
+                                                                        )
+                                                                        .colorScheme
+                                                                        .secondary,
+                                                              ),
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    )
-                                                    .toList(),
+                                                      )
+                                                      .toList(),
+                                            ),
                                           ),
                                         ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: Image.network(
+                                        producer.imageUrl,
+                                        width: 35,
+                                        height: 35,
+                                        fit: BoxFit.cover,
                                       ),
+                                    ),
+                                    Text(
+                                      "${producer.firstName} ${producer.lastName}",
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
                                   ],
                                 ),
-                              ),
-                              Column(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: Image.network(
-                                      producer.imageUrl,
-                                      width: 35,
-                                      height: 35,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Text(
-                                    "${producer.firstName} ${producer.lastName}",
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      const Divider(),
-                    ],
+                        const Divider(),
+                      ],
+                    ),
                   );
                 }).toList(),
               ],
@@ -621,7 +643,16 @@ class _ExplorePageState extends State<ExplorePage> {
           ),
           if (_searchText.isEmpty) ...[
             const SizedBox(height: 16),
-            _buildSeasonalCard(),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _searchText = "Season";
+                  _categoryText = "Season";
+                  applyFilters();
+                });
+              },
+              child: _buildSeasonalCard(),
+            ),
             const SizedBox(height: 16),
             ...Categories.categories.map((c) {
               final count =
@@ -670,6 +701,21 @@ class _ExplorePageState extends State<ExplorePage> {
         _maxPrice != 30 ||
         _sortOption != 'name_asc' ||
         _searchText != "";
+  }
+
+  Season calculateCurrentSeason() {
+    final now = DateTime.now();
+    final month = now.month;
+
+    if (month >= 3 && month <= 5) {
+      return Season.SPRING; // Março, Abril, Maio
+    } else if (month >= 6 && month <= 8) {
+      return Season.SUMMER; // Junho, Julho, Agosto
+    } else if (month >= 9 && month <= 11) {
+      return Season.AUTUMN; // Setembro, Outubro, Novembro
+    } else {
+      return Season.WINTER; // Dezembro, Janeiro, Fevereiro
+    }
   }
 
   void clearFilters() {

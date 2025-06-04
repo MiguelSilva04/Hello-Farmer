@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/utils/keywords.dart';
@@ -20,7 +21,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   final Set<String> selectedKeywords = {};
 
-  /// Sempre atualizada — evita usar uma variável fixa para os favoritos.
   List<String> get favoritesProductsIds {
     final consumer = AuthService().currentUser as ConsumerUser;
     return consumer.favouritesProductsIds ?? [];
@@ -76,7 +76,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
       }
       consumer.favouritesProductsIds = favorites;
 
-      loadFavorites(); // Atualiza a lista com base nos novos favoritos
+      loadFavorites();
     });
   }
 
@@ -94,7 +94,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
         children: [
           const SizedBox(height: 12),
 
-          // Filtros por palavras-chave
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -174,6 +173,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         return Column(
                           children: [
                             ListTile(
+                              onTap:
+                                  () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder:
+                                          (ctx) =>
+                                              ProductAdDetailScreen(ad: ad),
+                                    ),
+                                  ),
                               contentPadding: const EdgeInsets.all(12),
                               leading: Stack(
                                 clipBehavior: Clip.none,

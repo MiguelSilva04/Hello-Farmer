@@ -546,7 +546,10 @@ class ProducerUser extends AppUser {
              product: Product(
                season: Season.ALL,
                name: 'Ovos',
-               imageUrl: ['assets/images/mock_images/eggs.jpg'],
+               imageUrl: [
+                 'assets/images/mock_images/eggs.jpg',
+                 'assets/images/mock_images/eggs2.jpeg',
+               ],
                category: 'Ovos',
                stock: 50,
                minAmount: 6,

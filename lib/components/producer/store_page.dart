@@ -331,7 +331,7 @@ class _StorePageState extends State<StorePage> {
                       rating: medianRating,
                       itemBuilder:
                           (context, index) =>
-                              Icon(Icons.star, color: Colors.amber),
+                              Icon(Icons.star, color: Colors.amber.shade700),
                       itemCount: 5,
                       itemSize: 24.0,
                       direction: Axis.horizontal,
@@ -441,7 +441,7 @@ class _StorePageState extends State<StorePage> {
                                         itemBuilder:
                                             (context, index) => Icon(
                                               Icons.star,
-                                              color: Colors.amber,
+                                              color: Colors.amber.shade700,
                                             ),
                                         itemCount: 5,
                                         itemSize: 18,

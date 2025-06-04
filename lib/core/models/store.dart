@@ -55,6 +55,15 @@ class Store {
     this.viewsByUserDateTime,
   }) : id = (_idCounter++).toString();
 
+  double get averageRating {
+    if (storeReviews == null || storeReviews!.isEmpty) return 0.0;
+    final total = storeReviews!
+        .where((r) => r.rating != null)
+        .fold(0.0, (sum, r) => sum + r.rating!);
+    final count = storeReviews!.where((r) => r.rating != null).length;
+    return count == 0 ? 0.0 : total / count;
+  }
+
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
       createdAt:

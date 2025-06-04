@@ -25,6 +25,8 @@ class _ExplorePageState extends State<ExplorePage> {
   double _maxPrice = 30;
   String _sortOption = 'name_asc';
 
+  final ScrollController _scrollController = ScrollController();
+
   List<String> selectedKeywords = [];
   List<ProductAd> allFavorites = [];
   List<ProductAd> displayedAds = [];
@@ -108,7 +110,6 @@ class _ExplorePageState extends State<ExplorePage> {
             .where((ad) {
               final product = ad.product;
 
-              // Filtro por estação se for esse o modo de pesquisa
               if (_searchText == "Season") {
                 final isCurrentSeason =
                     product.season == currentSeason ||
@@ -116,7 +117,6 @@ class _ExplorePageState extends State<ExplorePage> {
                 return isCurrentSeason;
               }
 
-              // Filtros normais
               final nameMatch = product.name.toLowerCase().contains(
                 _searchText.toLowerCase(),
               );
@@ -132,7 +132,6 @@ class _ExplorePageState extends State<ExplorePage> {
                               .contains(_selectedKeyword!.toLowerCase()) ??
                           false);
 
-              // Encontrar o produtor do anúncio
               ProducerUser? producer;
               try {
                 producer = AuthService().users
@@ -368,6 +367,7 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      controller: _scrollController,
       padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,6 +405,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 _searchText = value;
               });
               applyFilters();
+              _scrollController.jumpTo(0);
             },
           ),
           const SizedBox(height: 16),
@@ -416,6 +417,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 _selectedKeyword = value;
               });
               applyFilters();
+              _scrollController.jumpTo(0);
             },
           ),
           const SizedBox(height: 24),
@@ -674,6 +676,7 @@ class _ExplorePageState extends State<ExplorePage> {
                     _categoryText = c.name;
                     applyFilters();
                   });
+                  _scrollController.jumpTo(0);
                 },
                 child: _buildCategory(
                   c.name,

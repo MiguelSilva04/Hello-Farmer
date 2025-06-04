@@ -50,4 +50,22 @@ class Offer {
     required this.startDate,
     required this.endDate,
   });
+
+  int get value {
+    switch (discountValue) {
+      case DiscountValue.FIVE:
+        return 5;
+      case DiscountValue.TEN:
+        return 10;
+      case DiscountValue.TWENTY_FIVE:
+        return 25;
+      case DiscountValue.FIFTY:
+        return 50;
+      case DiscountValue.SEVENTY_FIVE:
+        return 75;
+      case DiscountValue.NINETY:
+        return 90;
+      
+    }
+  }
 }

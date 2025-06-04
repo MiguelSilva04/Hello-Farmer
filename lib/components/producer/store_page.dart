@@ -493,47 +493,49 @@ class _StorePageState extends State<StorePage> {
                                 ],
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 12,
-                                left: 12,
-                                right: 12,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  InkWell(
-                                    onTap:
-                                        () => print("Respondido com sucesso!"),
-                                    child: Text(
-                                      "Responder",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.surface,
+                            if (widget.store == null)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: 12,
+                                  left: 12,
+                                  right: 12,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    InkWell(
+                                      onTap:
+                                          () =>
+                                              print("Respondido com sucesso!"),
+                                      child: Text(
+                                        "Responder",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.surface,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  InkWell(
-                                    onTap:
-                                        () => print("Reportado com sucesso!"),
-                                    child: Text(
-                                      "Reportar",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.surface,
+                                    InkWell(
+                                      onTap:
+                                          () => print("Reportado com sucesso!"),
+                                      child: Text(
+                                        "Reportar",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.surface,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),

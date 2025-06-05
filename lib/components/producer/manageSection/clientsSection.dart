@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/app_user.dart';
 import '../../../core/models/order.dart';
@@ -24,7 +26,7 @@ class _ClientsSectionState extends State<ClientsSection> {
     final currentUser = (AuthService().currentUser! as ProducerUser);
     final users = AuthService().users;
     _orders =
-        currentUser.store.orders
+        currentUser.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].orders
             ?.where((o) => o.producerId == currentUser.id)
             .toList() ??
         [];

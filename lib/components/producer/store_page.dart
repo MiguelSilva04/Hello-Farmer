@@ -31,7 +31,11 @@ class _StorePageState extends State<StorePage> {
     myStore =
         widget.store != null
             ? widget.store!
-            : (AuthService().currentUser! as ProducerUser).store;
+            : (AuthService().currentUser! as ProducerUser)
+                .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex];
   }
 
   @override

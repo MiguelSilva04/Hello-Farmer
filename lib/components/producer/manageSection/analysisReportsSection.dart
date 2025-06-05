@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
@@ -10,7 +12,6 @@ class AnalysisReportsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentStore = (AuthService().currentUser! as ProducerUser).store!;
     double calcularDiasRestantesDeStock({
       required List<Product> products,
       required List<Order> orders,
@@ -42,7 +43,10 @@ class AnalysisReportsSection extends StatelessWidget {
       return diasRestantes;
     }
 
-    final curUserStore = (AuthService().currentUser! as ProducerUser).store;
+    final curUserStore = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex];
     final orders = curUserStore.orders!;
     final productAds = curUserStore.productsAds!;
     final todosProdutos = <Product>[];
@@ -59,6 +63,7 @@ class AnalysisReportsSection extends StatelessWidget {
         orders
             .where((order) {
               final date = order.deliveryDate ?? order.pickupDate;
+              if (date == null) return false;
               return date.year == today.year &&
                   date.month == today.month &&
                   date.day == today.day;
@@ -120,38 +125,57 @@ class AnalysisReportsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildMetricCard(
-                percentagemSemana > 0
-                    ? "+${percentagemSemana.toStringAsFixed(2)}%"
-                    : "-${percentagemSemana.toStringAsFixed(2)}%",
-                'esta semana',
-                Icons.shopping_cart,
-                context,
+              Expanded(
+                child: _buildMetricCard(
+                  percentagemSemana > 0
+                      ? "+${percentagemSemana.toStringAsFixed(2)}%"
+                      : "-${percentagemSemana.toStringAsFixed(2)}%",
+                  'esta semana',
+                  Icons.shopping_cart,
+                  context,
+                ),
               ),
-              _buildMetricCard(
-                dias.toStringAsFixed(0),
-                'dias restantes',
-                Icons.calendar_today,
-                context,
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildMetricCard(
+                  dias.toStringAsFixed(0),
+                  'dias restantes',
+                  Icons.calendar_today,
+                  context,
+                ),
               ),
-              _buildMetricCard(
-                buyersToday.toString(),
-                'pessoas hoje',
-                Icons.group,
-                context,
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildMetricCard(
+                  buyersToday.toString(),
+                  'pessoas hoje',
+                  Icons.group,
+                  context,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 24),
           Row(
-            children: const [
-              Icon(Icons.inventory, color: Colors.orange),
-              SizedBox(width: 8),
-              Text('Inventário', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(width: 8),
-              Text('acompanha os teus movimentos'),
+            children: [
+              const Icon(Icons.inventory, color: Colors.orange),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  children: const [
+                    Text(
+                      'Inventário',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('acompanha os teus movimentos'),
+                  ],
+                ),
+              ),
             ],
           ),
+
           const SizedBox(height: 12),
           _buildInventoryTable(context),
           const SizedBox(height: 24),
@@ -278,8 +302,15 @@ class AnalysisReportsSection extends StatelessWidget {
   }
 
   Widget _buildInventoryTable(BuildContext context) {
-    final productAds = (AuthService().currentUser! as ProducerUser).store.productsAds!;
-    final orders = (AuthService().currentUser! as ProducerUser).store.orders!;
+    final productAds =
+        (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex].productsAds!;
+    final orders = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex].orders!;
 
     final uniqueProducts = <String, Product>{};
     for (var ad in productAds) {
@@ -299,7 +330,10 @@ class AnalysisReportsSection extends StatelessWidget {
       for (var order in orders) {
         final hasProduct = order.productsAds.any((p) {
           final finalProductAd =
-              (AuthService().currentUser! as ProducerUser).store.productsAds!
+              (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex].productsAds!
                   .where((pr) => pr.id == p.produtctAdId)
                   .first;
           return finalProductAd.product.name == productName;
@@ -341,21 +375,21 @@ class AnalysisReportsSection extends StatelessWidget {
         TableRow(
           children: const [
             Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(4),
               child: Text(
                 'Produto',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(4),
               child: Text(
                 'Taxa de venda',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(4),
               child: Text(
                 'Dias desde última venda',
                 style: TextStyle(fontWeight: FontWeight.bold),

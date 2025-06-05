@@ -1,5 +1,6 @@
 import 'package:harvestly/core/services/chat/chat_firebase_service.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
+import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:harvestly/pages/auth_page.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import '../pages/chat_page.dart';
@@ -43,6 +44,7 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (_) => BottomNavigationNotifier()),
         ChangeNotifierProvider(create: (_) => ManageSectionNotifier()),
+        ChangeNotifierProvider(create: (_) => SettingsNotifier()),
         ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
       ],
       child: const MyApp(),

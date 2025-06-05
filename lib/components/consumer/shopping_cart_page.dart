@@ -9,6 +9,8 @@ import 'package:harvestly/core/models/shopping_cart.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:collection/collection.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:provider/provider.dart';
 
 class ShoppingCartPage extends StatefulWidget {
   const ShoppingCartPage({super.key});
@@ -51,8 +53,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         final productId = entry.key;
         final qty = entry.value;
 
-        final productAd = finder.findProductAdById(productId);
-        final productStore = finder.findStoreByAdId(productId);
+        final productAd = finder.findProductAdById(productId, context);
+        final productStore = finder.findStoreByAdId(productId, context);
 
         if (detectedStore == null) {
           detectedStore = productStore;
@@ -366,11 +368,11 @@ class ProductAdFinder {
 
   ProductAdFinder(this.allUsers);
 
-  ProductAd? findProductAdById(String adId) {
+  ProductAd? findProductAdById(String adId, BuildContext context) {
     for (var user in allUsers) {
       if (user is ProducerUser) {
         try {
-          final productAd = user.store.productsAds?.firstWhereOrNull(
+          final productAd = user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.firstWhereOrNull(
             (ad) => ad.id == adId,
           );
           if (productAd != null) {
@@ -382,15 +384,15 @@ class ProductAdFinder {
     return null;
   }
 
-  Store? findStoreByAdId(String adId) {
+  Store? findStoreByAdId(String adId, BuildContext context) {
     for (var user in allUsers) {
       if (user is ProducerUser) {
         try {
-          final productAd = user.store.productsAds?.firstWhere(
+          final productAd = user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.firstWhere(
             (ad) => ad.id == adId,
           );
           if (productAd != null) {
-            return user.store;
+            return user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex];
           }
         } catch (_) {}
       }

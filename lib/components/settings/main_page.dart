@@ -197,7 +197,7 @@ class _MainPageState extends State<MainPage> {
                         const SizedBox(width: 8),
                         Text(
                           "Permissões da aplicação",
-                          style: TextStyle(fontSize: 20),
+                          style: TextStyle(fontSize: 18),
                         ),
                       ],
                     ),
@@ -269,7 +269,7 @@ class _MainPageState extends State<MainPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                if (user.isProducer!) ...[
+                if (user.isProducer) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

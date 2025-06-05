@@ -239,7 +239,9 @@ class _MainMenuState extends State<MainMenu>
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Icon(
-                          FontAwesomeIcons.gift,
+                          user.isProducer
+                              ? FontAwesomeIcons.buildingUser
+                              : FontAwesomeIcons.gift,
                           color: Theme.of(context).colorScheme.tertiaryFixed,
                         ),
                         SizedBox(width: 10),
@@ -297,7 +299,10 @@ class _MainMenuState extends State<MainMenu>
           ),
           if (!user.isProducer)
             InkWell(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ShoppingCartPage())),
+              onTap:
+                  () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (ctx) => ShoppingCartPage()),
+                  ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Badge.count(

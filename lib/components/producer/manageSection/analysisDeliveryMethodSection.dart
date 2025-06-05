@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
@@ -8,94 +10,109 @@ import '../../../core/models/store.dart';
 
 class AnalysisDeliveryMethodSection extends StatelessWidget {
   AnalysisDeliveryMethodSection({Key? key}) : super(key: key);
-  final List<Order> orders = (AuthService().currentUser! as ProducerUser).store.orders ?? [];
-  static List<Map<String, dynamic>> _calculateChannelData(List<Order> orders) {
-    final currentStore = (AuthService().currentUser! as ProducerUser).store;
-    final List<Order> orders = currentStore.orders ?? [];
-    final deliveryMethods = [
-      {
-        'method': DeliveryMethod.HOME_DELIVERY.toDisplayString(),
-        'icon': Icons.home,
-        'type': DeliveryMethod.HOME_DELIVERY,
-      },
-      {
-        'method': DeliveryMethod.COURIER.toDisplayString(),
-        'icon': Icons.local_shipping,
-        'type': DeliveryMethod.COURIER,
-      },
-      {
-        'method': DeliveryMethod.PICKUP.toDisplayString(),
-        'icon': Icons.storefront,
-        'type': DeliveryMethod.PICKUP,
-      },
-    ];
-
-    final deliveredOrders = orders.where((o) => o.state == OrderState.Delivered);
-
-    List<Map<String, dynamic>> result = [];
-    double totalSalesAll = 0;
-    Map<DeliveryMethod, double> salesPerMethod = {};
-    Map<DeliveryMethod, int> unitsPerMethod = {};
-    Map<DeliveryMethod, double> kgPerMethod = {};
-    Map<DeliveryMethod, bool> selectedPerMethod = {};
-
-    for (var method in DeliveryMethod.values) {
-      salesPerMethod[method] = 0;
-      unitsPerMethod[method] = 0;
-      kgPerMethod[method] = 0;
-      selectedPerMethod[method] = false;
-    }
-
-    for (var order in deliveredOrders) {
-      for (var ad in order.productsAds) {
-        final productAd =
-            currentStore.productsAds!
-                .where((p) => p.id == ad.produtctAdId)
-                .first;
-        for (var method in productAd.preferredDeliveryMethods) {
-          selectedPerMethod[method] = true;
-        }
-
-        for (var method in productAd.preferredDeliveryMethods) {
-          salesPerMethod[method] =
-              (salesPerMethod[method] ?? 0) + order.totalPrice;
-          if (productAd.product.unit == Unit.UNIT) {
-            unitsPerMethod[method] = (unitsPerMethod[method] ?? 0) + 1;
-            kgPerMethod[method] = (kgPerMethod[method] ?? 0) + 0;
-          } else {
-            unitsPerMethod[method] = (unitsPerMethod[method] ?? 0) + 1;
-            kgPerMethod[method] = (kgPerMethod[method] ?? 0) + ad.qty;
-          }
-        }
-      }
-      totalSalesAll += order.totalPrice;
-    }
-
-    for (var method in deliveryMethods) {
-      final type = method['type'] as DeliveryMethod;
-      final totalSales = salesPerMethod[type] ?? 0;
-      final unitsSold = unitsPerMethod[type] ?? 0;
-      final kgSold = kgPerMethod[type] ?? 0;
-      final selected = selectedPerMethod[type] ?? false;
-      final percentage =
-          totalSalesAll > 0 ? (totalSales / totalSalesAll) * 100 : 0.0;
-
-      result.add({
-        'method': method['method'],
-        'icon': method['icon'],
-        'totalSales': totalSales,
-        'unitsSold': unitsSold,
-        'kgSold': kgSold,
-        'percentage': percentage,
-        'selected': selected && totalSales > 0,
-      });
-    }
-
-    return result;
-  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Order> orders =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .orders ??
+        [];
+    List<Map<String, dynamic>> _calculateChannelData(List<Order> orders) {
+      final currentStore =
+          (AuthService().currentUser! as ProducerUser)
+              .stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex];
+      final List<Order> orders = currentStore.orders ?? [];
+      final deliveryMethods = [
+        {
+          'method': DeliveryMethod.HOME_DELIVERY.toDisplayString(),
+          'icon': Icons.home,
+          'type': DeliveryMethod.HOME_DELIVERY,
+        },
+        {
+          'method': DeliveryMethod.COURIER.toDisplayString(),
+          'icon': Icons.local_shipping,
+          'type': DeliveryMethod.COURIER,
+        },
+        {
+          'method': DeliveryMethod.PICKUP.toDisplayString(),
+          'icon': Icons.storefront,
+          'type': DeliveryMethod.PICKUP,
+        },
+      ];
+
+      final deliveredOrders = orders.where(
+        (o) => o.state == OrderState.Delivered,
+      );
+
+      List<Map<String, dynamic>> result = [];
+      double totalSalesAll = 0;
+      Map<DeliveryMethod, double> salesPerMethod = {};
+      Map<DeliveryMethod, int> unitsPerMethod = {};
+      Map<DeliveryMethod, double> kgPerMethod = {};
+      Map<DeliveryMethod, bool> selectedPerMethod = {};
+
+      for (var method in DeliveryMethod.values) {
+        salesPerMethod[method] = 0;
+        unitsPerMethod[method] = 0;
+        kgPerMethod[method] = 0;
+        selectedPerMethod[method] = false;
+      }
+
+      for (var order in deliveredOrders) {
+        for (var ad in order.productsAds) {
+          final productAd =
+              currentStore.productsAds!
+                  .where((p) => p.id == ad.produtctAdId)
+                  .first;
+          for (var method in productAd.preferredDeliveryMethods) {
+            selectedPerMethod[method] = true;
+          }
+
+          for (var method in productAd.preferredDeliveryMethods) {
+            salesPerMethod[method] =
+                (salesPerMethod[method] ?? 0) + order.totalPrice;
+            if (productAd.product.unit == Unit.UNIT) {
+              unitsPerMethod[method] = (unitsPerMethod[method] ?? 0) + 1;
+              kgPerMethod[method] = (kgPerMethod[method] ?? 0) + 0;
+            } else {
+              unitsPerMethod[method] = (unitsPerMethod[method] ?? 0) + 1;
+              kgPerMethod[method] = (kgPerMethod[method] ?? 0) + ad.qty;
+            }
+          }
+        }
+        totalSalesAll += order.totalPrice;
+      }
+
+      for (var method in deliveryMethods) {
+        final type = method['type'] as DeliveryMethod;
+        final totalSales = salesPerMethod[type] ?? 0;
+        final unitsSold = unitsPerMethod[type] ?? 0;
+        final kgSold = kgPerMethod[type] ?? 0;
+        final selected = selectedPerMethod[type] ?? false;
+        final percentage =
+            totalSalesAll > 0 ? (totalSales / totalSalesAll) * 100 : 0.0;
+
+        result.add({
+          'method': method['method'],
+          'icon': method['icon'],
+          'totalSales': totalSales,
+          'unitsSold': unitsSold,
+          'kgSold': kgSold,
+          'percentage': percentage,
+          'selected': selected && totalSales > 0,
+        });
+      }
+
+      return result;
+    }
+
     final Color cardColor = Theme.of(context).colorScheme.surface;
     final Color textColor = Colors.white;
     final channelData = _calculateChannelData(orders);

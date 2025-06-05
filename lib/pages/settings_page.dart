@@ -3,10 +3,13 @@ import 'package:harvestly/components/settings/account_page.dart';
 import 'package:harvestly/components/settings/billing_page.dart';
 import 'package:harvestly/components/settings/notifications_page.dart';
 import 'package:harvestly/components/settings/payment_page.dart';
+import 'package:harvestly/core/services/other/settings_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../components/settings/main_page.dart';
 import '../core/models/app_user.dart';
 import '../core/services/auth/auth_service.dart';
+import '../core/services/other/manage_section_notifier.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,8 +19,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  int _selectedIndex = 0;
-
+  late int _selectedIndex;
+  late SettingsNotifier provider;
   Widget _buildSettingsTile({
     required IconData icon,
     required String title,
@@ -41,6 +44,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    provider = Provider.of<SettingsNotifier>(context);
+    _selectedIndex = provider.currentIndex;
     final user = AuthService().currentUser!;
     final pages = [
       {"Definições": getMain(context, user)},
@@ -58,9 +63,7 @@ class _SettingsPageState extends State<SettingsPage> {
             if (_selectedIndex == 0) {
               Navigator.of(context).pop();
             } else {
-              setState(() {
-                _selectedIndex = 0;
-              });
+              provider.setIndex(0);
             }
           },
         ),
@@ -86,28 +89,28 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingsTile(
               icon: Icons.settings,
               title: "Geral",
-              onTap: () => setState(() => _selectedIndex = 1),
+              onTap: () => provider.setIndex(1),
             ),
             _buildSettingsTile(
               icon: Icons.credit_card,
               title: "Métodos de pagamento",
-              onTap: () => setState(() => _selectedIndex = 2),
+              onTap: () => provider.setIndex(2),
             ),
             if (user.isProducer!)
               _buildSettingsTile(
                 icon: Icons.receipt,
                 title: "Faturação",
-                onTap: () => setState(() => _selectedIndex = 3),
+                onTap: () => provider.setIndex(3),
               ),
             _buildSettingsTile(
               icon: Icons.notifications,
               title: "Notificações",
-              onTap: () => setState(() => _selectedIndex = 4),
+              onTap: () => provider.setIndex(4),
             ),
             _buildSettingsTile(
               icon: Icons.person,
               title: "Conta",
-              onTap: () => setState(() => _selectedIndex = 5),
+              onTap: () => provider.setIndex(5),
             ),
           ],
         ),

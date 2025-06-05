@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product_ad.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
@@ -36,7 +37,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     final favoritesIds = favoritesProductsIds;
 
     final allAds = AuthService().users.whereType<ProducerUser>().expand(
-      (producer) => producer.store.productsAds ?? [],
+      (producer) => producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [],
     );
 
     final uniqueFavorites = {
@@ -159,7 +160,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                               .whereType<ProducerUser>()
                               .firstWhereOrNull(
                                 (u) =>
-                                    u.store.productsAds?.any(
+                                    u.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.any(
                                       (a) => a.id == ad.id,
                                     ) ??
                                     false,

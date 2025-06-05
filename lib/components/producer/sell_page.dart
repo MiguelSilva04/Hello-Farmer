@@ -550,7 +550,7 @@ class SellPageState extends State<SellPage> {
                       Text(method.toDisplayString()),
                       Checkbox(
                         value: (AuthService().currentUser! as ProducerUser)
-                            .store
+                            .stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex]
                             .preferredDeliveryMethod!
                             .contains(method),
                         onChanged: (value) {},

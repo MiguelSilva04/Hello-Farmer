@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/models/consumer_user.dart';
 import '../../core/models/offer.dart';
@@ -19,12 +21,12 @@ class OffersPage extends StatelessWidget {
       itemBuilder: (context, index) {
         final offer = allOffers[index];
         final ad = producers
-            .expand((p) => p.store.productsAds ?? [])
+            .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
             .firstWhere((a) => a.id == offer.productAdId);
 
         final producer = producers.firstWhere(
           (p) =>
-              p.store.productsAds?.any((prodAd) => prodAd.id == ad.id) ?? false,
+              p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.any((prodAd) => prodAd.id == ad.id) ?? false,
         );
 
         return Column(

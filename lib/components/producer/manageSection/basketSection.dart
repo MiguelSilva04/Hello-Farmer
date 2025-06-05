@@ -3,6 +3,8 @@ import 'package:harvestly/core/models/basket.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/producer_user.dart';
 
@@ -14,31 +16,36 @@ class BasketSection extends StatefulWidget {
 }
 
 class _BasketSectionState extends State<BasketSection> {
-  List<Basket> baskets =
-      (AuthService().currentUser! as ProducerUser).store.baskets!;
-  Basket? _editingBasket = null;
-
-  void startEdit(Basket basket) {
-    setState(() {
-      _editingBasket = basket;
-    });
-  }
-
-  void stopEdit() {
-    setState(() {
-      _editingBasket = null;
-    });
-  }
-
-  void removeBasket(Basket basket) {
-    setState(() {
-      baskets.remove(basket);
-      _editingBasket = null;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    List<Basket> baskets =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .baskets!;
+    Basket? _editingBasket = null;
+
+    void startEdit(Basket basket) {
+      setState(() {
+        _editingBasket = basket;
+      });
+    }
+
+    void stopEdit() {
+      setState(() {
+        _editingBasket = null;
+      });
+    }
+
+    void removeBasket(Basket basket) {
+      setState(() {
+        baskets.remove(basket);
+        _editingBasket = null;
+      });
+    }
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -150,12 +157,19 @@ class BasketCard extends StatelessWidget {
             ...basket.productsAmounts.map((p) {
               final productId = p.keys.first;
               final quantity = p.values.first;
+
+              final storeIndex =
+                  Provider.of<ManageSectionNotifier>(
+                    context,
+                    listen: false,
+                  ).storeIndex;
               ProductAd? matchedProductAd;
 
               for (final user in AuthService().users) {
-                if (user is ProducerUser) {
-                  for (final ad in (user).store.productsAds ?? []) {
-                    if (ad.product.id == productId) {
+                if (user is ProducerUser && storeIndex < user.stores.length) {
+                  final ads = user.stores[storeIndex].productsAds ?? [];
+                  for (final ad in ads) {
+                    if (ad.id == productId) {
                       matchedProductAd = ad;
                       break;
                     }
@@ -167,6 +181,7 @@ class BasketCard extends StatelessWidget {
               if (matchedProductAd == null) {
                 return Text("Produto não encontrado ($productId)");
               }
+
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(
@@ -507,7 +522,14 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
 
                 for (final user in AuthService().users) {
                   if (user is ProducerUser) {
-                    for (final ad in (user).store.productsAds ?? []) {
+                    for (final ad
+                        in (user)
+                                .stores[Provider.of<ManageSectionNotifier>(
+                                  context,
+                                  listen: false,
+                                ).storeIndex]
+                                .productsAds ??
+                            []) {
                       if (ad.product.id == productId) {
                         matchedProductAd = ad;
                         break;

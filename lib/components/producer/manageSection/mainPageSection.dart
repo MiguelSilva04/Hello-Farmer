@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -19,9 +20,21 @@ class MainPageSection extends StatefulWidget {
 }
 
 class _MainPageSectionState extends State<MainPageSection> {
-  final store = (AuthService().currentUser! as ProducerUser).store;
+  late Store store;
+
   bool _isEditingAd = false;
   ProductAd? _currentAd;
+
+  @override
+  void initState() {
+    super.initState();
+    store =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+          context,
+          listen: false,
+        ).storeIndex];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +140,11 @@ class _MainPageSectionState extends State<MainPageSection> {
                         ),
                         const Spacer(),
                         TextButton(
-                          onPressed: () {},
+                          onPressed:
+                              () => Provider.of<ManageSectionNotifier>(
+                                context,
+                                listen: false,
+                              ).setIndex(13),
                           child: const Text(
                             "Definir Canais de venda",
                             style: TextStyle(fontSize: 12),
@@ -182,7 +199,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                   children: [
                     Tooltip(
                       message:
-                          "Os anúncios, se destacados, são classificados em:\n\nInicio: Para o topo da página de pesquisa \n- Com este destaque, o anúncio sobre de posição relativamente a anúncios semelhantes que não têm qualquer destaque\n\nPesquisa: Top de anúncios (destaque na página inicial) \n- Com este destaque, o anúncio vai ser apresentado rotativamente na página inicial de consumidores, antes mesmo de iniciarem a sua pesquisa, colocando também o embelema 'TOP' na foto do anúncio para que chame mais à atenção.",
+                          "Os anúncios, se destacados, são classificados em:\n\nInicio: Para o topo da página de pesquisa \n- Com este destaque, o anúncio sobe de posição relativamente a anúncios semelhantes que não têm qualquer destaque\n\nPesquisa: Top de anúncios (destaque na página inicial) \n- Com este destaque, o anúncio vai ser apresentado rotativamente na página inicial de consumidores, antes mesmo de iniciarem a sua pesquisa, colocando também o embelema 'TOP' na foto do anúncio para que chame mais à atenção.",
                       textStyle: TextStyle(
                         fontSize: 20,
                         color: Theme.of(context).colorScheme.secondary,
@@ -304,11 +321,18 @@ class _MainPageSectionState extends State<MainPageSection> {
                                     ],
                                   ),
                                   title: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        ad.product.name,
-                                        style: TextStyle(fontSize: 20),
+                                      Flexible(
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            ad.product.name,
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                       const SizedBox(width: 5),
                                       if (ad.highlight.isNotEmpty)
@@ -319,7 +343,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                                           ),
                                           triggerMode: TooltipTriggerMode.tap,
                                           preferBelow: false,
-                                          child: Icon(Icons.info_outline),
+                                          child: const Icon(Icons.info_outline),
                                         ),
                                     ],
                                   ),

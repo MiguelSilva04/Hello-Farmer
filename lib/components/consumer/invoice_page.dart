@@ -4,8 +4,10 @@ import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
 
 class InvoicePageConsumer extends StatelessWidget {
   final Order order;
@@ -19,8 +21,9 @@ class InvoicePageConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final storeIndex = Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex;
     final subtotal = order.productsAds.fold<double>(0.0, (sum, item) {
-      final ad = producer.store.productsAds!.firstWhere(
+      final ad = producer.stores[storeIndex].productsAds!.firstWhere(
         (ad) => ad.id == item.produtctAdId,
       );
       final product = ad.product;
@@ -64,7 +67,7 @@ class InvoicePageConsumer extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    producer.store.name ?? 'N/A',
+                    producer.stores[storeIndex].name ?? 'N/A',
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],
@@ -165,7 +168,8 @@ class InvoicePageConsumer extends StatelessWidget {
                     ],
                   ),
                   ...order.productsAds.map((item) {
-                    final ad = producer.store.productsAds!.firstWhere(
+                    
+                    final ad = producer.stores[storeIndex].productsAds!.firstWhere(
                       (ad) => ad.id == item.produtctAdId,
                     );
                     final product = ad.product;
@@ -303,6 +307,7 @@ class InvoicePageConsumer extends StatelessWidget {
                         order,
                         producer,
                         consumerName,
+                        context
                       );
                       await Printing.layoutPdf(
                         onLayout: (format) async => pdf.save(),
@@ -324,6 +329,7 @@ class InvoicePageConsumer extends StatelessWidget {
                         order,
                         producer,
                         consumerName,
+                        context
                       );
                       await Printing.sharePdf(
                         bytes: await pdf.save(),
@@ -344,6 +350,7 @@ class InvoicePageConsumer extends StatelessWidget {
     Order order,
     ProducerUser producer,
     String consumerName,
+    BuildContext context,
   ) async {
     final pdf = pw.Document();
 
@@ -351,8 +358,10 @@ class InvoicePageConsumer extends StatelessWidget {
       await rootBundle.load('assets/fonts/Poppins-Regular.ttf'),
     );
 
+    final storeIndex = Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex;
+
     final subtotal = order.productsAds.fold<double>(0.0, (sum, item) {
-      final ad = producer.store.productsAds!.firstWhere(
+      final ad = producer.stores[storeIndex].productsAds!.firstWhere(
         (ad) => ad.id == item.produtctAdId,
       );
       final product = ad.product;
@@ -381,7 +390,7 @@ class InvoicePageConsumer extends StatelessWidget {
                   pw.Text(
                     "Vendedor: ${producer.firstName} ${producer.lastName}",
                   ),
-                  pw.Text("Banca: ${producer.store.name ?? 'N/A'}"),
+                  pw.Text("Banca: ${producer.stores[storeIndex].name ?? 'N/A'}"),
                   pw.Text("Encomenda Nº: ${order.id}"),
                   pw.SizedBox(height: 16),
                   pw.Text("Cliente: $consumerName"),
@@ -393,7 +402,7 @@ class InvoicePageConsumer extends StatelessWidget {
                     headers: ["Descrição", "Qtd.", "Custo/un."],
                     data:
                         order.productsAds.map((item) {
-                          final ad = producer.store.productsAds!.firstWhere(
+                          final ad = producer.stores[storeIndex].productsAds!.firstWhere(
                             (ad) => ad.id == item.produtctAdId,
                           );
                           final product = ad.product;

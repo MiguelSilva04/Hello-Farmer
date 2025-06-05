@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
@@ -10,7 +12,12 @@ class AbandonedOrdersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentStore = (AuthService().currentUser! as ProducerUser).store;
+    final currentStore =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+          context,
+          listen: false,
+        ).storeIndex];
     final orders = currentStore.orders!;
 
     final abandonedOrders =
@@ -138,37 +145,44 @@ class AbandonedOrdersPage extends StatelessWidget {
                         }
 
                         if (productCount <= maxVisible) {
-                          return Row(
-                            children:
-                                products.map((p) {
-                                  final productAd =
-                                      currentStore.productsAds!
-                                          .where(
-                                            (pr) => pr.id == p.produtctAdId,
-                                          )
-                                          .first;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 8.0),
-                                    child: Column(
-                                      children: [
-                                        Text(
-                                          productAd.product.name,
-                                          style: const TextStyle(fontSize: 12),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Container(
-                                          height: imageSize,
-                                          width: imageSize,
-                                          child: Image.asset(
-                                            productAd.product.imageUrl.first,
-                                            fit: BoxFit.cover,
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children:
+                                  products.map((p) {
+                                    final productAd =
+                                        currentStore.productsAds!
+                                            .where(
+                                              (pr) => pr.id == p.produtctAdId,
+                                            )
+                                            .first;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            productAd.product.name,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                          const SizedBox(height: 5),
+                                          Container(
+                                            height: imageSize,
+                                            width: imageSize,
+                                            child: Image.asset(
+                                              productAd.product.imageUrl.first,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                            ),
                           );
                         } else {
                           return SizedBox(
@@ -245,27 +259,37 @@ class AbandonedOrdersPage extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Estas encomendas foram iniciadas mas não finalizadas.",
-              style: TextStyle(fontSize: 16, color: Colors.black54),
+    return abandonedOrders.isEmpty
+        ? Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              "Boa! Não há qualquer encomenda que tenha sido abandonada!😁",
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            ...abandonedOrders.map((order) {
-              final consumidor = getUserName(order.consumerId);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildAbandonedCard(order, consumidor),
-              );
-            }),
-          ],
-        ),
-      ),
-    );
+          ),
+        )
+        : Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Estas encomendas foram iniciadas mas não finalizadas.",
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+                const SizedBox(height: 16),
+                ...abandonedOrders.map((order) {
+                  final consumidor = getUserName(order.consumerId);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildAbandonedCard(order, consumidor),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
   }
 }

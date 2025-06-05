@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/services/chat/chat_list_notifier.dart';
@@ -38,6 +39,7 @@ class AccountPage extends StatelessWidget {
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil(AppRoutes.AUTH_OR_APP_PAGE, (route) => false);
+        Provider.of<ManageSectionNotifier>(context, listen: false).setIndex(0);
       });
     }
   }
@@ -102,10 +104,19 @@ class AccountPage extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
               ),
               Text(
-                "${currentUser.address!}",
+                "${currentUser.address}",
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
               ),
             ],
+          ),
+          Center(
+            child: TextButton(
+              onPressed: () {},
+              child: Text(
+                "Mudar palavra-passe",
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
           ),
           const SizedBox(height: 30),
           SizedBox(

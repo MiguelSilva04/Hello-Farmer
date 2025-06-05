@@ -30,12 +30,17 @@ class BillingSection extends StatefulWidget {
 class _BillingSectionState extends State<BillingSection> {
   DateRangeOption _selectedRange = DateRangeOption.none;
   late ManageSectionNotifier provider;
+  late List<Order> _orders;
 
   @override
   void initState() {
     super.initState();
     provider = Provider.of<ManageSectionNotifier>(context, listen: false);
     _selectedRange = _getRangeFromDate(provider.billingFromDate);
+    _orders =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[provider.storeIndex]
+            .orders!;
   }
 
   @override
@@ -54,7 +59,12 @@ class _BillingSectionState extends State<BillingSection> {
     if (date == null) return DateRangeOption.none;
     final now = DateTime.now();
     final createdAt =
-        (AuthService().currentUser! as ProducerUser).store.createdAt;
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .createdAt;
     if (date.isAtSameMomentAs(createdAt)) return DateRangeOption.none;
     if (date.isAtSameMomentAs(
       now
@@ -92,12 +102,14 @@ class _BillingSectionState extends State<BillingSection> {
     return DateRangeOption.none;
   }
 
-  final List<Order> _orders =
-      (AuthService().currentUser! as ProducerUser).store.orders!;
-
   List<Order> get _filteredOrders {
     if (provider.billingFromDate ==
-        (AuthService().currentUser! as ProducerUser).store.createdAt) {
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .createdAt) {
       return _orders
           .where((order) => order.state == OrderState.Delivered)
           .toList();
@@ -162,7 +174,12 @@ class _BillingSectionState extends State<BillingSection> {
           break;
         default:
           provider.setBillingFromDate(
-            (AuthService().currentUser! as ProducerUser).store.createdAt,
+            (AuthService().currentUser! as ProducerUser)
+                .stores[Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).storeIndex]
+                .createdAt,
           );
       }
     });
@@ -234,7 +251,10 @@ class _BillingSectionState extends State<BillingSection> {
                                   listen: false,
                                 ).billingFromDate !=
                                 (AuthService().currentUser! as ProducerUser)
-                                    .store
+                                    .stores[Provider.of<ManageSectionNotifier>(
+                                      context,
+                                      listen: false,
+                                    ).storeIndex]
                                     .createdAt
                             ? DateFormat.yMMMd().format(
                               Provider.of<ManageSectionNotifier>(

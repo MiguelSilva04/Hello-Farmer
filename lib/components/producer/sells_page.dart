@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/models/order.dart';
 
@@ -20,12 +22,13 @@ class _SellsPageState extends State<SellsPage>
 
   late final TabController _tabController;
 
-  final orders = (AuthService().currentUser! as ProducerUser).store.orders!;
+  late List<Order> orders;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    orders = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].orders!;
   }
 
   @override
@@ -46,35 +49,40 @@ class _SellsPageState extends State<SellsPage>
         itemBuilder:
             (context, index) => Card(
               child: ListTile(
-                title: Text(
-                  "Pedido #${ordersFiltered[index].id}",
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Pedido #${ordersFiltered[index].id}",
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Text(
+                          ordersFiltered[index].state.toDisplayString(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 subtitle: Text(
                   "Data da Recolha: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].pickupDate)}\n${ordersFiltered[index].deliveryDate != null ? "Data de Entrega: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate!)}" : "Sem Recolha"}\nMorada: ${ordersFiltered[index].address}",
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(fontSize: 16),
                 ),
                 isThreeLine: true,
-                trailing: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.tertiary,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    child: Text(
-                      ordersFiltered[index].state.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ),
       ),

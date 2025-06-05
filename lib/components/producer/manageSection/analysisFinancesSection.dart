@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/order.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/producer_user.dart';
 import '../../../core/services/auth/auth_service.dart';
@@ -19,7 +21,13 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
   @override
   Widget build(BuildContext context) {
     final user = (AuthService().currentUser! as ProducerUser);
-    final orders = user.store.orders;
+    final orders =
+        user
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .orders;
 
     final now = DateTime.now();
 
@@ -208,7 +216,7 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
                 Text(
                   labels[i],
                   style: TextStyle(
-                    fontSize: filtroSelecionado == 'Semana' ? 11 : 8,
+                    fontSize: filtroSelecionado == 'Semana' ? 10 : 8,
                     fontWeight:
                         filtroSelecionado == 'Semana'
                             ? FontWeight.w700

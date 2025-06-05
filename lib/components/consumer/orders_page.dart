@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/order_details_page.dart';
-import 'package:harvestly/components/consumer/shopping_cart.dart';
-import 'package:harvestly/core/models/shopping_cart.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/producer_user.dart';
 import '../../core/models/product_ad.dart';
@@ -30,14 +30,14 @@ class _OrdersPageState extends State<OrdersPage> {
     allAds =
         users
             .whereType<ProducerUser>()
-            .expand((p) => p.store.productsAds ?? [])
+            .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
             .cast<ProductAd>()
             .toList();
 
     orders =
         users
             .whereType<ProducerUser>()
-            .expand((p) => p.store.orders ?? [])
+            .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].orders ?? [])
             .where(
               (order) =>
                   (state == null || order.state == state) &&
@@ -60,150 +60,157 @@ class _OrdersPageState extends State<OrdersPage> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                  onTap: () => setState(() => state = null),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color:
-                          state == null
-                              ? Theme.of(context).colorScheme.tertiary
-                              : Theme.of(context).colorScheme.inverseSurface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        "Todas",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              state != null
-                                  ? Theme.of(context).colorScheme.tertiary
-                                  : Theme.of(
-                                    context,
-                                  ).colorScheme.inverseSurface,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: () => setState(() => state = null),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            state == null
+                                ? Theme.of(context).colorScheme.tertiary
+                                : Theme.of(context).colorScheme.inverseSurface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          "Todas",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                state != null
+                                    ? Theme.of(context).colorScheme.tertiary
+                                    : Theme.of(
+                                      context,
+                                    ).colorScheme.inverseSurface,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () => setState(() => state = OrderState.Pendent),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color:
-                          state == OrderState.Pendent
-                              ? Theme.of(context).colorScheme.tertiary
-                              : Theme.of(context).colorScheme.inverseSurface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        "Pendente",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              state != OrderState.Pendent
-                                  ? Theme.of(context).colorScheme.tertiary
-                                  : Theme.of(
-                                    context,
-                                  ).colorScheme.inverseSurface,
+                  const SizedBox(width: 5),
+                  InkWell(
+                    onTap: () => setState(() => state = OrderState.Pendent),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            state == OrderState.Pendent
+                                ? Theme.of(context).colorScheme.tertiary
+                                : Theme.of(context).colorScheme.inverseSurface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          "Pendente",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                state != OrderState.Pendent
+                                    ? Theme.of(context).colorScheme.tertiary
+                                    : Theme.of(
+                                      context,
+                                    ).colorScheme.inverseSurface,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () => setState(() => state = OrderState.Sent),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color:
-                          state == OrderState.Sent
-                              ? Theme.of(context).colorScheme.tertiary
-                              : Theme.of(context).colorScheme.inverseSurface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        "Enviada",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              state != OrderState.Sent
-                                  ? Theme.of(context).colorScheme.tertiary
-                                  : Theme.of(
-                                    context,
-                                  ).colorScheme.inverseSurface,
+                  const SizedBox(width: 5),
+                  InkWell(
+                    onTap: () => setState(() => state = OrderState.Sent),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            state == OrderState.Sent
+                                ? Theme.of(context).colorScheme.tertiary
+                                : Theme.of(context).colorScheme.inverseSurface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          "Enviada",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                state != OrderState.Sent
+                                    ? Theme.of(context).colorScheme.tertiary
+                                    : Theme.of(
+                                      context,
+                                    ).colorScheme.inverseSurface,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () => setState(() => state = OrderState.Delivered),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color:
-                          state == OrderState.Delivered
-                              ? Theme.of(context).colorScheme.tertiary
-                              : Theme.of(context).colorScheme.inverseSurface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        "Entregue",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              state != OrderState.Delivered
-                                  ? Theme.of(context).colorScheme.tertiary
-                                  : Theme.of(
-                                    context,
-                                  ).colorScheme.inverseSurface,
+                  const SizedBox(width: 5),
+                  InkWell(
+                    onTap: () => setState(() => state = OrderState.Delivered),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            state == OrderState.Delivered
+                                ? Theme.of(context).colorScheme.tertiary
+                                : Theme.of(context).colorScheme.inverseSurface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          "Entregue",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                state != OrderState.Delivered
+                                    ? Theme.of(context).colorScheme.tertiary
+                                    : Theme.of(
+                                      context,
+                                    ).colorScheme.inverseSurface,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                InkWell(
-                  onTap: () => setState(() => state = OrderState.Abandonned),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color:
-                          state == OrderState.Abandonned
-                              ? Theme.of(context).colorScheme.tertiary
-                              : Theme.of(context).colorScheme.inverseSurface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        "Abandonada",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              state != OrderState.Abandonned
-                                  ? Theme.of(context).colorScheme.tertiary
-                                  : Theme.of(
-                                    context,
-                                  ).colorScheme.inverseSurface,
+                  const SizedBox(width: 5),
+                  InkWell(
+                    onTap: () => setState(() => state = OrderState.Abandonned),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            state == OrderState.Abandonned
+                                ? Theme.of(context).colorScheme.tertiary
+                                : Theme.of(context).colorScheme.inverseSurface,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          "Abandonada",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                state != OrderState.Abandonned
+                                    ? Theme.of(context).colorScheme.tertiary
+                                    : Theme.of(
+                                      context,
+                                    ).colorScheme.inverseSurface,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           ListView.builder(

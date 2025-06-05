@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
@@ -51,7 +53,10 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final currentStore = (AuthService().currentUser! as ProducerUser).store;
+    final currentStore = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex];
 
     if (currentStore == null) {
       return const Center(

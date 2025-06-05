@@ -2,14 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/invoice_page.dart';
-import 'package:harvestly/components/producer/manageSection/invoice_page.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final Order order;
@@ -31,7 +32,7 @@ class OrderDetailsPage extends StatelessWidget {
     final deliveryMethod =
         (AuthService().users
                     .whereType<ProducerUser>()
-                    .expand((p) => p.store.productsAds ?? [])
+                    .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
                     .firstWhere(
                       (ad) => ad.id == products.first.produtctAdId,
                       orElse:
@@ -162,11 +163,11 @@ class OrderDetailsPage extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundImage:
-                        producer.store.imageUrl != null
-                            ? AssetImage(producer.store.imageUrl!)
+                        producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].imageUrl != null
+                            ? AssetImage(producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].imageUrl!)
                             : null,
                     child:
-                        producer.store.imageUrl == null
+                        producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].imageUrl == null
                             ? const Icon(Icons.store, size: 30)
                             : null,
                   ),
@@ -176,18 +177,18 @@ class OrderDetailsPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          producer.store.name!,
+                          producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].name!,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        if (producer.store.city != null)
+                        if (producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city != null)
                           Row(
                             children: [
                               Icon(Icons.pin_drop_rounded),
                               Text(
-                                producer.store.city!,
+                                producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city!,
                                 style: TextStyle(
                                   color:
                                       Theme.of(
@@ -269,7 +270,7 @@ class OrderDetailsPage extends StatelessWidget {
                   final ad =
                       AuthService().users
                               .whereType<ProducerUser>()
-                              .expand((p) => p.store.productsAds ?? [])
+                              .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
                               .firstWhere(
                                 (ad) => ad.id == item.produtctAdId,
                                 orElse:

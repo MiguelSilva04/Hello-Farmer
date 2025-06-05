@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/other/settings_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../components/country_state_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -170,15 +172,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _customButton(String label, {bool isPrimary = false}) {
+  Widget _customButton(
+    String label,
+    GestureTapCallback onTap, {
+    bool isPrimary = false,
+  }) {
     return InkWell(
-      onTap:
-          () => setState(() {
-            _isEditingEmail = true;
-            _submit();
-          }),
+      onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(2),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
@@ -508,7 +510,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          _buildTextField("Morada", "R. da Fonte Nova 37"),
+          _buildTextField("Morada", user!.address),
 
           Align(
             alignment: Alignment.centerLeft,
@@ -533,18 +535,35 @@ class _ProfilePageState extends State<ProfilePage> {
 
           SizedBox(height: 24),
 
-          // Botões de ações
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _customButton("Alterar E-mail"),
-              _customButton("Gerir dados\n de pagamento", isPrimary: true),
-              _customButton("Alterar Senha"),
+              Expanded(
+                child: _customButton("Alterar E-mail", () {
+                  navigateToSettings(5);
+                }),
+              ),
+              Expanded(
+                child: _customButton("Gerir dados\n de pagamento", () {
+                  navigateToSettings(2);
+                }, isPrimary: true),
+              ),
+              Expanded(
+                child: _customButton("Alterar Senha", () {
+                  navigateToSettings(5);
+                }),
+              ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  void navigateToSettings(int index) {
+    Navigator.of(context).pop();
+    Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+    Provider.of<SettingsNotifier>(context, listen: false).setIndex(index);
   }
 
   Column getOnlyViewingProfile(BuildContext context) {
@@ -599,18 +618,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:
-                        (ctx) => StorePage(store: (user as ProducerUser).store),
+                        (ctx) => StorePage(store: (user as ProducerUser).stores.first),
                   ),
                 ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  (user as ProducerUser).store.name!,
+                  (user as ProducerUser).stores.first.name!,
                   style: TextStyle(fontSize: 18),
                 ),
                 Text(
-                  " 📍 ${(user as ProducerUser).store.city!}",
+                  " 📍 ${(user as ProducerUser).stores.first.city!}",
                   style: TextStyle(fontSize: 18),
                 ),
               ],
@@ -675,7 +694,7 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                user!.isProducer! ? "Produtos em destaque" : 'Últimas compras',
+                user!.isProducer ? "Produtos em destaque" : 'Últimas compras',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
@@ -691,120 +710,128 @@ class _ProfilePageState extends State<ProfilePage> {
                           '${producerUser!.firstName} ${producerUser.lastName}';
                       final producerImage = producerUser.imageUrl;
 
-                      return Card(
-                        color: Theme.of(context).colorScheme.onTertiary,
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Flexible(
-                                flex: 8,
-                                child: Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.asset(
-                                        purchase.productImage,
-                                        width: 70,
-                                        height: 70,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          purchase.productName,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Text(
-                                          'Quantidade: ${purchase.unit == "kg" ? purchase.quantity.toStringAsFixed(2) : purchase.quantity.toStringAsFixed(0)} ${purchase.unit}',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.tertiaryFixed,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${purchase.price.toStringAsFixed(2)}€',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.tertiaryFixed,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              if (user != null && !user!.isProducer!)
+                      return Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Flexible(
-                                  flex: 3,
-                                  child: InkWell(
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  ProfilePage(producerUser),
+                                  flex: 8,
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.asset(
+                                          purchase.productImage,
+                                          width: 70,
+                                          height: 70,
+                                          fit: BoxFit.cover,
                                         ),
-                                      );
-                                    },
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const Text(
-                                          "Produtor:",
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        // <- Responsividade aqui
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              purchase.productName,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              'Quantidade: ${purchase.unit == "kg" ? purchase.quantity.toStringAsFixed(2) : purchase.quantity.toStringAsFixed(0)} ${purchase.unit}',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color:
+                                                    Theme.of(
+                                                      context,
+                                                    ).colorScheme.tertiaryFixed,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${purchase.price.toStringAsFixed(2)}€',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color:
+                                                    Theme.of(
+                                                      context,
+                                                    ).colorScheme.tertiaryFixed,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(height: 6),
-                                        ClipOval(
-                                          child: Image.network(
-                                            producerImage,
-                                            width: 35,
-                                            height: 35,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (_, __, ___) =>
-                                                    const Icon(Icons.person),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          producerName,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.tertiaryFixed,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                            ],
-                          ),
+
+                                if (user != null && !user!.isProducer)
+                                  Flexible(
+                                    flex: 3,
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) =>
+                                                    ProfilePage(producerUser),
+                                          ),
+                                        );
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            "Produtor:",
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          ClipOval(
+                                            child: Image.network(
+                                              producerImage,
+                                              width: 35,
+                                              height: 35,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (_, __, ___) =>
+                                                      const Icon(Icons.person),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            producerName,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.tertiaryFixed,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const Divider(),
+                          ],
                         ),
                       );
                     }).toList(),

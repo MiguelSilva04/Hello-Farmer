@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
 
-// Define the ProductStats class
 class ProductStats {
   final String name;
   final String image;
@@ -24,7 +25,6 @@ class ProductStats {
   });
 }
 
-// Widget for displaying a product on the podium
 class _PodiumProduct extends StatelessWidget {
   final ProductStats product;
   final double percent;
@@ -68,7 +68,7 @@ class _PodiumProduct extends StatelessWidget {
           product.name,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: place == 1 ? 16 : 14,
+            fontSize: place == 1 ? 12 : 10,
           ),
         ),
         Text(
@@ -104,7 +104,6 @@ class _PodiumProduct extends StatelessWidget {
   }
 }
 
-// Widget for displaying a product card in the grid
 class _ProductCard extends StatelessWidget {
   final ProductStats product;
   final double percent;
@@ -162,7 +161,12 @@ class AnalysisMainProductsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<ProductStats> calculateProductStats() {
-      final currentStore = (AuthService().currentUser! as ProducerUser).store!;
+      final currentStore =
+          (AuthService().currentUser! as ProducerUser)
+              .stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex];
       final orders = currentStore.orders!;
       final Map<String, ProductStats> statsMap = {};
 
@@ -186,7 +190,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
           final stats = statsMap[name]!;
 
           stats.totalSales += 1;
-          stats.totalAmountInSales += price!;
+          stats.totalAmountInSales += price;
 
           if (unit == Unit.KG) {
             stats.totalKg += amount;
@@ -202,8 +206,6 @@ class AnalysisMainProductsSection extends StatelessWidget {
     final stats = calculateProductStats();
     stats.sort((a, b) => b.totalSales.compareTo(a.totalSales));
     final totalSales = stats.fold<int>(0, (sum, s) => sum + s.totalSales);
-
-    stats.forEach((s) => print(s.totalKg)); // 0
 
     final top3 = stats.take(3).toList();
     final rest = stats.length > 3 ? stats.sublist(3) : [];
@@ -224,26 +226,36 @@ class AnalysisMainProductsSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (top3.length > 1)
-                  _PodiumProduct(
-                    product: top3[1],
-                    percent:
-                        totalSales > 0 ? top3[1].totalSales / totalSales : 0.0,
-                    place: 2,
+                  Expanded(
+                    child: _PodiumProduct(
+                      product: top3[1],
+                      percent:
+                          totalSales > 0
+                              ? top3[1].totalSales / totalSales
+                              : 0.0,
+                      place: 2,
+                    ),
                   ),
                 const SizedBox(width: 20),
-                _PodiumProduct(
-                  product: top3[0],
-                  percent:
-                      totalSales > 0 ? top3[0].totalSales / totalSales : 0.0,
-                  place: 1,
+                Expanded(
+                  child: _PodiumProduct(
+                    product: top3[0],
+                    percent:
+                        totalSales > 0 ? top3[0].totalSales / totalSales : 0.0,
+                    place: 1,
+                  ),
                 ),
                 const SizedBox(width: 20),
                 if (top3.length > 2)
-                  _PodiumProduct(
-                    product: top3[2],
-                    percent:
-                        totalSales > 0 ? top3[2].totalSales / totalSales : 0.0,
-                    place: 3,
+                  Expanded(
+                    child: _PodiumProduct(
+                      product: top3[2],
+                      percent:
+                          totalSales > 0
+                              ? top3[2].totalSales / totalSales
+                              : 0.0,
+                      place: 3,
+                    ),
                   ),
               ],
             ),

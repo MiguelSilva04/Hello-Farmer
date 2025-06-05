@@ -19,15 +19,16 @@ class ManageProductsSection extends StatefulWidget {
 
 class _ManageProductsSectionState extends State<ManageProductsSection> {
   late ManageViewMode _mode;
-
-  final List<ProductAd> _products =
-      (AuthService().currentUser! as ProducerUser).store.productsAds!;
+  late List<ProductAd> _products;
 
   @override
   void initState() {
     super.initState();
-    final currentIndex =
-        Provider.of<ManageSectionNotifier>(context, listen: false).currentIndex;
+    final provider = Provider.of<ManageSectionNotifier>(context, listen: false);
+    final currentIndex = provider.currentIndex;
+    _products =
+        (AuthService().currentUser! as ProducerUser).stores[provider
+            .storeIndex].productsAds!;
     if (currentIndex == 4) {
       _mode = ManageViewMode.stock;
     } else if (currentIndex == 5) {
@@ -113,7 +114,22 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      title: Text(product.name, style: TextStyle(fontSize: 20)),
+                      title: Row(
+                        children: [
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                product.name,
+                                style: const TextStyle(fontSize: 20),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
                       subtitle: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
@@ -138,7 +154,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                                                 .toString()
                                                 .length *
                                             14.0
-                                        : ((product.price ?? 0)
+                                        : ((product.price)
                                                 .toStringAsFixed(1)
                                                 .length *
                                             16.0))
@@ -201,41 +217,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                             },
                           ),
                           SizedBox(width: 5),
-                          (_mode == ManageViewMode.stock)
-                              ? StatefulBuilder(
-                                builder: (context, setStateUnit) {
-                                  return DropdownButton<Unit>(
-                                    dropdownColor:
-                                        Theme.of(context).colorScheme.secondary,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.secondaryFixed,
-                                    ),
-                                    value: product.unit,
-                                    onChanged: (val) {
-                                      if (val != null) {
-                                        setStateUnit(() {
-                                          product.unit = val;
-                                        });
-                                      }
-                                    },
-                                    items: const [
-                                      DropdownMenuItem(
-                                        value: Unit.KG,
-                                        child: Text("Kg"),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: Unit.UNIT,
-                                        child: Text("Unidade(s)"),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              )
-                              : Text("€"),
+                          if (_mode != ManageViewMode.stock) Text("€"),
                         ],
                       ),
                       trailing: StatefulBuilder(

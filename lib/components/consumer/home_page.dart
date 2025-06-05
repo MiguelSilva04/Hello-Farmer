@@ -5,6 +5,7 @@ import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/categories.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +34,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
     final producer =
         (AuthService().users.where((u) => u.runtimeType == ProducerUser)).first
             as ProducerUser;
-    recommendedAds = producer.store.productsAds?.take(5).toList() ?? [];
+    recommendedAds = producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.take(5).toList() ?? [];
     nearbyProducers =
         AuthService().users.whereType<ProducerUser>().take(5).toList();
 
@@ -67,18 +68,24 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Olá, $userName!',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'Olá, $userName!',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Descobre os melhores produtos frescos na tua zona!',
-            style: TextStyle(fontSize: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: const Text(
+              'Descobre os melhores produtos frescos na tua zona!',
+              style: TextStyle(fontSize: 16),
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -86,9 +93,12 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           const SizedBox(height: 16),
           _buildCategories(),
 
-          const Text(
-            'Recomendados para ti',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: const Text(
+              'Recomendados para ti',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -103,9 +113,12 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Produtores perto de ti',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: const Text(
+              'Produtores perto de ti',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -272,7 +285,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              user.store.city ?? 'Cidade desconhecida',
+              user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city ?? 'Cidade desconhecida',
               style: const TextStyle(fontSize: 10),
             ),
             Row(
@@ -281,7 +294,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                 const Text("4.6", style: TextStyle(fontSize: 10)),
                 const Icon(Icons.star, size: 12, color: Colors.amber),
                 Text(
-                  '(${user.store.storeReviews?.length ?? 0})',
+                  '(${user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].storeReviews?.length ?? 0})',
                   style: const TextStyle(fontSize: 10),
                 ),
               ],

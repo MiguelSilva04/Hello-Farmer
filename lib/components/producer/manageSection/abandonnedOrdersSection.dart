@@ -18,7 +18,7 @@ class AbandonedOrdersPage extends StatelessWidget {
           context,
           listen: false,
         ).storeIndex];
-    final orders = currentStore.orders!;
+    final orders = currentStore.orders ?? [];
 
     final abandonedOrders =
         orders

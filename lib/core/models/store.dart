@@ -20,6 +20,19 @@ extension DeliveryMethodExtension on DeliveryMethod {
         return "Recolha do Consumidor";
     }
   }
+
+  static DeliveryMethod fromString(String value) {
+    switch (value) {
+      case "Entrega ao Domicílio":
+        return DeliveryMethod.HOME_DELIVERY;
+      case "Transportadora":
+        return DeliveryMethod.COURIER;
+      case "Recolha do Consumidor":
+        return DeliveryMethod.PICKUP;
+      default:
+        return DeliveryMethod.HOME_DELIVERY;
+    }
+  }
 }
 
 class Store {
@@ -127,15 +140,10 @@ class Store {
               )
               : [],
       preferredDeliveryMethod:
-          json['preferredDeliveryMethod'] != null
-              ? List<DeliveryMethod>.from(
-                (json['preferredDeliveryMethod'] as List).map(
-                  (x) => DeliveryMethod.values.firstWhere(
-                    (e) => e.toString() == 'DeliveryMethod.$x',
-                    orElse: () => DeliveryMethod.HOME_DELIVERY,
-                  ),
-                ),
-              )
+          json['deliveryMethods'] != null
+              ? (json['deliveryMethods'] as List)
+                  .map((x) => DeliveryMethodExtension.fromString(x))
+                  .toList()
               : [],
     );
   }

@@ -167,7 +167,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
             context,
             listen: false,
           ).storeIndex];
-      final orders = currentStore.orders!;
+      final orders = currentStore.orders ?? [];
       final Map<String, ProductStats> statsMap = {};
 
       for (final order in orders) {

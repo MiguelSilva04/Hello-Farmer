@@ -139,7 +139,6 @@ class AuthFirebaseService implements AuthService {
 
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        print(data);
         if (data['ownerId'] == userId) {
           final store = Store.fromJson({
             ...data,

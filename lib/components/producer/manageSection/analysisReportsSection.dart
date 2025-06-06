@@ -17,6 +17,7 @@ class AnalysisReportsSection extends StatelessWidget {
       required List<Order> orders,
       required int numDias,
     }) {
+      if (products.length == 0) return 0.0;
       // Soma o stock total de todos os produtos
       final double stockTotal = products.fold(
         0.0,
@@ -36,18 +37,19 @@ class AnalysisReportsSection extends StatelessWidget {
 
       // Evita divisão por zero
       if (mediaVendasPorDia == 0) return double.infinity;
-
       // Calcula dias restantes de stock
       final double diasRestantes = stockTotal / mediaVendasPorDia;
 
       return diasRestantes;
     }
 
-    final curUserStore = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
-            context,
-            listen: false,
-          ).storeIndex];
-    final orders = curUserStore.orders!;
+    final curUserStore =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+          context,
+          listen: false,
+        ).storeIndex];
+    final orders = curUserStore.orders ?? [];
     final productAds = curUserStore.productsAds!;
     final todosProdutos = <Product>[];
     final nomesProdutos = <String>{};
@@ -303,14 +305,20 @@ class AnalysisReportsSection extends StatelessWidget {
 
   Widget _buildInventoryTable(BuildContext context) {
     final productAds =
-        (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
-            context,
-            listen: false,
-          ).storeIndex].productsAds!;
-    final orders = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
-            context,
-            listen: false,
-          ).storeIndex].orders!;
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .productsAds!;
+    final orders =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .orders ??
+        [];
 
     final uniqueProducts = <String, Product>{};
     for (var ad in productAds) {
@@ -330,10 +338,12 @@ class AnalysisReportsSection extends StatelessWidget {
       for (var order in orders) {
         final hasProduct = order.productsAds.any((p) {
           final finalProductAd =
-              (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(
-            context,
-            listen: false,
-          ).storeIndex].productsAds!
+              (AuthService().currentUser! as ProducerUser)
+                  .stores[Provider.of<ManageSectionNotifier>(
+                    context,
+                    listen: false,
+                  ).storeIndex]
+                  .productsAds!
                   .where((pr) => pr.id == p.produtctAdId)
                   .first;
           return finalProductAd.product.name == productName;

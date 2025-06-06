@@ -40,7 +40,8 @@ class _BillingSectionState extends State<BillingSection> {
     _orders =
         (AuthService().currentUser! as ProducerUser)
             .stores[provider.storeIndex]
-            .orders!;
+            .orders ??
+        [];
   }
 
   @override
@@ -330,39 +331,40 @@ class _BillingSectionState extends State<BillingSection> {
                     }).toList(),
               ),
             ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                foregroundColor: Theme.of(context).colorScheme.secondary,
-                iconColor: Theme.of(context).colorScheme.secondary,
+            if (_orders.length > 0)
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  foregroundColor: Theme.of(context).colorScheme.secondary,
+                  iconColor: Theme.of(context).colorScheme.secondary,
+                ),
+                onPressed: () {
+                  _filteredOrders.isNotEmpty
+                      ? Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder:
+                              (context) => InvoicePage(
+                                orders: _filteredOrders,
+                                total: _totalFaturacao,
+                                fromDate:
+                                    Provider.of<ManageSectionNotifier>(
+                                      context,
+                                      listen: false,
+                                    ).billingFromDate,
+                              ),
+                        ),
+                      )
+                      : null;
+                },
+                icon: Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+                  child: Icon(Icons.receipt, size: 30),
+                ),
+                label: Padding(
+                  padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+                  child: Text("Gerar Fatura", style: TextStyle(fontSize: 20)),
+                ),
               ),
-              onPressed: () {
-                _filteredOrders.isNotEmpty
-                    ? Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder:
-                            (context) => InvoicePage(
-                              orders: _filteredOrders,
-                              total: _totalFaturacao,
-                              fromDate:
-                                  Provider.of<ManageSectionNotifier>(
-                                    context,
-                                    listen: false,
-                                  ).billingFromDate,
-                            ),
-                      ),
-                    )
-                    : null;
-              },
-              icon: Padding(
-                padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
-                child: Icon(Icons.receipt, size: 30),
-              ),
-              label: Padding(
-                padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-                child: Text("Gerar Fatura", style: TextStyle(fontSize: 20)),
-              ),
-            ),
           ],
         ),
       ),

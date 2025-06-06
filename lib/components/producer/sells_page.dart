@@ -28,7 +28,14 @@ class _SellsPageState extends State<SellsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    orders = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].orders!;
+    orders =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .orders ??
+        [];
   }
 
   @override

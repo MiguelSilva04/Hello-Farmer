@@ -46,13 +46,14 @@ class _MainPageSectionState extends State<MainPageSection> {
         )
         : SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Image.asset(
+                  Image.network(
                     store.backgroundImageUrl ??
-                        "assets/images/default_store.jpg",
+                        "assets/images/background_logo.png",
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: 180,
@@ -72,7 +73,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                         ),
                         child: CircleAvatar(
                           radius: 60,
-                          backgroundImage: AssetImage(
+                          backgroundImage: NetworkImage(
                             store.imageUrl ?? "assets/images/default_store.jpg",
                           ),
                         ),
@@ -249,7 +250,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                                     children: [
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(8),
-                                        child: Image.asset(
+                                        child: Image.network(
                                           ad.product.imageUrl.first,
                                           width: 75,
                                           height: 75,
@@ -569,7 +570,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
+                        child: Image.network(
                           widget.ad.product.imageUrl.first,
                           width: 75,
                           height: 75,

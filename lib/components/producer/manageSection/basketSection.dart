@@ -24,7 +24,8 @@ class _BasketSectionState extends State<BasketSection> {
               context,
               listen: false,
             ).storeIndex]
-            .baskets!;
+            .baskets ??
+        [];
     Basket? _editingBasket = null;
 
     void startEdit(Basket basket) {

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:harvestly/core/models/app_user.dart';
 // import 'package:chat/core/services/auth/auth_mock_service.dart';
 
@@ -21,6 +22,30 @@ abstract class AuthService {
   void setLoggingInState(bool state);
 
   Stream<AppUser?> get userChanges;
+
+  Future<void> addStore({
+    required String name,
+    required String subName,
+    required String description,
+    required String city,
+    required String municipality,
+    required String address,
+    required File imageFile,
+    required File backgroundImageFile,
+    required List<String> deliveryMethods,
+    required LatLng coordinates,
+  });
+
+  Future<void> publishAd(
+    String title,
+    String description,
+    List<File> images,
+    String category,
+    int minQty,
+    String unit,
+    double price,
+    int stock,
+  );
 
   Future<void> signup(
     String firstName,
@@ -64,6 +89,8 @@ abstract class AuthService {
 
   Future<void> addFriend(String userId);
   Future<void> removeFriend(String userId);
+
+  Future<AppUser?> initializeAndGetUser();
 
   factory AuthService() {
     // return AuthMockService();

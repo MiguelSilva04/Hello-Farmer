@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
@@ -8,12 +9,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-
-import '../../models/app_user.dart';
 import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
+import 'package:uuid/uuid.dart';
 
 class AuthFirebaseService implements AuthService {
   static bool? _isLoggingIn;
@@ -38,15 +38,9 @@ class AuthFirebaseService implements AuthService {
         if (doc.exists) {
           final data = doc.data()!;
           if (data['isProducer'] == true) {
-            _currentUser = ProducerUser.fromJson({
-              ...data,
-              'id': user.uid,
-            });
+            _currentUser = ProducerUser.fromJson({...data, 'id': user.uid});
           } else {
-            _currentUser = ConsumerUser.fromJson({
-              ...data,
-              'id': user.uid,
-            });
+            _currentUser = ConsumerUser.fromJson({...data, 'id': user.uid});
           }
         } else {
           _currentUser = _toAppUser(user);
@@ -61,6 +55,40 @@ class AuthFirebaseService implements AuthService {
 
   AuthFirebaseService() {
     listenToUserChanges();
+  }
+
+  @override
+  Future<AppUser?> initializeAndGetUser() async {
+    final user = await getCurrentUser();
+
+    if (user is ProducerUser) {
+      final completer = Completer<void>();
+
+      FirebaseFirestore.instance
+          .collection('stores')
+          .where('ownerId', isEqualTo: user.id)
+          .get()
+          .then((snapshot) {
+            user.stores.clear();
+            for (var doc in snapshot.docs) {
+              final data = doc.data();
+              final store = Store.fromJson({
+                ...data,
+                'id': doc.id,
+                if (data['createdAt'] is Timestamp)
+                  'createdAt': (data['createdAt'] as Timestamp).toDate(),
+                if (data['updatedAt'] is Timestamp)
+                  'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+              });
+              user.stores.add(store);
+            }
+            completer.complete();
+          });
+
+      await completer.future;
+    }
+
+    return user;
   }
 
   @override
@@ -81,32 +109,50 @@ class AuthFirebaseService implements AuthService {
           _users.clear();
           for (var doc in snapshot.docs) {
             final data = doc.data();
+            final id = doc.id;
+
+            AppUser user;
             if (data['isProducer'] == true) {
-              _users.add(ProducerUser.fromJson({
-                ...data,
-                'id': doc.id,
-              }));
+              user = ProducerUser.fromJson({...data, 'id': id});
             } else {
-              _users.add(ConsumerUser.fromJson({
-                ...data,
-                'id': doc.id,
-              }));
+              user = ConsumerUser.fromJson({...data, 'id': id});
             }
-            if (_currentUser != null && _currentUser!.id == doc.id) {
-              // Atualiza campos mutáveis do usuário atual
-              _currentUser!.firstName = data['firstName'];
-              _currentUser!.lastName = data['lastName'];
-              _currentUser!.gender = data['gender'];
-              _currentUser!.phone = data['phone'];
-              _currentUser!.recoveryEmail = data['recoveryEmail'];
-              _currentUser!.imageUrl = data['imageUrl'];
-              _currentUser!.backgroundUrl = data['backgroundImageUrl'];
-              _currentUser!.dateOfBirth = data['dateOfBirth'];
-              _currentUser!.aboutMe = data['aboutMe'];
-              _currentUser!.isProducer = data['isProducer'];
+
+            _users.add(user);
+
+            if (_currentUser != null && _currentUser!.id == id) {
+              _currentUser = user;
+
+              if (_currentUser is ProducerUser) {
+                _listenToMyStores(_currentUser!.id);
+              }
             }
           }
         });
+  }
+
+  void _listenToMyStores(String userId) {
+    FirebaseFirestore.instance.collection('stores').snapshots().listen((
+      snapshot,
+    ) {
+      (_currentUser as ProducerUser).stores.clear();
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        print(data);
+        if (data['ownerId'] == userId) {
+          final store = Store.fromJson({
+            ...data,
+            'id': doc.id,
+            if (data['createdAt'] is Timestamp)
+              'createdAt': (data['createdAt'] as Timestamp).toDate(),
+            if (data['updatedAt'] is Timestamp)
+              'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+          });
+          (_currentUser as ProducerUser).stores.add(store);
+        }
+      }
+    });
   }
 
   @override
@@ -313,13 +359,17 @@ class AuthFirebaseService implements AuthService {
     final docRef = store.collection('users').doc(user.uid);
 
     if (firstName != null) {
-      await user.updateDisplayName("${firstName} ${lastName ?? _currentUser?.lastName ?? ''}");
+      await user.updateDisplayName(
+        "${firstName} ${lastName ?? _currentUser?.lastName ?? ''}",
+      );
       await docRef.update({'firstName': firstName});
       _currentUser!.firstName = firstName;
     }
 
     if (lastName != null) {
-      await user.updateDisplayName("${firstName ?? _currentUser?.firstName ?? ''} ${lastName}");
+      await user.updateDisplayName(
+        "${firstName ?? _currentUser?.firstName ?? ''} ${lastName}",
+      );
       await docRef.update({'lastName': lastName});
       _currentUser!.lastName = lastName;
     }
@@ -351,23 +401,18 @@ class AuthFirebaseService implements AuthService {
     }
     if (customIconStatus != null) {
       await docRef.update({'customIconStatus': customIconStatus});
-      // Optionally update _currentUser if this field exists
     }
     if (customStatus != null) {
       await docRef.update({'customStatus': customStatus});
-      // Optionally update _currentUser if this field exists
     }
     if (iconStatus != null) {
       await docRef.update({'iconStatus': iconStatus});
-      // Optionally update _currentUser if this field exists
     }
     if (nickname != null) {
       await docRef.update({'nickname': nickname});
-      // Optionally update _currentUser if this field exists
     }
     if (status != null) {
       await docRef.update({'status': status});
-      // Optionally update _currentUser if this field exists
     }
   }
 
@@ -429,8 +474,16 @@ class AuthFirebaseService implements AuthService {
       return ProducerUser(
         id: user.uid,
         email: user.email!,
-        firstName: firstName ?? user.displayName?.split(' ')[0] ?? user.email!.split('@')[0],
-        lastName: lastName ?? (((user.displayName?.split(' ').length ?? 0) > 1) ? user.displayName?.split(' ')[1] : "") ?? "",
+        firstName:
+            firstName ??
+            user.displayName?.split(' ')[0] ??
+            user.email!.split('@')[0],
+        lastName:
+            lastName ??
+            (((user.displayName?.split(' ').length ?? 0) > 1)
+                ? user.displayName?.split(' ')[1]
+                : "") ??
+            "",
         isProducer: true,
         phone: phone ?? '',
         gender: gender ?? '',
@@ -443,8 +496,16 @@ class AuthFirebaseService implements AuthService {
       return ConsumerUser(
         id: user.uid,
         email: user.email!,
-        firstName: firstName ?? user.displayName?.split(' ')[0] ?? user.email!.split('@')[0],
-        lastName: lastName ?? ((user.displayName?.split(' ').length ?? 0) > 1 ? user.displayName?.split(' ')[1] : "") ?? "",
+        firstName:
+            firstName ??
+            user.displayName?.split(' ')[0] ??
+            user.email!.split('@')[0],
+        lastName:
+            lastName ??
+            ((user.displayName?.split(' ').length ?? 0) > 1
+                ? user.displayName?.split(' ')[1]
+                : "") ??
+            "",
         isProducer: false,
         phone: phone ?? '',
         gender: gender ?? '',
@@ -456,14 +517,100 @@ class AuthFirebaseService implements AuthService {
   }
 
   @override
+  Future<void> addStore({
+    required String name,
+    required String subName,
+    required String description,
+    required String city,
+    required String municipality,
+    required String address,
+    required File imageFile,
+    required File backgroundImageFile,
+    required List<String> deliveryMethods,
+    required LatLng coordinates,
+  }) async {
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final FirebaseStorage _storage = FirebaseStorage.instance;
+    try {
+      final storeId = const Uuid().v4();
+
+      final imageRef = _storage.ref().child('stores/$storeId/image.jpg');
+      final imageUploadTask = await imageRef.putFile(imageFile);
+      final imageUrl = await imageUploadTask.ref.getDownloadURL();
+
+      final bgRef = _storage.ref().child('stores/$storeId/background.jpg');
+      final bgUploadTask = await bgRef.putFile(backgroundImageFile);
+      final backgroundImageUrl = await bgUploadTask.ref.getDownloadURL();
+
+      await _firestore.collection('stores').doc(storeId).set({
+        'id': storeId,
+        'ownerId': currentUser!.id,
+        'name': name,
+        'subName': subName,
+        'description': description,
+        'city': city,
+        'municipality': municipality,
+        'address': address,
+        'imageUrl': imageUrl,
+        'backgroundImageUrl': backgroundImageUrl,
+        'deliveryMethods': deliveryMethods,
+        'coordinates': {
+          'latitude': coordinates.latitude,
+          'longitude': coordinates.longitude,
+        },
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      print("Store criada com sucesso!");
+    } catch (e) {
+      print("Erro ao criar store: $e");
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> publishAd(
+    String title,
+    String description,
+    List<File> images,
+    String category,
+    int minQty,
+    String unit,
+    double price,
+    int stock,
+  ) async {
+    return Future.value();
+    // final store = FirebaseFirestore.instance;
+    // final docRef = store.collection('users').doc(currentUser!.id).collection('ads');
+
+    // return docRef.set({
+    //   'firstName': user.firstName,
+    //   'lastName': user.lastName,
+    //   'email': user.email,
+    //   'gender': user.gender,
+    //   'phone': user.phone,
+    //   'recoveryEmail': user.recoveryEmail,
+    //   'imageUrl': user.imageUrl,
+    //   'dateOfBirth': user.dateOfBirth,
+    //   'isProducer': user.isProducer,
+    //   'aboutMe': user.aboutMe,
+    //   'backgroundImageUrl': user.backgroundUrl,
+    // });
+  }
+
+  @override
   Future<void> addFriend(String userId) async {
     // Não implementado pois não existe mais friendsIds na nova estrutura
-    throw UnimplementedError('addFriend não faz parte da nova estrutura de AppUser');
+    throw UnimplementedError(
+      'addFriend não faz parte da nova estrutura de AppUser',
+    );
   }
 
   @override
   Future<void> removeFriend(String userId) async {
     // Não implementado pois não existe mais friendsIds na nova estrutura
-    throw UnimplementedError('removeFriend não faz parte da nova estrutura de AppUser');
+    throw UnimplementedError(
+      'removeFriend não faz parte da nova estrutura de AppUser',
+    );
   }
 }

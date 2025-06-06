@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
+import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
+import 'package:harvestly/pages/loading_page.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
 import '../components/consumer/home_page.dart';
@@ -41,7 +44,6 @@ class _MainMenuState extends State<MainMenu>
   @override
   void initState() {
     super.initState();
-    user = AuthService().currentUser!;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -51,12 +53,6 @@ class _MainMenuState extends State<MainMenu>
       curve: Curves.easeInOut,
     );
     _animationController.forward();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final notifier = Provider.of<ChatListNotifier>(context, listen: false);
-      notifier.clearChats();
-      notifier.listenToChats();
-    });
   }
 
   void _toggleSearch() {
@@ -95,9 +91,6 @@ class _MainMenuState extends State<MainMenu>
 
   @override
   Widget build(BuildContext context) {
-    final bool isProducer = user.isProducer;
-    _profileImageUrl = user.imageUrl;
-
     final List<Widget> _producerPages = [
       ProducerHomePage(),
       SellsPage(),
@@ -116,283 +109,319 @@ class _MainMenuState extends State<MainMenu>
       OffersPage(),
     ];
 
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        title: Row(
-          children: [
-            if (Provider.of<BottomNavigationNotifier>(context).currentIndex ==
-                5)
-              InkWell(
-                onTap:
-                    () => Provider.of<BottomNavigationNotifier>(
+    return FutureBuilder(
+      future: AuthService().initializeAndGetUser(),
+      builder: (ctx, snapshot) {
+        if (!snapshot.hasData) return LoadingPage();
+
+        final user = snapshot.data!;
+        final isProducer = user.isProducer;
+        _profileImageUrl = user.imageUrl;
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: false,
+            title: Row(
+              children: [
+                if (Provider.of<BottomNavigationNotifier>(
                       context,
-                      listen: false,
-                    ).setIndex(0),
-                child: const Icon(Icons.arrow_back),
-              ),
-            if (!_isSearching)
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Image.asset(
-                  "assets/images/logo_android2.png",
-                  height: 50,
-                ),
-              ),
-          ],
-        ),
-        actions: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (child, animation) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            child:
-                _isSearching
-                    ? Padding(
-                      key: const ValueKey(1),
-                      padding: const EdgeInsets.all(8),
-                      child: SizedBox(
-                        width:
-                            MediaQuery.of(context).size.width *
-                            (user.isProducer ? 0.80 : 0.70),
-                        child: SearchBar(
-                          autoFocus: true,
-                          hintText: "Procurar...",
-                          onChanged: (query) {
-                            Provider.of<ChatListNotifier>(
-                              context,
-                              listen: false,
-                            ).setSearchQuery(query);
-                          },
-                          trailing: [
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isSearching = false;
-                                });
-                                Provider.of<ChatListNotifier>(
-                                  context,
-                                  listen: false,
-                                ).setSearchQuery("");
-                              },
-                              icon: const Icon(Icons.close, color: Colors.grey),
+                    ).currentIndex ==
+                    5)
+                  InkWell(
+                    onTap:
+                        () => Provider.of<BottomNavigationNotifier>(
+                          context,
+                          listen: false,
+                        ).setIndex(0),
+                    child: const Icon(Icons.arrow_back),
+                  ),
+                if (!_isSearching)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Image.asset(
+                      "assets/images/logo_android2.png",
+                      height: 50,
+                    ),
+                  ),
+              ],
+            ),
+            actions: [
+              if (user.isProducer && (user as ProducerUser).stores.length > 0)
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  child:
+                      _isSearching
+                          ? Padding(
+                            key: const ValueKey(1),
+                            padding: const EdgeInsets.all(8),
+                            child: SizedBox(
+                              width:
+                                  MediaQuery.of(context).size.width *
+                                  (user.isProducer ? 0.80 : 0.70),
+                              child: SearchBar(
+                                autoFocus: true,
+                                hintText: "Procurar...",
+                                onChanged: (query) {
+                                  Provider.of<ChatListNotifier>(
+                                    context,
+                                    listen: false,
+                                  ).setSearchQuery(query);
+                                },
+                                trailing: [
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isSearching = false;
+                                      });
+                                      Provider.of<ChatListNotifier>(
+                                        context,
+                                        listen: false,
+                                      ).setSearchQuery("");
+                                    },
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                          )
+                          : IconButton(
+                            key: const ValueKey(2),
+                            icon: const Icon(Icons.search),
+                            onPressed: _toggleSearch,
+                          ),
+                ),
+              PopupMenuButton<String>(
+                tooltip: "Opções",
+                offset: const Offset(0, 50),
+                icon:
+                    user.imageUrl.isNotEmpty
+                        ? CircleAvatar(
+                          backgroundImage: NetworkImage(_profileImageUrl),
+                        )
+                        : const Icon(Icons.account_circle),
+                onSelected: (value) async {
+                  switch (value) {
+                    case "Notifications":
+                      Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.NOTIFICATION_PAGE);
+                      break;
+                    case "Alt":
+                      Provider.of<BottomNavigationNotifier>(
+                        context,
+                        listen: false,
+                      ).setIndex(5);
+                      break;
+                    case "Profile":
+                      _navigateToPage(AppRoutes.PROFILE_PAGE);
+                      break;
+                    case "Favorites":
+                      Navigator.of(context).pushNamed(AppRoutes.FAVORITES_PAGE);
+                      break;
+                    case "Settings":
+                      Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+                      break;
+                  }
+                },
+                itemBuilder:
+                    (context) => [
+                      PopupMenuItem(
+                        value: "Profile",
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.person,
+                              color:
+                                  Theme.of(context).colorScheme.tertiaryFixed,
+                            ),
+                            SizedBox(width: 10),
+                            Text("Perfil"),
                           ],
                         ),
                       ),
-                    )
-                    : IconButton(
-                      key: const ValueKey(2),
-                      icon: const Icon(Icons.search),
-                      onPressed: _toggleSearch,
-                    ),
-          ),
-          PopupMenuButton<String>(
-            tooltip: "Opções",
-            offset: const Offset(0, 50),
-            icon:
-                user.imageUrl.isNotEmpty
-                    ? CircleAvatar(
-                      backgroundImage: NetworkImage(_profileImageUrl),
-                    )
-                    : const Icon(Icons.account_circle),
-            onSelected: (value) async {
-              switch (value) {
-                case "Notifications":
-                  Navigator.of(context).pushNamed(AppRoutes.NOTIFICATION_PAGE);
-                  break;
-                case "Alt":
-                  Provider.of<BottomNavigationNotifier>(
-                    context,
-                    listen: false,
-                  ).setIndex(5);
-                  break;
-                case "Profile":
-                  _navigateToPage(AppRoutes.PROFILE_PAGE);
-                  break;
-                case "Favorites":
-                  Navigator.of(context).pushNamed(AppRoutes.FAVORITES_PAGE);
-                  break;
-                case "Settings":
-                  Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
-                  break;
-              }
-            },
-            itemBuilder:
-                (context) => [
-                  PopupMenuItem(
-                    value: "Profile",
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(
-                          Icons.person,
-                          color: Theme.of(context).colorScheme.tertiaryFixed,
+                      PopupMenuItem(
+                        value: "Alt",
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              user.isProducer
+                                  ? FontAwesomeIcons.buildingUser
+                                  : FontAwesomeIcons.gift,
+                              color:
+                                  Theme.of(context).colorScheme.tertiaryFixed,
+                            ),
+                            SizedBox(width: 10),
+                            Text(user.isProducer ? "Banca" : "Ofertas"),
+                          ],
                         ),
-                        SizedBox(width: 10),
-                        Text("Perfil"),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: "Alt",
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(
-                          user.isProducer
-                              ? FontAwesomeIcons.buildingUser
-                              : FontAwesomeIcons.gift,
-                          color: Theme.of(context).colorScheme.tertiaryFixed,
+                      ),
+                      PopupMenuItem(
+                        value: "Notifications",
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Badge.count(
+                              count: user.notifications!.length,
+                              child: Icon(
+                                Icons.notifications_none_rounded,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.secondaryFixed,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Text("Notificações"),
+                          ],
                         ),
-                        SizedBox(width: 10),
-                        Text(user.isProducer ? "Banca" : "Ofertas"),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: "Notifications",
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Badge.count(
-                          count: user.notifications!.length,
-                          child: Icon(
-                            Icons.notifications_none_rounded,
-                            color: Theme.of(context).colorScheme.secondaryFixed,
+                      ),
+                      if (!user.isProducer)
+                        PopupMenuItem(
+                          value: "Favorites",
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Icon(
+                                FontAwesomeIcons.heart,
+                                color:
+                                    Theme.of(context).colorScheme.tertiaryFixed,
+                              ),
+                              SizedBox(width: 10),
+                              Text("Favoritos"),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 10),
-                        Text("Notificações"),
-                      ],
-                    ),
-                  ),
-                  if (!user.isProducer)
-                    PopupMenuItem(
-                      value: "Favorites",
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Icon(
-                            FontAwesomeIcons.heart,
-                            color: Theme.of(context).colorScheme.tertiaryFixed,
-                          ),
-                          SizedBox(width: 10),
-                          Text("Favoritos"),
-                        ],
+                      PopupMenuItem(
+                        value: "Settings",
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Icon(
+                              Icons.settings,
+                              color:
+                                  Theme.of(context).colorScheme.tertiaryFixed,
+                            ),
+                            SizedBox(width: 10),
+                            Text("Definições"),
+                          ],
+                        ),
+                      ),
+                    ],
+              ),
+              if (!user.isProducer)
+                InkWell(
+                  onTap:
+                      () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (ctx) => ShoppingCartPage()),
+                      ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Badge.count(
+                      count:
+                          (user as ConsumerUser)
+                              .shoppingCart
+                              .productsQty
+                              ?.length ??
+                          0,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Icon(Icons.shopping_cart_rounded),
                       ),
                     ),
-                  PopupMenuItem(
-                    value: "Settings",
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(
-                          Icons.settings,
-                          color: Theme.of(context).colorScheme.tertiaryFixed,
-                        ),
-                        SizedBox(width: 10),
-                        Text("Definições"),
-                      ],
-                    ),
-                  ),
-                ],
-          ),
-          if (!user.isProducer)
-            InkWell(
-              onTap:
-                  () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (ctx) => ShoppingCartPage()),
-                  ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Badge.count(
-                  count:
-                      (user as ConsumerUser).shoppingCart.productsQty?.length ??
-                      0,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Icon(Icons.shopping_cart_rounded),
                   ),
                 ),
-              ),
-            ),
-        ],
-      ),
-      body: FadeTransition(
-        opacity: _opacityAnimation,
-        child:
-            isProducer
-                ? _producerPages[Provider.of<BottomNavigationNotifier>(
-                  context,
-                ).currentIndex]
-                : _consumerPages[Provider.of<BottomNavigationNotifier>(
-                  context,
-                ).currentIndex],
-      ),
-      bottomNavigationBar:
-          Provider.of<BottomNavigationNotifier>(context).currentIndex < 5
-              ? BottomNavigationBar(
-                selectedItemColor: Theme.of(context).bottomAppBarTheme.color,
-                unselectedItemColor:
-                    Theme.of(context).colorScheme.secondaryFixed,
-                currentIndex:
-                    Provider.of<BottomNavigationNotifier>(context).currentIndex,
-                onTap: (index) {
-                  Provider.of<BottomNavigationNotifier>(
-                    context,
-                    listen: false,
-                  ).setIndex(index);
-                },
-                items:
-                    isProducer
-                        ? const [
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.home),
-                            label: "Início",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(FontAwesomeIcons.fileInvoiceDollar),
-                            label: "Vendas",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.add_circle),
-                            label: "Vender",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.message_rounded),
-                            label: "Mensagens",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.manage_accounts),
-                            label: "Gestão",
-                          ),
-                        ]
-                        : const [
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.home),
-                            label: "Início",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(FontAwesomeIcons.boxOpen),
-                            label: "Encomendas",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.search),
-                            label: "Explorar",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.message_rounded),
-                            label: "Mensagens",
-                          ),
-                          BottomNavigationBarItem(
-                            icon: Icon(Icons.map_rounded),
-                            label: "Mapa",
-                          ),
-                        ],
-              )
-              : null,
+            ],
+          ),
+          body: FadeTransition(
+            opacity: _opacityAnimation,
+            child:
+                isProducer && (user as ProducerUser).stores.length == 0
+                    ? CreateStore(isFirstTime: true)
+                    : (user as ProducerUser).stores.length > 0
+                    ? _producerPages[Provider.of<BottomNavigationNotifier>(
+                      context,
+                    ).currentIndex]
+                    : _consumerPages[Provider.of<BottomNavigationNotifier>(
+                      context,
+                    ).currentIndex],
+          ),
+          bottomNavigationBar:
+              (Provider.of<BottomNavigationNotifier>(context).currentIndex <
+                          5 &&
+                      (user.isProducer &&
+                          (user as ProducerUser).stores.length > 0))
+                  ? BottomNavigationBar(
+                    selectedItemColor:
+                        Theme.of(context).bottomAppBarTheme.color,
+                    unselectedItemColor:
+                        Theme.of(context).colorScheme.secondaryFixed,
+                    currentIndex:
+                        Provider.of<BottomNavigationNotifier>(
+                          context,
+                        ).currentIndex,
+                    onTap: (index) {
+                      Provider.of<BottomNavigationNotifier>(
+                        context,
+                        listen: false,
+                      ).setIndex(index);
+                    },
+                    items:
+                        isProducer
+                            ? const [
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.home),
+                                label: "Início",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(FontAwesomeIcons.fileInvoiceDollar),
+                                label: "Vendas",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.add_circle),
+                                label: "Vender",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.message_rounded),
+                                label: "Mensagens",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.manage_accounts),
+                                label: "Gestão",
+                              ),
+                            ]
+                            : const [
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.home),
+                                label: "Início",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(FontAwesomeIcons.boxOpen),
+                                label: "Encomendas",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.search),
+                                label: "Explorar",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.message_rounded),
+                                label: "Mensagens",
+                              ),
+                              BottomNavigationBarItem(
+                                icon: Icon(Icons.map_rounded),
+                                label: "Mapa",
+                              ),
+                            ],
+                  )
+                  : null,
+        );
+      },
     );
   }
 }

@@ -30,12 +30,12 @@ class SelectState extends StatefulWidget {
 }
 
 class _SelectStateState extends State<SelectState> {
-  List<String> _cities = ["Escolha uma Cidade"];
+  List<String> _cities = ["Escolha um Munícipio"];
   List<String> _country = ["Escolha um País"];
-  String _selectedCity = "Escolha uma Cidade";
+  String _selectedCity = "Escolha um Munícipio";
   String _selectedCountry = "Escolha um País";
-  String _selectedState = "Escolha uma Região";
-  List<String> _states = ["Escolha uma Região"];
+  String _selectedState = "Escolha uma Cidade";
+  List<String> _states = ["Escolha uma Cidade"];
   var responses;
 
   @override
@@ -73,9 +73,7 @@ class _SelectStateState extends State<SelectState> {
   }
 
   Future getResponse() async {
-    var res = await rootBundle.loadString(
-      'assets/data/country.json',
-    );
+    var res = await rootBundle.loadString('assets/data/country.json');
     return jsonDecode(res);
   }
 
@@ -148,8 +146,8 @@ class _SelectStateState extends State<SelectState> {
   void _onSelectedCountry(String value) {
     if (!mounted) return;
     setState(() {
-      _selectedState = "Escolha uma Região";
-      _states = ["Escolha uma Região"];
+      _selectedState = "Escolha uma Cidade";
+      _states = ["Escolha uma Cidade"];
       _selectedCountry = value;
       widget.onCountryChanged(value);
       getState();
@@ -159,8 +157,8 @@ class _SelectStateState extends State<SelectState> {
   void _onSelectedState(String value) {
     if (!mounted) return;
     setState(() {
-      _selectedCity = "Escolha uma Cidade";
-      _cities = ["Escolha uma Cidade"];
+      _selectedCity = "Escolha um Munícipio";
+      _cities = ["Escolha um Munícipio"];
       _selectedState = value;
       widget.onStateChanged(value);
       getCity();

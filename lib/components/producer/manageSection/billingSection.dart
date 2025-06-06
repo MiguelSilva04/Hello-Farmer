@@ -65,7 +65,7 @@ class _BillingSectionState extends State<BillingSection> {
               listen: false,
             ).storeIndex]
             .createdAt;
-    if (date.isAtSameMomentAs(createdAt)) return DateRangeOption.none;
+    if (date.isAtSameMomentAs(createdAt!)) return DateRangeOption.none;
     if (date.isAtSameMomentAs(
       now
           .subtract(const Duration(days: 7))
@@ -179,7 +179,7 @@ class _BillingSectionState extends State<BillingSection> {
                   context,
                   listen: false,
                 ).storeIndex]
-                .createdAt,
+                .createdAt!,
           );
       }
     });

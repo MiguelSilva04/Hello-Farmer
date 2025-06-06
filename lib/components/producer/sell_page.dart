@@ -26,7 +26,6 @@ class SellPageState extends State<SellPage> {
   String? title;
   String? category;
   String? description;
-  String? location;
   List<String> deliveryOptions = [];
   String? unit = 'Kg';
   String? qty;
@@ -45,6 +44,20 @@ class SellPageState extends State<SellPage> {
   String? _highlightOption;
   Set<String> _selectedKeywords = {};
 
+  @override
+  void initState() {
+    super.initState();
+    deliveryOptions =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .preferredDeliveryMethod!
+            .map((p) => p.toDisplayString())
+            .toList();
+  }
+
   void toggleDelivery(String option, bool selected) {
     setState(() {
       if (selected) {
@@ -56,6 +69,14 @@ class SellPageState extends State<SellPage> {
   }
 
   Future<void> _submit() async {
+    print("Titulo: $title");
+    print("Descrição: $description");
+    print("Numero de Imagens: ${images.length}");
+    print("Categoria: $category");
+    print("Quantidade minima: $qty");
+    print("Unidade: $unit");
+    print("Preço: $price");
+    print("Stock: $stock");
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -141,7 +162,6 @@ class SellPageState extends State<SellPage> {
                     height: 300,
                     child: Container(
                       width: double.infinity,
-                      color: Theme.of(context).colorScheme.onInverseSurface,
                       child: Column(
                         children: [
                           Expanded(
@@ -154,19 +174,12 @@ class SellPageState extends State<SellPage> {
                                 });
                               },
                               itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 30,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: activeImages[index]!,
-                                          fit: BoxFit.cover,
-                                        ),
+                                return ClipRRect(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: activeImages[index]!,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
@@ -229,13 +242,26 @@ class SellPageState extends State<SellPage> {
                 ),
                 const SizedBox(height: 8),
 
-                Text(
-                  title ?? "Sem titulo",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.surface,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      title ?? "Sem titulo",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.surface,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    if (_highlighted!)
+                      Chip(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                        label: Text(
+                          _highlightOption == "topo_pesquisa" ? "TOPO" : "TOP",
+                        ),
+                      ),
+                  ],
                 ),
 
                 Text(
@@ -247,23 +273,6 @@ class SellPageState extends State<SellPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onTertiary,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    location ?? 'Sem Localização',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onTertiaryFixed,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
 
                 if (_selectedKeywords.isNotEmpty) ...[
                   const SizedBox(height: 12),
@@ -423,8 +432,9 @@ class SellPageState extends State<SellPage> {
     int? maxLength,
     int? maxLines,
     TextInputType? keyboardType,
-    required FormFieldValidator<String>? validator,
-    required ValueChanged<String> onChanged,
+    FormFieldValidator<String>? validator,
+    ValueChanged<String>? onChanged,
+    bool? enabled,
   }) {
     return TextFormField(
       decoration: InputDecoration(
@@ -442,6 +452,7 @@ class SellPageState extends State<SellPage> {
           ),
         ),
       ),
+      enabled: enabled,
       initialValue: initialValue,
       maxLines: maxLines,
       maxLength: maxLength,
@@ -591,26 +602,6 @@ class SellPageState extends State<SellPage> {
                   dropdownColor: Theme.of(context).colorScheme.secondary,
                 ),
 
-                SizedBox(height: 16),
-                Text(
-                  "Localização:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                customTextFormField(
-                  context: context,
-                  label: "Freguesia ou código postal",
-                  onChanged: (val) => description = val,
-                  maxLength: 20,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return "A localização não pode estar vazia.";
-                    }
-                    if (val.length < 3) {
-                      return "A localização deve ter pelo menos 3 caracteres.";
-                    }
-                    return null;
-                  },
-                ),
                 SizedBox(height: 16),
                 Row(
                   children: [
@@ -763,7 +754,7 @@ class SellPageState extends State<SellPage> {
                       flex: 2,
                       child: customTextFormField(
                         context: context,
-                        label: "Preço (€)",
+                        label: "Preço p/ ${unit} (€)",
                         initialValue: price,
                         onChanged: (val) => price = val,
                         validator: (val) {
@@ -783,7 +774,7 @@ class SellPageState extends State<SellPage> {
                     ),
                     SizedBox(width: 5),
                     Flexible(
-                      flex: 3,
+                      flex: 2,
                       child: customTextFormField(
                         context: context,
                         label: "Stock (${unit})",
@@ -865,6 +856,25 @@ class SellPageState extends State<SellPage> {
                   },
                 ),
 
+                const SizedBox(height: 10),
+                Text(
+                  "Localização:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                customTextFormField(
+                  context: context,
+                  label: "Munícipio ou Código Postal",
+                  initialValue:
+                      (AuthService().currentUser as ProducerUser)
+                          .stores[Provider.of<ManageSectionNotifier>(
+                            context,
+                            listen: false,
+                          ).storeIndex]
+                          .municipality,
+                  enabled: false,
+                  maxLength: 20,
+                ),
+
                 SizedBox(height: 16),
                 CheckboxListTile(
                   title: Text("Publicar anúncio já destacado"),
@@ -905,6 +915,11 @@ class SellPageState extends State<SellPage> {
                     ],
                   ),
 
+                const SizedBox(height: 10),
+                Text(
+                  "Selecione as categorias em que o seu anúncio se enquadra:",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,

@@ -123,7 +123,7 @@ class AccountPage extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                backgroundColor: Colors.red,
                 foregroundColor:
                     Theme.of(context).colorScheme.onSecondaryContainer,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -139,7 +139,7 @@ class AccountPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Colors.red,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
             ),

@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'basket.dart';
 import 'order.dart';
@@ -21,9 +23,8 @@ extension DeliveryMethodExtension on DeliveryMethod {
 }
 
 class Store {
-  static int _idCounter = 0;
   final String id;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   String? backgroundImageUrl;
   String? imageUrl;
   String? name;
@@ -31,7 +32,8 @@ class Store {
   String? description;
   String? city;
   String? address;
-  List<String>? preferredMarkets;
+  String? municipality;
+  LatLng? coordinates;
   List<ProductAd>? productsAds;
   List<Order>? orders;
   List<DeliveryMethod>? preferredDeliveryMethod;
@@ -39,21 +41,23 @@ class Store {
   List<Map<DateTime, String>>? viewsByUserDateTime;
 
   Store({
-    required this.createdAt,
+    required this.id,
+    this.createdAt,
     this.backgroundImageUrl,
     this.imageUrl,
     this.name,
     this.subName,
     this.description,
     this.city,
+    this.municipality,
     this.address,
-    this.preferredMarkets,
+    this.coordinates,
     this.productsAds,
     this.orders,
     this.preferredDeliveryMethod,
     this.baskets,
     this.viewsByUserDateTime,
-  }) : id = (_idCounter++).toString();
+  });
 
   List<Review>? get storeReviews {
     return productsAds
@@ -85,21 +89,27 @@ class Store {
 
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
+      id: json['id'],
       createdAt:
-          json['createdAt'] != null
-              ? DateTime.parse(json['createdAt'])
-              : DateTime.now(),
+          (json['createdAt'] is cf.Timestamp)
+              ? (json['createdAt'] as cf.Timestamp).toDate()
+              : json['createdAt'],
       name: json['name'] ?? '',
       subName: json['subName'] ?? '',
       description: json['description'] ?? '',
       city: json['city'] ?? '',
       address: json['address'] ?? '',
+      municipality: json['municipality'],
+      coordinates:
+          json['coordinates'] != null
+              ? LatLng(
+                json['coordinates']['latitude'],
+                json['coordinates']['longitude'],
+              )
+              : null,
+
       imageUrl: json['imageUrl'] ?? '',
       backgroundImageUrl: json['backgroundImageUrl'],
-      preferredMarkets:
-          json['preferredMarkets'] != null
-              ? List<String>.from(json['preferredMarkets'])
-              : [],
       productsAds:
           json['productsAds'] != null
               ? List<ProductAd>.from(

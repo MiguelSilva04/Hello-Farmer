@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:harvestly/utils/categories.dart';
+import 'package:harvestly/utils/keywords.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
@@ -29,6 +31,7 @@ class SellPageState extends State<SellPage> {
   String? unit = 'Kg';
   String? qty;
   String? price;
+  String? stock;
   String? name;
   String? phone;
   List<ImageProvider?> images = List.generate(
@@ -40,6 +43,7 @@ class SellPageState extends State<SellPage> {
   bool _isPreviewing = false;
   bool? _highlighted = false;
   String? _highlightOption;
+  Set<String> _selectedKeywords = {};
 
   void toggleDelivery(String option, bool selected) {
     setState(() {
@@ -120,250 +124,330 @@ class SellPageState extends State<SellPage> {
 
   Widget getPreviewingScreen(BuildContext context) {
     final pageController = PageController();
-    return Column(
-      children: [
-        StatefulBuilder(
-          builder: (context, setState) {
-            int currentPage =
-                pageController.hasClients
-                    ? pageController.page?.round() ?? 0
-                    : 0;
-            final activeImages =
-                images.where((image) => image != null).toList();
-            return Container(
-              child: Center(
-                child: SizedBox(
-                  height: 300,
-                  child: Container(
-                    width: double.infinity,
-                    color: Theme.of(context).colorScheme.onInverseSurface,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: PageView.builder(
-                            controller: pageController,
-                            itemCount: activeImages.length,
-                            onPageChanged: (index) {
-                              setState(() {
-                                currentPage = index;
-                              });
-                            },
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 30,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(30),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: activeImages[index]!,
-                                        fit: BoxFit.cover,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          StatefulBuilder(
+            builder: (context, setState) {
+              int currentPage =
+                  pageController.hasClients
+                      ? pageController.page?.round() ?? 0
+                      : 0;
+              final activeImages =
+                  images.where((image) => image != null).toList();
+              return Container(
+                child: Center(
+                  child: SizedBox(
+                    height: 300,
+                    child: Container(
+                      width: double.infinity,
+                      color: Theme.of(context).colorScheme.onInverseSurface,
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: PageView.builder(
+                              controller: pageController,
+                              itemCount: activeImages.length,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  currentPage = index;
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 30,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: activeImages[index]!,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            activeImages.length,
-                            (index) => Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withAlpha(
-                                  index == currentPage ? 255 : 102,
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              activeImages.length,
+                              (index) => Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withAlpha(
+                                    index == currentPage ? 255 : 102,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.all(30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundImage: NetworkImage(
-                      AuthService().currentUser!.imageUrl,
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.all(30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundImage: NetworkImage(
+                        AuthService().currentUser!.imageUrl,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    name ??
-                        AuthService().currentUser!.firstName +
-                            " " +
-                            AuthService().currentUser!.lastName,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+                    const SizedBox(width: 5),
+                    Text(
+                      name ??
+                          AuthService().currentUser!.firstName +
+                              " " +
+                              AuthService().currentUser!.lastName,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
 
-              Text(
-                title ?? "Sem titulo",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.surface,
-                ),
-              ),
-
-              Text(
-                '${price ?? "PREÇO"}€/${unit ?? "unidade"}',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Theme.of(context).colorScheme.inverseSurface,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onTertiary,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  location ?? 'Sem Localização',
+                Text(
+                  title ?? "Sem titulo",
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onTertiaryFixed,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 12),
-              Text(
-                description ?? 'SEM DESCRIÇÃO',
-                style: TextStyle(fontSize: 14),
-              ),
-
-              const SizedBox(height: 12),
-
-              Text(
-                'Opções de entrega:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onTertiaryFixed,
+                Text(
+                  '${price ?? "PREÇO"}€/${unit ?? "unidade"}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Theme.of(context).colorScheme.inverseSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              deliveryOptions.isEmpty
-                  ? Text("Sem opções de entrega selecionadas")
-                  : Column(
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onTertiary,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    location ?? 'Sem Localização',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onTertiaryFixed,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                if (_selectedKeywords.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children:
-                        deliveryOptions
+                        Keywords.keywords
+                            .where(
+                              (keyword) =>
+                                  _selectedKeywords.contains(keyword.name),
+                            )
                             .map(
-                              (deliveryOption) => Row(
-                                children: [
-                                  Icon(
-                                    Icons.check,
+                              (keyword) => Chip(
+                                avatar: Icon(
+                                  keyword.icon,
+                                  size: 18,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
+                                label: Text(
+                                  keyword.name,
+                                  style: TextStyle(
                                     color:
-                                        Theme.of(
-                                          context,
-                                        ).colorScheme.onTertiaryFixed,
-                                    size: 18,
+                                        Theme.of(context).colorScheme.secondary,
                                   ),
-                                  SizedBox(width: 4),
-                                  Text(deliveryOption),
-                                ],
+                                ),
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.1),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                               ),
                             )
                             .toList(),
                   ),
+                ],
 
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
+                Text(
+                  description ?? 'SEM DESCRIÇÃO',
+                  style: TextStyle(fontSize: 14),
+                ),
 
-              Text(
-                'Quantidade mínima: ${qty ?? "XX"} unidades',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onTertiaryFixed,
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 12),
+
+                Text(
+                  'Opções de entrega:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onTertiaryFixed,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                deliveryOptions.isEmpty
+                    ? Text("Sem opções de entrega selecionadas")
+                    : Column(
+                      children:
+                          deliveryOptions
+                              .map(
+                                (deliveryOption) => Row(
+                                  children: [
+                                    Icon(
+                                      Icons.check,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onTertiaryFixed,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(deliveryOption),
+                                  ],
+                                ),
+                              )
+                              .toList(),
+                    ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  'Quantidade mínima: ${qty ?? "XX"} unidades',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onTertiaryFixed,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              InkWell(
+                onTap:
+                    () => setState(() {
+                      _isPreviewing = false;
+                    }),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Voltar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap:
+                    () => setState(() {
+                      _submit();
+                      _isPreviewing = false;
+                    }),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Publicar",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget customTextFormField({
+    required BuildContext context,
+    required String label,
+    String? initialValue,
+    int? maxLength,
+    int? maxLines,
+    TextInputType? keyboardType,
+    required FormFieldValidator<String>? validator,
+    required ValueChanged<String> onChanged,
+  }) {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: label,
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.secondaryFixed,
+            width: 1,
+          ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            InkWell(
-              onTap:
-                  () => setState(() {
-                    _isPreviewing = false;
-                  }),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                width: MediaQuery.of(context).size.width * 0.3,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Voltar",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            InkWell(
-              onTap:
-                  () => setState(() {
-                    _submit();
-                    _isPreviewing = false;
-                  }),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                width: MediaQuery.of(context).size.width * 0.3,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "Publicar",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
         ),
-      ],
+      ),
+      initialValue: initialValue,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      validator: validator,
+      onChanged: onChanged,
+      keyboardType: keyboardType,
     );
   }
 
@@ -407,8 +491,9 @@ class SellPageState extends State<SellPage> {
                     color: Theme.of(context).colorScheme.onTertiaryFixedVariant,
                   ),
                 ),
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Título do anúncio"),
+                customTextFormField(
+                  context: context,
+                  label: "Título do anúncio",
                   initialValue: title,
                   onChanged: (val) => title = val,
                   maxLength: 20,
@@ -422,12 +507,12 @@ class SellPageState extends State<SellPage> {
                     return null;
                   },
                 ),
-
-                TextFormField(
-                  decoration: InputDecoration(labelText: "Descrição"),
+                customTextFormField(
+                  context: context,
                   initialValue: description,
+                  label: "Descrição",
                   maxLines: 4,
-                  maxLength: 10000,
+                  maxLength: 1000,
                   onChanged: (val) => description = val,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
@@ -480,15 +565,24 @@ class SellPageState extends State<SellPage> {
 
                 DropdownButtonFormField<String>(
                   value: category,
-                  items: [
-                    DropdownMenuItem(value: "Fruta", child: Text("Fruta")),
-                    DropdownMenuItem(value: "Legumes", child: Text("Legumes")),
-                    DropdownMenuItem(value: "Ervas", child: Text("Ervas")),
-                    DropdownMenuItem(value: "Flores", child: Text("Flores")),
-                  ],
+                  items:
+                      Categories.categories
+                          .map(
+                            (m) => DropdownMenuItem(
+                              child: Text(m.name),
+                              value: m.name,
+                            ),
+                          )
+                          .toList(),
                   onChanged: (val) => setState(() => category = val),
                   decoration: InputDecoration(
                     labelText: "Selecione uma categoria",
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.secondaryFixed,
+                        width: 1,
+                      ),
+                    ),
                   ),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -502,11 +596,11 @@ class SellPageState extends State<SellPage> {
                   "Localização:",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: "Freguesia ou código postal",
-                  ),
-                  onChanged: (val) => location = val,
+                customTextFormField(
+                  context: context,
+                  label: "Freguesia ou código postal",
+                  onChanged: (val) => description = val,
+                  maxLength: 20,
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
                       return "A localização não pode estar vazia.";
@@ -517,7 +611,6 @@ class SellPageState extends State<SellPage> {
                     return null;
                   },
                 ),
-
                 SizedBox(height: 16),
                 Row(
                   children: [
@@ -550,7 +643,10 @@ class SellPageState extends State<SellPage> {
                       Text(method.toDisplayString()),
                       Checkbox(
                         value: (AuthService().currentUser! as ProducerUser)
-                            .stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex]
+                            .stores[Provider.of<ManageSectionNotifier>(
+                              context,
+                              listen: false,
+                            ).storeIndex]
                             .preferredDeliveryMethod!
                             .contains(method),
                         onChanged: (value) {},
@@ -558,29 +654,6 @@ class SellPageState extends State<SellPage> {
                     ],
                   ),
                 ),
-
-                // CheckboxListTile(
-                //   title: Text("Entrega ao domicílio"),
-                //   value: deliveryOptions.contains("Entrega ao domicílio"),
-                //   onChanged:
-                //       (val) => toggleDelivery("Entrega ao domicílio", val!),
-                // ),
-                // CheckboxListTile(
-                //   title: Text("Recolha num local à escolha"),
-                //   value: deliveryOptions.contains(
-                //     "Recolha num local à escolha",
-                //   ),
-                //   onChanged:
-                //       (val) =>
-                //           toggleDelivery("Recolha num local à escolha", val!),
-                // ),
-                // CheckboxListTile(
-                //   title: Text("Entrega por transportadora"),
-                //   value: deliveryOptions.contains("Entrega por transportadora"),
-                //   onChanged:
-                //       (val) =>
-                //           toggleDelivery("Entrega por transportadora", val!),
-                // ),
                 SizedBox(height: 16),
                 Text(
                   "Detalhes da venda:",
@@ -688,12 +761,10 @@ class SellPageState extends State<SellPage> {
                   children: [
                     Flexible(
                       flex: 2,
-                      child: TextFormField(
-                        decoration: InputDecoration(labelText: "Preço (€)"),
+                      child: customTextFormField(
+                        context: context,
+                        label: "Preço (€)",
                         initialValue: price,
-                        keyboardType: TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
                         onChanged: (val) => price = val,
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) {
@@ -705,20 +776,19 @@ class SellPageState extends State<SellPage> {
                           }
                           return null;
                         },
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                       ),
                     ),
                     SizedBox(width: 5),
                     Flexible(
                       flex: 3,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: "Stock (${unit})",
-                        ),
-                        initialValue: price,
-                        keyboardType: TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        onChanged: (val) => price = val,
+                      child: customTextFormField(
+                        context: context,
+                        label: "Stock (${unit})",
+                        initialValue: stock,
+                        onChanged: (val) => stock = val,
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) {
                             return "O stock não pode estar vazio.";
@@ -729,6 +799,9 @@ class SellPageState extends State<SellPage> {
                           }
                           return null;
                         },
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                       ),
                     ),
                   ],
@@ -741,7 +814,15 @@ class SellPageState extends State<SellPage> {
                 ),
 
                 TextFormField(
-                  decoration: InputDecoration(labelText: "Nome"),
+                  decoration: InputDecoration(
+                    labelText: "Nome",
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.secondaryFixed,
+                        width: 1,
+                      ),
+                    ),
+                  ),
                   enabled: false,
                   initialValue:
                       AuthService().currentUser!.firstName +
@@ -760,7 +841,15 @@ class SellPageState extends State<SellPage> {
                 ),
 
                 TextFormField(
-                  decoration: InputDecoration(labelText: "Número de telefone"),
+                  decoration: InputDecoration(
+                    labelText: "Número de telefone",
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.secondaryFixed,
+                        width: 1,
+                      ),
+                    ),
+                  ),
                   enabled: false,
                   initialValue: AuthService().currentUser!.phone,
                   keyboardType: TextInputType.phone,
@@ -815,6 +904,65 @@ class SellPageState extends State<SellPage> {
                       ),
                     ],
                   ),
+
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      Keywords.keywords.map((keyword) {
+                        final isSelected = _selectedKeywords.contains(
+                          keyword.name,
+                        );
+                        return FilterChip(
+                          label: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                keyword.icon,
+                                size: 18,
+                                color:
+                                    isSelected
+                                        ? Theme.of(
+                                          context,
+                                        ).colorScheme.secondary
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.tertiaryFixed,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                keyword.name,
+                                style: TextStyle(
+                                  color:
+                                      isSelected
+                                          ? Theme.of(
+                                            context,
+                                          ).colorScheme.secondary
+                                          : Theme.of(
+                                            context,
+                                          ).colorScheme.tertiaryFixed,
+                                ),
+                              ),
+                            ],
+                          ),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedKeywords.add(keyword.name);
+                              } else {
+                                _selectedKeywords.remove(keyword.name);
+                              }
+                            });
+                          },
+                          backgroundColor:
+                              Theme.of(context).colorScheme.secondary,
+                          selectedColor: Theme.of(context).colorScheme.surface,
+                          checkmarkColor:
+                              Theme.of(context).colorScheme.secondary,
+                        );
+                      }).toList(),
+                ),
 
                 SizedBox(height: 24),
                 SizedBox(

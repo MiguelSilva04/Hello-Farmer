@@ -1177,4 +1177,10 @@ class ProducerUser extends AppUser {
           [],
     );
   }
+
+  double get rating {
+    if (stores.isEmpty) return 0.0;
+    double sumRatings = stores.fold(0.0, (a, b) => a + b.averageRating);
+    return double.parse((sumRatings / stores.length).toStringAsFixed(1));
+  }
 }

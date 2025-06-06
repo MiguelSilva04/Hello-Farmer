@@ -34,7 +34,16 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
     final producer =
         (AuthService().users.where((u) => u.runtimeType == ProducerUser)).first
             as ProducerUser;
-    recommendedAds = producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.take(5).toList() ?? [];
+    recommendedAds =
+        producer
+            .stores[Provider.of<ManageSectionNotifier>(
+              context,
+              listen: false,
+            ).storeIndex]
+            .productsAds
+            ?.take(5)
+            .toList() ??
+        [];
     nearbyProducers =
         AuthService().users.whereType<ProducerUser>().take(5).toList();
 
@@ -285,13 +294,19 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city ?? 'Cidade desconhecida',
+              user
+                      .stores[Provider.of<ManageSectionNotifier>(
+                        context,
+                        listen: false,
+                      ).storeIndex]
+                      .city ??
+                  'Cidade desconhecida',
               style: const TextStyle(fontSize: 10),
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("4.6", style: TextStyle(fontSize: 10)),
+                Text(user.rating.toString(), style: TextStyle(fontSize: 10)),
                 const Icon(Icons.star, size: 12, color: Colors.amber),
                 Text(
                   '(${user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].storeReviews?.length ?? 0})',

@@ -24,10 +24,15 @@ class _StorePageState extends State<StorePage> {
   bool showBanca = true;
 
   late Store myStore;
+  late ProducerUser? currentProducerUser;
 
   @override
   void initState() {
     super.initState();
+    currentProducerUser =
+        widget.store == null
+            ? (AuthService().currentUser! as ProducerUser)
+            : null;
     myStore =
         widget.store != null
             ? widget.store!
@@ -45,7 +50,118 @@ class _StorePageState extends State<StorePage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
-          const SizedBox(height: 16),
+          if (widget.store == null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isSmall = constraints.maxWidth < 400;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Banca Selecionada:",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: myStore.name,
+                                  dropdownColor:
+                                      Theme.of(context).colorScheme.secondary,
+                                  iconEnabledColor:
+                                      Theme.of(context).colorScheme.secondary,
+                                  iconSize: 30,
+                                  style: const TextStyle(color: Colors.black),
+                                  selectedItemBuilder: (BuildContext context) {
+                                    return currentProducerUser!.stores.map((
+                                      store,
+                                    ) {
+                                      return Container(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          store.name!,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.secondary,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
+                                  items:
+                                      currentProducerUser!.stores.map((store) {
+                                        return DropdownMenuItem<String>(
+                                          value: store.name!,
+                                          child: Text(
+                                            store.name!,
+                                            style: TextStyle(
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.tertiaryFixed,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      print(value);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Flexible(
+                          flex: 1,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.secondary,
+                            ),
+                            onPressed: () {},
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                "Gerir Bancas",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.tertiaryFixed,
+                                  fontSize: isSmall ? 30 : 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          const Divider(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(

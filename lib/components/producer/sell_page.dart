@@ -43,6 +43,7 @@ class SellPageState extends State<SellPage> {
   bool? _highlighted = false;
   String? _highlightOption;
   Set<String> _selectedKeywords = {};
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -69,31 +70,37 @@ class SellPageState extends State<SellPage> {
   }
 
   Future<void> _submit() async {
-    print("Titulo: $title");
-    print("Descrição: $description");
-    print("Numero de Imagens: ${images.length}");
-    print("Categoria: $category");
-    print("Quantidade minima: $qty");
-    print("Unidade: $unit");
-    print("Preço: $price");
-    print("Stock: $stock");
+    setState(() {
+      _isLoading = true;
+    });
+
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Por favor, preencha todos os campos obrigatórios.'),
         ),
       );
-    } else if (images.every((image) => image == null)) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    if (images.every((image) => image == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, adicione pelo menos uma imagem.')),
       );
+      setState(() => _isLoading = false);
       return;
-    } else if (category == null) {
+    }
+
+    if (category == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Por favor, selecione uma categoria.')),
       );
+      setState(() => _isLoading = false);
       return;
-    } else if (deliveryOptions.isEmpty) {
+    }
+
+    if (deliveryOptions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -101,10 +108,42 @@ class SellPageState extends State<SellPage> {
           ),
         ),
       );
+      setState(() => _isLoading = false);
       return;
-    } else {
-      _formKey.currentState!.save();
+    }
+
+    _formKey.currentState!.save();
+
+    try {
+      final selectedStore =
+          (AuthService().currentUser as ProducerUser)
+              .stores[Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).storeIndex];
+
+      List<File> imageFiles =
+          images.whereType<FileImage>().map((image) => image.file).toList();
+
+      await AuthService().publishAd(
+        title!,
+        description!,
+        imageFiles,
+        category!,
+        double.parse(qty!),
+        unit!,
+        double.parse(price!),
+        int.parse(stock!),
+        selectedStore.id,
+      );
+    } catch (e) {
+      print('Erro ao publicar anúncio: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao publicar anúncio.')));
+    } finally {
       setState(() {
+        _isLoading = false;
         _isSubmitted = true;
       });
     }
@@ -463,6 +502,21 @@ class SellPageState extends State<SellPage> {
   }
 
   Container getMainScreen(BuildContext context) {
+    final storeIndex =
+        Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex;
+    final user = AuthService().currentUser! as ProducerUser;
+
+    if (user.stores.isEmpty || storeIndex >= user.stores.length) {
+      return Container();
+    }
+
+    final preferredMethods =
+        (AuthService().currentUser! as ProducerUser).stores.length > storeIndex
+            ? (AuthService().currentUser! as ProducerUser)
+                    .stores[storeIndex]
+                    .preferredDeliveryMethod ??
+                []
+            : [];
     return Container(
       color: Theme.of(context).colorScheme.surface,
       child: SingleChildScrollView(
@@ -633,13 +687,7 @@ class SellPageState extends State<SellPage> {
                     children: [
                       Text(method.toDisplayString()),
                       Checkbox(
-                        value: (AuthService().currentUser! as ProducerUser)
-                            .stores[Provider.of<ManageSectionNotifier>(
-                              context,
-                              listen: false,
-                            ).storeIndex]
-                            .preferredDeliveryMethod!
-                            .contains(method),
+                        value: preferredMethods.contains(method),
                         onChanged: (value) {},
                       ),
                     ],
@@ -985,37 +1033,44 @@ class SellPageState extends State<SellPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => setState(() => _isPreviewing = true),
-                          child: Text(
-                            "pré-visualizar",
-                            style: TextStyle(
-                              color:
-                                  Theme.of(context).colorScheme.inverseSurface,
+                      if (!_isLoading)
+                        Expanded(
+                          child: TextButton(
+                            onPressed:
+                                () => setState(() => _isPreviewing = true),
+                            child: Text(
+                              "pré-visualizar",
+                              style: TextStyle(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.inverseSurface,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.surface,
-                          ),
-                          onPressed: () {
-                            _submit();
-                          },
-                          child: Text(
-                            "Publicar",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                      _isLoading
+                          ? Expanded(
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                          : Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.surface,
+                              ),
+                              onPressed: _submit,
+                              child: Text(
+                                "Publicar",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -1060,6 +1115,17 @@ class SellPageState extends State<SellPage> {
                       _isSubmitted = false;
                       unit = "Kg";
                       title = null;
+                      description = null;
+                      images = List.generate(
+                        6,
+                        (index) => null,
+                        growable: true,
+                      );
+                      qty = null;
+                      stock = null;
+                      price = null;
+                      _selectedKeywords = {};
+                      _highlighted = false;
                     }),
                 child: Container(
                   padding: EdgeInsets.all(10),

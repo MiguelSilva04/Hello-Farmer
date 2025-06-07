@@ -12,7 +12,6 @@ import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
-import 'package:uuid/uuid.dart';
 
 class AuthService {
   static bool? _isLoggingIn;
@@ -514,7 +513,8 @@ class AuthService {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     final FirebaseStorage _storage = FirebaseStorage.instance;
     try {
-      final storeId = const Uuid().v4();
+      final docRef = _firestore.collection('stores').doc();
+      final storeId = docRef.id;
 
       final imageRef = _storage.ref().child('stores/$storeId/image.jpg');
       final imageUploadTask = await imageRef.putFile(imageFile);
@@ -555,41 +555,48 @@ class AuthService {
     String description,
     List<File> images,
     String category,
-    int minQty,
+    double minQty,
     String unit,
     double price,
     int stock,
+    String storeId,
   ) async {
-    return Future.value();
-    // final store = FirebaseFirestore.instance;
-    // final docRef = store.collection('users').doc(currentUser!.id).collection('ads');
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final FirebaseStorage _storage = FirebaseStorage.instance;
 
-    // return docRef.set({
-    //   'firstName': user.firstName,
-    //   'lastName': user.lastName,
-    //   'email': user.email,
-    //   'gender': user.gender,
-    //   'phone': user.phone,
-    //   'recoveryEmail': user.recoveryEmail,
-    //   'imageUrl': user.imageUrl,
-    //   'dateOfBirth': user.dateOfBirth,
-    //   'isProducer': user.isProducer,
-    //   'aboutMe': user.aboutMe,
-    //   'backgroundImageUrl': user.backgroundUrl,
-    // });
+    try {
+      final docRef =
+          _firestore.collection('stores').doc(storeId).collection('ads').doc();
+
+      final String adId = docRef.id;
+      final List<String> imageUrls = [];
+
+      for (int i = 0; i < images.length; i++) {
+        final imageRef = _storage.ref().child('stores/$storeId/ads/$adId/image_$i.jpg');
+        final uploadTask = await imageRef.putFile(images[i]);
+        final imageUrl = await uploadTask.ref.getDownloadURL();
+        imageUrls.add(imageUrl);
+      }
+
+      await docRef.set({
+        'createdAt': FieldValue.serverTimestamp(),
+        'id': adId,
+        'title': title,
+        'description': description,
+        'imageUrls': imageUrls,
+        'category': category,
+        'minQty': minQty,
+        'unit': unit,
+        'price': price,
+        'stock': stock,
+        'storeId': storeId,
+      });
+
+      print("Anúncio publicado com sucesso!");
+    } catch (e) {
+      print("Erro ao publicar anúncio: $e");
+      rethrow;
+    }
   }
 
-  Future<void> addFriend(String userId) async {
-    // Não implementado pois não existe mais friendsIds na nova estrutura
-    throw UnimplementedError(
-      'addFriend não faz parte da nova estrutura de AppUser',
-    );
-  }
-
-  Future<void> removeFriend(String userId) async {
-    // Não implementado pois não existe mais friendsIds na nova estrutura
-    throw UnimplementedError(
-      'removeFriend não faz parte da nova estrutura de AppUser',
-    );
-  }
 }

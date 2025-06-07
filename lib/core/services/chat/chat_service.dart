@@ -359,7 +359,6 @@ class ChatService with ChangeNotifier {
     } catch (e) {}
   }
 
-  // ChatMessage => Map<String, dynamic>
   Map<String, dynamic> _toFirestore(ChatMessage msg, SetOptions? options) {
     return {
       'text': msg.text,
@@ -370,7 +369,6 @@ class ChatService with ChangeNotifier {
     };
   }
 
-  // Map<String, dynamic> => ChatMessage
   ChatMessage _fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> doc,
     SnapshotOptions? options,
@@ -484,7 +482,6 @@ class ChatService with ChangeNotifier {
 
     if (!memberDoc.exists) throw Exception("User not found in chat.");
 
-    // Atualiza o status de admin apenas se necessário
     if (memberDoc.data()?['isAdmin'] == true) {
       await memberDoc.reference.update({'isAdmin': false});
 
@@ -514,7 +511,6 @@ class ChatService with ChangeNotifier {
       userImageUrl: user.imageUrl,
     );
 
-    // Adiciona a mensagem na coleção de mensagens
     final docRef = await store
         .collection('chats')
         .doc(chatId)
@@ -522,7 +518,6 @@ class ChatService with ChangeNotifier {
         .withConverter(fromFirestore: _fromFirestore, toFirestore: _toFirestore)
         .add(msg);
 
-    // Obtém os dados da mensagem recém-criada
     final doc = await docRef.get();
     return doc.data();
   }

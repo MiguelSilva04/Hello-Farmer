@@ -58,12 +58,6 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
             listen: false,
           ).storeIndex];
 
-    if (currentStore == null) {
-      return const Center(
-        child: Text('Não foi possível carregar os dados da loja.'),
-      );
-    }
-
     final filteredViews = _filterViewsByPeriod(
       currentStore.viewsByUserDateTime ?? [],
       _selectedPeriod,
@@ -115,7 +109,6 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
               endDate = DateTime(now.year, 12, 31, 23, 59, 59, 999);
               break;
             case DateFilter.ALL:
-            default:
               startDate = DateTime(2000, 1, 1);
               break;
           }
@@ -377,7 +370,6 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
         endDate = DateTime(now.year, 12, 31, 23, 59, 59, 999);
         break;
       case DateFilter.ALL:
-      default:
         startDate = DateTime(2000, 1, 1);
         break;
     }

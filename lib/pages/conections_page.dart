@@ -129,7 +129,6 @@ class _ConectionsPageState extends State<ConectionsPage> {
                 friends.sort((a, b) => a.firstName.compareTo(b.firstName));
                 final friend = friends[index];
                 // final followsBack = friend.friendsIds!.contains(currentUser.id);
-                final followsBack = true;
 
                 return ListTile(
                   onTap:
@@ -144,11 +143,9 @@ class _ConectionsPageState extends State<ConectionsPage> {
                   title: Text(friend.firstName),
                   subtitle: Row(
                     children: [
-                      followsBack
-                          ? Icon(FontAwesomeIcons.solidFaceGrinHearts)
-                          : Icon(FontAwesomeIcons.personHiking),
+                      Icon(FontAwesomeIcons.solidFaceGrinHearts),
                       const SizedBox(width: 5),
-                      Text(followsBack ? 'Amigos' : 'A seguir'),
+                      Text('Amigos'),
                     ],
                   ),
                 );

@@ -1,4 +1,4 @@
-import 'package:harvestly/core/models/product_ad.dart';
+
 
 class ShoppingCart {
   List<Map<String, int>>? productsQty;

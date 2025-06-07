@@ -42,7 +42,6 @@ class PreferencesNotifier with ChangeNotifier {
       case Language.ENGLISH:
         return const Locale('en');
       case Language.PORTUGUESE:
-      default:
         return const Locale('pt');
     }
   }

@@ -573,10 +573,10 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "${user!.firstName} ${user!.lastName} ${user!.isProducer! ? "🧑‍🌾" : ""}",
+              "${user!.firstName} ${user!.lastName} ${user!.isProducer ? "🧑‍🌾" : ""}",
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            if (!user!.isProducer!) Icon(FontAwesomeIcons.person),
+            if (!user!.isProducer) Icon(FontAwesomeIcons.person),
           ],
         ),
         Text(

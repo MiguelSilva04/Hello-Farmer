@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:provider/provider.dart';
-
-import '../../../core/models/product.dart';
 import '../../../core/models/product_ad.dart';
 import '../../../core/services/auth/auth_service.dart';
 import '../../../core/services/other/manage_section_notifier.dart';
@@ -145,7 +143,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                                     text:
                                         _mode == ManageViewMode.stock
                                             ? (product.stock ?? 0).toString()
-                                            : (product.price ?? 0)
+                                            : (product.price)
                                                 .toStringAsFixed(1),
                                   );
                               return SizedBox(
@@ -236,7 +234,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                                               (product.stock ?? 0) - 1;
                                       } else {
                                         product.price = double.parse(
-                                          ((product.price ?? 0) - 0.1)
+                                          ((product.price) - 0.1)
                                               .toStringAsFixed(1),
                                         );
                                       }
@@ -256,7 +254,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                                             (product.stock ?? 0) + 1;
                                       } else {
                                         product.price = double.parse(
-                                          ((product.price ?? 0) + 0.1)
+                                          ((product.price) + 0.1)
                                               .toStringAsFixed(1),
                                         );
                                       }

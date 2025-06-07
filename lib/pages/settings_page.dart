@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import '../components/settings/main_page.dart';
 import '../core/models/app_user.dart';
 import '../core/services/auth/auth_service.dart';
-import '../core/services/other/manage_section_notifier.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -96,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
               title: "Métodos de pagamento",
               onTap: () => provider.setIndex(2),
             ),
-            if (user.isProducer!)
+            if (user.isProducer)
               _buildSettingsTile(
                 icon: Icons.receipt,
                 title: "Faturação",

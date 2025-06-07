@@ -28,11 +28,11 @@ class _BasketSectionState extends State<BasketSection> {
         [];
     Basket? _editingBasket = null;
 
-    void startEdit(Basket basket) {
-      setState(() {
-        _editingBasket = basket;
-      });
-    }
+    // void startEdit(Basket basket) {
+    //   setState(() {
+    //     _editingBasket = basket;
+    //   });
+    // }
 
     void stopEdit() {
       setState(() {
@@ -548,7 +548,7 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
                   child: ListTile(
                     title: Text(matchedProductAd.product.name),
                     subtitle: Text(
-                      "${matchedProductAd.product.unit == Unit.UNIT ? quantity.toStringAsFixed(0) : quantity.toStringAsFixed(2)} ${matchedProductAd.product.unit.toDisplayString()} - ${matchedProductAd.product.price!.toStringAsFixed(2)}€",
+                      "${matchedProductAd.product.unit == Unit.UNIT ? quantity.toStringAsFixed(0) : quantity.toStringAsFixed(2)} ${matchedProductAd.product.unit.toDisplayString()} - ${matchedProductAd.product.price.toStringAsFixed(2)}€",
                     ),
                     trailing: IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),

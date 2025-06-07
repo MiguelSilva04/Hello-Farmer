@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+// ignore: must_be_immutable
 class CreateStore extends StatefulWidget {
   bool? isFirstTime;
   CreateStore({super.key, this.isFirstTime});
@@ -297,9 +298,7 @@ class MapPageProducer extends StatefulWidget {
 }
 
 class _MapPageProducerState extends State<MapPageProducer> {
-  GoogleMapController? _mapController;
   LatLng? _currentPosition;
-  LatLng? _selectedPosition;
   Marker? _selectedMarker;
 
   @override
@@ -326,7 +325,6 @@ class _MapPageProducerState extends State<MapPageProducer> {
 
   Future<void> _handleTap(LatLng tappedPoint) async {
     setState(() {
-      _selectedPosition = tappedPoint;
       _selectedMarker = Marker(
         markerId: const MarkerId('selected'),
         position: tappedPoint,
@@ -358,7 +356,7 @@ class _MapPageProducerState extends State<MapPageProducer> {
           _currentPosition == null
               ? const Center(child: CircularProgressIndicator())
               : GoogleMap(
-                onMapCreated: (controller) => _mapController = controller,
+                onMapCreated: (controller) {},
                 initialCameraPosition: CameraPosition(
                   target: _currentPosition!,
                   zoom: 15,

@@ -1,11 +1,11 @@
-import 'package:harvestly/core/models/product.dart';
+// import 'package:harvestly/core/models/product.dart';
 
 import 'app_user.dart';
 import 'basket.dart';
-import 'order.dart';
-import 'product_ad.dart';
+// import 'order.dart';
+// import 'product_ad.dart';
 import 'store.dart';
-import 'review.dart';
+// import 'review.dart';
 
 class ProducerUser extends AppUser {
   List<Store> stores;

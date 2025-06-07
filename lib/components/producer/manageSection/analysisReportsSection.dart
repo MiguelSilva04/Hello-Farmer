@@ -65,7 +65,6 @@ class AnalysisReportsSection extends StatelessWidget {
         orders
             .where((order) {
               final date = order.deliveryDate ?? order.pickupDate;
-              if (date == null) return false;
               return date.year == today.year &&
                   date.month == today.month &&
                   date.day == today.day;
@@ -99,7 +98,6 @@ class AnalysisReportsSection extends StatelessWidget {
 
       for (var order in orders) {
         final date = order.deliveryDate ?? order.pickupDate;
-        if (date == null) continue;
         vendasTotal++;
         if (date.year == currentYear && getWeekNumber(date) == currentWeek) {
           vendasSemana++;

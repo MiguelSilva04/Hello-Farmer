@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';

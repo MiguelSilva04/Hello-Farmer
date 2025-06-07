@@ -1,4 +1,4 @@
-import 'package:harvestly/core/services/chat/chat_firebase_service.dart';
+import 'package:harvestly/core/services/chat/chat_service.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:harvestly/pages/auth_page.dart';
@@ -17,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'core/services/other/bottom_navigation_notifier.dart';
-import 'core/services/chat/chat_service.dart';
 import 'core/services/other/manage_section_notifier.dart';
 import 'pages/settings_page.dart';
 import 'utils/app_routes.dart';
@@ -40,7 +39,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ChatListNotifier()),
         ChangeNotifierProvider(create: (_) => ChatNotificationService()),
         ChangeNotifierProvider<ChatService>(
-          create: (_) => ChatFirebaseService(),
+          create: (_) => ChatService(),
         ),
         ChangeNotifierProvider(create: (_) => BottomNavigationNotifier()),
         ChangeNotifierProvider(create: (_) => ManageSectionNotifier()),

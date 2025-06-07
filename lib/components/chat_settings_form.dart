@@ -110,20 +110,17 @@ class _ChatSettingsFormState extends State<ChatSettingsForm> {
         // final curUserFriendsList = AuthService().currentUser?.friendsIds ?? [];
         final curUserFriendsList = [];
 
-        if (curUserFriendsList != null) {
-          usersNotInTheChat =
-              users
-                  .where(
-                    (u) =>
-                        curUserFriendsList.contains(u.id) &&
-                        !usersInTheChat.any(
-                          (userInChat) => userInChat.id == u.id,
-                        ),
-                  )
-                  .toList();
-        } else {
-          usersNotInTheChat = [];
-        }
+        usersNotInTheChat =
+            users
+                .where(
+                  (u) =>
+                      curUserFriendsList.contains(u.id) &&
+                      !usersInTheChat.any(
+                        (userInChat) => userInChat.id == u.id,
+                      ),
+                )
+                .toList();
+
         _isDataLoaded = true;
         _isLoading = false;
       });

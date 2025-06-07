@@ -1,4 +1,4 @@
-import 'package:harvestly/core/models/product_ad.dart';
+// import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/shopping_cart.dart';
 
 import 'app_user.dart';

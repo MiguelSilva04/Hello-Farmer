@@ -356,7 +356,7 @@ class _MainMenuState extends State<MainMenu>
               (Provider.of<BottomNavigationNotifier>(context).currentIndex <
                           5 &&
                       (user.isProducer &&
-                          (user as ProducerUser).stores.length > 0))
+                          user.stores.length > 0))
                   ? BottomNavigationBar(
                     selectedItemColor:
                         Theme.of(context).bottomAppBarTheme.color,

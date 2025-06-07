@@ -11,6 +11,7 @@ import '../../core/models/store.dart';
 import '../../core/services/other/manage_section_notifier.dart';
 import '../../pages/profile_page.dart';
 
+// ignore: must_be_immutable
 class StorePage extends StatefulWidget {
   Store? store;
 

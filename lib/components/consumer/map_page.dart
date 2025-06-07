@@ -18,10 +18,8 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  GoogleMapController? _mapController;
   LatLng? _currentPosition;
 
-  // Lista de produtores com descrição
   final List<ProducerLocation> _producerLocations = [
     ProducerLocation(
       position: const LatLng(37.4225, -122.0855),
@@ -36,7 +34,6 @@ class _MapPageState extends State<MapPage> {
   Set<Marker> get _markers {
     final markers = <Marker>{};
 
-    // Marcadores para cada produtor da lista com descrição personalizada
     for (var i = 0; i < _producerLocations.length; i++) {
       final prod = _producerLocations[i];
       markers.add(
@@ -97,7 +94,7 @@ class _MapPageState extends State<MapPage> {
     return _currentPosition == null
         ? const Center(child: CircularProgressIndicator())
         : GoogleMap(
-          onMapCreated: (controller) => _mapController = controller,
+          onMapCreated: (controller) {},
           initialCameraPosition: CameraPosition(
             target: _currentPosition!,
             zoom: 15,

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';

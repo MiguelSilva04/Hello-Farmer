@@ -415,7 +415,7 @@ class _EditAdSectionState extends State<EditAdSection> {
     nameController = TextEditingController(text: widget.ad.product.name);
     descController = TextEditingController(text: widget.ad.description);
     priceController = TextEditingController(
-      text: widget.ad.product.price?.toStringAsFixed(2),
+      text: widget.ad.product.price.toStringAsFixed(2),
     );
     category = widget.ad.product.category;
     unit = widget.ad.product.unit.toDisplayString();

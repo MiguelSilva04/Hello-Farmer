@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class AnalysisReportsSection extends StatelessWidget {
@@ -45,10 +45,10 @@ class AnalysisReportsSection extends StatelessWidget {
 
     final curUserStore =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).storeIndex];
+        ).selectedStoreIndex];
     final orders = curUserStore.orders ?? [];
     final productAds = curUserStore.productsAds!;
     final todosProdutos = <Product>[];
@@ -304,17 +304,17 @@ class AnalysisReportsSection extends StatelessWidget {
   Widget _buildInventoryTable(BuildContext context) {
     final productAds =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
+            ).selectedStoreIndex]
             .productsAds!;
     final orders =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
+            ).selectedStoreIndex]
             .orders ??
         [];
 
@@ -337,10 +337,10 @@ class AnalysisReportsSection extends StatelessWidget {
         final hasProduct = order.productsAds.any((p) {
           final finalProductAd =
               (AuthService().currentUser! as ProducerUser)
-                  .stores[Provider.of<ManageSectionNotifier>(
+                  .stores[Provider.of<AuthNotifier>(
                     context,
                     listen: false,
-                  ).storeIndex]
+                  ).selectedStoreIndex]
                   .productsAds!
                   .where((pr) => pr.id == p.produtctAdId)
                   .first;

@@ -590,6 +590,7 @@ class AuthService {
         'price': price,
         'stock': stock,
         'storeId': storeId,
+        'visibility': true,
       });
 
       print("Anúncio publicado com sucesso!");

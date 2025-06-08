@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class AbandonedOrdersPage extends StatelessWidget {
@@ -14,10 +14,10 @@ class AbandonedOrdersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentStore =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).storeIndex];
+        ).selectedStoreIndex];
     final orders = currentStore.orders ?? [];
 
     final abandonedOrders =

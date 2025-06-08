@@ -49,7 +49,7 @@ class Store {
   LatLng? coordinates;
   List<ProductAd>? productsAds;
   List<Order>? orders;
-  List<DeliveryMethod>? preferredDeliveryMethod;
+  List<DeliveryMethod> preferredDeliveryMethod;
   List<Basket>? baskets;
   List<Map<DateTime, String>>? viewsByUserDateTime;
 
@@ -67,7 +67,7 @@ class Store {
     this.coordinates,
     this.productsAds,
     this.orders,
-    this.preferredDeliveryMethod,
+    required this.preferredDeliveryMethod,
     this.baskets,
     this.viewsByUserDateTime,
   });

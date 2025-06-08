@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
@@ -13,21 +13,22 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final List<Order> orders =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
+            ).selectedStoreIndex]
             .orders ??
         [];
     List<Map<String, dynamic>> _calculateChannelData(List<Order> orders) {
       final currentStore =
           (AuthService().currentUser! as ProducerUser)
-              .stores[Provider.of<ManageSectionNotifier>(
+              .stores[Provider.of<AuthNotifier>(
             context,
             listen: false,
-          ).storeIndex];
+          ).selectedStoreIndex];
       final List<Order> orders = currentStore.orders ?? [];
       final deliveryMethods = [
         {
@@ -71,11 +72,13 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
               currentStore.productsAds!
                   .where((p) => p.id == ad.produtctAdId)
                   .first;
-          for (var method in productAd.preferredDeliveryMethods) {
+          for (var method in productAd.preferredDeliveryMethods(
+            authNotifier.producerUsers,
+          )) {
             selectedPerMethod[method] = true;
           }
 
-          for (var method in productAd.preferredDeliveryMethods) {
+          for (var method in productAd.preferredDeliveryMethods(authNotifier.producerUsers)) {
             salesPerMethod[method] =
                 (salesPerMethod[method] ?? 0) + order.totalPrice;
             if (productAd.product.unit == Unit.UNIT) {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/models/order.dart';
+import '../../core/services/auth/auth_notifier.dart';
 
 class SellsPage extends StatefulWidget {
   const SellsPage({super.key});
@@ -30,10 +30,10 @@ class _SellsPageState extends State<SellsPage>
     _tabController = TabController(length: 4, vsync: this);
     orders =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
+            ).selectedStoreIndex]
             .orders ??
         [];
   }

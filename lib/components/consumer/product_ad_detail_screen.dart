@@ -6,11 +6,12 @@ import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/services/auth/auth_notifier.dart';
 
 // ignore: must_be_immutable
 class ProductAdDetailScreen extends StatelessWidget {
@@ -22,10 +23,23 @@ class ProductAdDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final producer = AuthService().users.whereType<ProducerUser>().firstWhere(
-      (p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.any((a) => a.id == ad.id) ?? false,
+      (p) =>
+          p
+              .stores[Provider.of<AuthNotifier>(
+                context,
+                listen: false,
+              ).selectedStoreIndex]
+              .productsAds
+              ?.any((a) => a.id == ad.id) ??
+          false,
     );
-    final store = producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex];
+    final store =
+        producer.stores[Provider.of<AuthNotifier>(
+          context,
+          listen: false,
+        ).selectedStoreIndex];
 
     final keywordMap = {for (var k in Keywords.keywords) k.name: k.icon};
 
@@ -147,7 +161,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                   Wrap(
                     spacing: 8.0,
                     children:
-                        ad.preferredDeliveryMethods.map((method) {
+                        ad.preferredDeliveryMethods(authNotifier.producerUsers).map((method) {
                           return Chip(
                             label: Row(
                               mainAxisSize: MainAxisSize.min,

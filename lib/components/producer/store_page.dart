@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../core/models/producer_user.dart';
 import '../../core/models/product_ad.dart';
 import '../../core/models/store.dart';
+import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/other/manage_section_notifier.dart';
 import '../../pages/profile_page.dart';
 
@@ -38,10 +39,10 @@ class _StorePageState extends State<StorePage> {
         widget.store != null
             ? widget.store!
             : (AuthService().currentUser! as ProducerUser)
-                .stores[Provider.of<ManageSectionNotifier>(
+                .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex];
+            ).selectedStoreIndex];
   }
 
   @override

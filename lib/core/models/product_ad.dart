@@ -1,9 +1,7 @@
 import 'package:harvestly/core/models/review.dart';
-import 'package:harvestly/core/models/store.dart';
-
+import 'producer_user.dart';
 import 'product.dart';
-
-enum AdVisibility { PUBLIC, PRIVATE }
+import 'store.dart';
 
 enum HighlightType { SEARCH, HOME }
 
@@ -21,20 +19,20 @@ extension HighlightTypeExtension on HighlightType {
 class ProductAd {
   final String id;
   final Product product;
+  final DateTime createdAt;
   String description = "";
   String price;
   String highlight = "Não está destacado";
   DateTime? highlightDate;
   HighlightType? highlightType;
-  List<DeliveryMethod> preferredDeliveryMethods;
   List<Map<DateTime, String>>? viewsByUserDateTime;
   List<String>? keywords;
-  AdVisibility? visibility = AdVisibility.PUBLIC;
+  bool? visibility;
   List<Review>? adReviews;
   ProductAd({
     required this.id,
+    required this.createdAt,
     required this.product,
-    required this.preferredDeliveryMethods,
     String? description,
     String? price,
     String? highlight,
@@ -69,32 +67,50 @@ class ProductAd {
     }
   }
 
+  List<DeliveryMethod> preferredDeliveryMethods(List<ProducerUser> users) {
+    final user = users.firstWhere(
+      (u) => u.stores.any((s) => s.productsAds!.any((ad) => ad.id == id)),
+    );
+
+    final store = user.stores.firstWhere(
+      (s) => s.productsAds!.any((ad) => ad.id == id),
+    );
+
+    return store.preferredDeliveryMethod;
+  }
+
   static ProductAd fromJson(Map<String, dynamic> json) {
+    final now = DateTime.now();
+
     return ProductAd(
       id: json['id'] ?? '',
-      product: Product.fromJson(json['product']),
-      preferredDeliveryMethods:
-          (json['preferredDeliveryMethods'] as List<dynamic>?)
-              ?.map(
-                (e) => DeliveryMethod.values.firstWhere(
-                  (dm) => dm.toString() == e,
-                ),
-              )
-              .toList() ??
-          [],
+      createdAt: json['createdAt'] ?? '',
+      product: Product(
+        name: json['title'] ?? '',
+        imageUrl:
+            json['imageUrls'] != null
+                ? List<String>.from(json['imageUrls'])
+                : [],
+        category: json['category'] ?? '',
+        stock: (json['stock'] ?? 0).toInt(),
+        price: (json['price'] ?? 0).toDouble(),
+        minAmount: (json['minQty'] ?? 0).toInt(),
+        unit: Unit.values.firstWhere(
+          (u) =>
+              u.toDisplayString().toLowerCase() ==
+              (json['unit'] ?? '').toString().toLowerCase(),
+          orElse: () => Unit.KG,
+        ),
+        season: _determineSeason(now),
+      ),
       description: json['description'],
       price: json['price']?.toString(),
       highlight: json['highlight'],
       highlightDate:
           json['highlightDate'] != null
-              ? DateTime.parse(json['highlightDate'])
+              ? DateTime.tryParse(json['highlightDate'])
               : null,
-      visibility:
-          json['visibility'] != null
-              ? AdVisibility.values.firstWhere(
-                (v) => v.toString() == json['visibility'],
-              )
-              : null,
+      visibility: json['visibility'] ?? true,
       highlightType:
           json['highlightType'] != null
               ? HighlightType.values.firstWhere(
@@ -110,5 +126,40 @@ class ProductAd {
                   .toList()
               : null,
     );
+  }
+
+  static Season _determineSeason(DateTime now) {
+    final month = now.month;
+    if ([3, 4, 5].contains(month)) return Season.SPRING;
+    if ([6, 7, 8].contains(month)) return Season.SUMMER;
+    if ([9, 10, 11].contains(month)) return Season.AUTUMN;
+    if ([12, 1, 2].contains(month)) return Season.WINTER;
+    return Season.ALL;
+  }
+
+  @override
+  String toString() {
+    return '''
+      id: $id,
+      createdAt: $createdAt,
+      product: {
+        id: ${product.id},
+        name: ${product.name},
+        price: ${product.price.toStringAsFixed(2)}€,
+        unit: ${product.unit.toDisplayString()},
+        stock: ${product.stock},
+        minAmount: ${product.minAmount},
+        category: ${product.category},
+        season: ${product.season.toDisplayString()},
+        imageUrl: ${product.imageUrl.join(', ')}
+      },
+      description: $description,
+      price: $price,
+      highlight: $highlight,
+      highlightDate: $highlightDate,
+      highlightType: ${highlightType?.toDisplayString() ?? "Nenhum"},
+      visibility: ${visibility.toString().split('.').last}
+      viewsByUserDateTime: ${viewsByUserDateTime?.map((map) => map.entries.map((e) => '${e.key.toIso8601String()} by ${e.value}').join(', ')).join('; ') ?? "Nenhuma"}
+    ''';
   }
 }

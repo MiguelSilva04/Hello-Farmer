@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/order.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/producer_user.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class AnalysisFinancesSection extends StatefulWidget {
@@ -23,10 +23,10 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
     final user = (AuthService().currentUser! as ProducerUser);
     final orders =
         user
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
+            ).selectedStoreIndex]
             .orders;
 
     final now = DateTime.now();

@@ -1,3 +1,4 @@
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
@@ -44,6 +45,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => BottomNavigationNotifier()),
         ChangeNotifierProvider(create: (_) => ManageSectionNotifier()),
         ChangeNotifierProvider(create: (_) => SettingsNotifier()),
+        ChangeNotifierProvider(create: (_) => AuthNotifier()),
         ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
       ],
       child: const MyApp(),

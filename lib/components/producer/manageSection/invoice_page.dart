@@ -4,13 +4,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:harvestly/core/models/producer_user.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/order.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class InvoicePage extends StatelessWidget {
@@ -28,7 +28,12 @@ class InvoicePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final GlobalKey previewContainer = GlobalKey();
-    final store = (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex];
+    final store =
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<AuthNotifier>(
+          context,
+          listen: false,
+        ).selectedStoreIndex];
     final currencyFormatter = NumberFormat.currency(
       locale: 'pt_PT',
       symbol: '€',

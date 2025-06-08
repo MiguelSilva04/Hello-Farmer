@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/order_details_page.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/producer_user.dart';
 import '../../core/models/product_ad.dart';
+import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/auth/auth_service.dart';
 
 class OrdersPage extends StatefulWidget {
@@ -30,14 +30,32 @@ class _OrdersPageState extends State<OrdersPage> {
     allAds =
         users
             .whereType<ProducerUser>()
-            .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
+            .expand(
+              (p) =>
+                  p
+                      .stores[Provider.of<AuthNotifier>(
+                        context,
+                        listen: false,
+                      ).selectedStoreIndex]
+                      .productsAds ??
+                  [],
+            )
             .cast<ProductAd>()
             .toList();
 
     orders =
         users
             .whereType<ProducerUser>()
-            .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].orders ?? [])
+            .expand(
+              (p) =>
+                  p
+                      .stores[Provider.of<AuthNotifier>(
+                        context,
+                        listen: false,
+                      ).selectedStoreIndex]
+                      .orders ??
+                  [],
+            )
             .where(
               (order) =>
                   (state == null || order.state == state) &&

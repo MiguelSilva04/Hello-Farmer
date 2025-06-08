@@ -12,7 +12,7 @@ import '../components/consumer/explore_page.dart';
 import '../components/consumer/home_page.dart';
 import '../components/consumer/map_page.dart';
 import '../components/consumer/orders_page.dart';
-import '../core/services/auth/auth_service.dart';
+import '../core/services/auth/auth_notifier.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/manage_page.dart';
 import '../utils/app_routes.dart';
@@ -40,10 +40,20 @@ class _MainMenuState extends State<MainMenu>
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
   late AppUser user;
+  late AuthNotifier authProvider;
 
   @override
   void initState() {
     super.initState();
+    authProvider = Provider.of<AuthNotifier>(context, listen: false);
+    authProvider.loadUser().then((val) {
+      // print(authProvider.currentUser);
+      // print(
+      //   (authProvider.currentUser as ProducerUser)
+      //       .stores[authProvider.selectedStoreIndex]
+      //       .productsAds,
+      // );
+    });
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -110,12 +120,18 @@ class _MainMenuState extends State<MainMenu>
     ];
 
     return FutureBuilder(
-      future: AuthService().initializeAndGetUser(),
+      future: authProvider.loadUser(),
       builder: (ctx, snapshot) {
         if (!snapshot.hasData) return LoadingPage();
 
         final user = snapshot.data!;
         final isProducer = user.isProducer;
+        print(
+          (user as ProducerUser)
+              .stores[authProvider.selectedStoreIndex]
+              .productsAds!
+              .length,
+        );
         _profileImageUrl = user.imageUrl;
         return Scaffold(
           appBar: AppBar(
@@ -355,8 +371,7 @@ class _MainMenuState extends State<MainMenu>
           bottomNavigationBar:
               (Provider.of<BottomNavigationNotifier>(context).currentIndex <
                           5 &&
-                      (user.isProducer &&
-                          user.stores.length > 0))
+                      (user.isProducer && user.stores.length > 0))
                   ? BottomNavigationBar(
                     selectedItemColor:
                         Theme.of(context).bottomAppBarTheme.color,

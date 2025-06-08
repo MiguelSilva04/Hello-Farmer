@@ -8,8 +8,9 @@ import 'package:harvestly/core/models/shopping_cart.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:collection/collection.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/services/auth/auth_notifier.dart';
 
 class ShoppingCartPage extends StatefulWidget {
   const ShoppingCartPage({super.key});
@@ -371,9 +372,13 @@ class ProductAdFinder {
     for (var user in allUsers) {
       if (user is ProducerUser) {
         try {
-          final productAd = user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.firstWhereOrNull(
-            (ad) => ad.id == adId,
-          );
+          final productAd = user
+              .stores[Provider.of<AuthNotifier>(
+                context,
+                listen: false,
+              ).selectedStoreIndex]
+              .productsAds
+              ?.firstWhereOrNull((ad) => ad.id == adId);
           if (productAd != null) {
             return productAd;
           }
@@ -387,11 +392,18 @@ class ProductAdFinder {
     for (var user in allUsers) {
       if (user is ProducerUser) {
         try {
-          final productAd = user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.firstWhere(
-            (ad) => ad.id == adId,
-          );
+          final productAd = user
+              .stores[Provider.of<AuthNotifier>(
+                context,
+                listen: false,
+              ).selectedStoreIndex]
+              .productsAds
+              ?.firstWhere((ad) => ad.id == adId);
           if (productAd != null) {
-            return user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex];
+            return user.stores[Provider.of<AuthNotifier>(
+              context,
+              listen: false,
+            ).selectedStoreIndex];
           }
         } catch (_) {}
       }

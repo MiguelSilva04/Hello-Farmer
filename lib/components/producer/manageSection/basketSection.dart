@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/basket.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/producer_user.dart';
@@ -20,10 +20,10 @@ class _BasketSectionState extends State<BasketSection> {
   Widget build(BuildContext context) {
     List<Basket> baskets =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
+            ).selectedStoreIndex]
             .baskets ??
         [];
     Basket? _editingBasket = null;
@@ -159,16 +159,17 @@ class BasketCard extends StatelessWidget {
               final productId = p.keys.first;
               final quantity = p.values.first;
 
-              final storeIndex =
-                  Provider.of<ManageSectionNotifier>(
+              final selectedStoreIndex =
+                  Provider.of<AuthNotifier>(
                     context,
                     listen: false,
-                  ).storeIndex;
+                  ).selectedStoreIndex;
               ProductAd? matchedProductAd;
 
               for (final user in AuthService().users) {
-                if (user is ProducerUser && storeIndex < user.stores.length) {
-                  final ads = user.stores[storeIndex].productsAds ?? [];
+                if (user is ProducerUser &&
+                    selectedStoreIndex < user.stores.length) {
+                  final ads = user.stores[selectedStoreIndex].productsAds ?? [];
                   for (final ad in ads) {
                     if (ad.id == productId) {
                       matchedProductAd = ad;
@@ -525,10 +526,10 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
                   if (user is ProducerUser) {
                     for (final ad
                         in (user)
-                                .stores[Provider.of<ManageSectionNotifier>(
+                                .stores[Provider.of<AuthNotifier>(
                                   context,
                                   listen: false,
-                                ).storeIndex]
+                                ).selectedStoreIndex]
                                 .productsAds ??
                             []) {
                       if (ad.product.id == productId) {

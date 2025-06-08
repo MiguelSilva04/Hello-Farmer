@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/models/product_ad.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/categories.dart';
 import 'package:provider/provider.dart';
@@ -36,10 +36,10 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
             as ProducerUser;
     recommendedAds =
         producer
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
+            ).selectedStoreIndex]
             .productsAds
             ?.take(5)
             .toList() ??
@@ -295,10 +295,10 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
             ),
             Text(
               user
-                      .stores[Provider.of<ManageSectionNotifier>(
+                      .stores[Provider.of<AuthNotifier>(
                         context,
                         listen: false,
-                      ).storeIndex]
+                      ).selectedStoreIndex]
                       .city ??
                   'Cidade desconhecida',
               style: const TextStyle(fontSize: 10),
@@ -309,7 +309,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                 Text(user.rating.toString(), style: TextStyle(fontSize: 10)),
                 const Icon(Icons.star, size: 12, color: Colors.amber),
                 Text(
-                  '(${user.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].storeReviews?.length ?? 0})',
+                  '(${user.stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex].storeReviews?.length ?? 0})',
                   style: const TextStyle(fontSize: 10),
                 ),
               ],

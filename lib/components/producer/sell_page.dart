@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
@@ -50,11 +51,11 @@ class SellPageState extends State<SellPage> {
     super.initState();
     deliveryOptions =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
+            .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).storeIndex]
-            .preferredDeliveryMethod!
+            ).selectedStoreIndex]
+            .preferredDeliveryMethod
             .map((p) => p.toDisplayString())
             .toList();
   }
@@ -117,10 +118,10 @@ class SellPageState extends State<SellPage> {
     try {
       final selectedStore =
           (AuthService().currentUser as ProducerUser)
-              .stores[Provider.of<ManageSectionNotifier>(
+              .stores[Provider.of<AuthNotifier>(
             context,
             listen: false,
-          ).storeIndex];
+          ).selectedStoreIndex];
 
       List<File> imageFiles =
           images.whereType<FileImage>().map((image) => image.file).toList();
@@ -502,20 +503,23 @@ class SellPageState extends State<SellPage> {
   }
 
   Container getMainScreen(BuildContext context) {
-    final storeIndex =
-        Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex;
+    final selectedStoreIndex =
+        Provider.of<AuthNotifier>(
+          context,
+          listen: false,
+        ).selectedStoreIndex;
     final user = AuthService().currentUser! as ProducerUser;
 
-    if (user.stores.isEmpty || storeIndex >= user.stores.length) {
+    if (user.stores.isEmpty || selectedStoreIndex >= user.stores.length) {
       return Container();
     }
 
     final preferredMethods =
-        (AuthService().currentUser! as ProducerUser).stores.length > storeIndex
+        (AuthService().currentUser! as ProducerUser).stores.length >
+                selectedStoreIndex
             ? (AuthService().currentUser! as ProducerUser)
-                    .stores[storeIndex]
-                    .preferredDeliveryMethod ??
-                []
+                    .stores[selectedStoreIndex]
+                    .preferredDeliveryMethod 
             : [];
     return Container(
       color: Theme.of(context).colorScheme.surface,
@@ -914,10 +918,10 @@ class SellPageState extends State<SellPage> {
                   label: "Munícipio ou Código Postal",
                   initialValue:
                       (AuthService().currentUser as ProducerUser)
-                          .stores[Provider.of<ManageSectionNotifier>(
+                          .stores[Provider.of<AuthNotifier>(
                             context,
                             listen: false,
-                          ).storeIndex]
+                          ).selectedStoreIndex]
                           .municipality,
                   enabled: false,
                   maxLength: 20,

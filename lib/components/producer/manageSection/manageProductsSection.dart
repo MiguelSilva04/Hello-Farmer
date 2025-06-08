@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/product_ad.dart';
 import '../../../core/services/auth/auth_service.dart';
@@ -25,8 +26,9 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
     final provider = Provider.of<ManageSectionNotifier>(context, listen: false);
     final currentIndex = provider.currentIndex;
     _products =
-        (AuthService().currentUser! as ProducerUser).stores[provider
-            .storeIndex].productsAds!;
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex]
+            .productsAds!;
     if (currentIndex == 4) {
       _mode = ManageViewMode.stock;
     } else if (currentIndex == 5) {
@@ -143,8 +145,9 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                                     text:
                                         _mode == ManageViewMode.stock
                                             ? (product.stock ?? 0).toString()
-                                            : (product.price)
-                                                .toStringAsFixed(1),
+                                            : (product.price).toStringAsFixed(
+                                              1,
+                                            ),
                                   );
                               return SizedBox(
                                 width: (_mode == ManageViewMode.stock

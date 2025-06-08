@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 
 class ProductStats {
   final String name;
@@ -163,10 +163,10 @@ class AnalysisMainProductsSection extends StatelessWidget {
     List<ProductStats> calculateProductStats() {
       final currentStore =
           (AuthService().currentUser! as ProducerUser)
-              .stores[Provider.of<ManageSectionNotifier>(
+              .stores[Provider.of<AuthNotifier>(
             context,
             listen: false,
-          ).storeIndex];
+          ).selectedStoreIndex];
       final orders = currentStore.orders ?? [];
       final Map<String, ProductStats> statsMap = {};
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/store.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/producer_user.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class DeliveryMethodsSection extends StatefulWidget {
@@ -19,7 +19,12 @@ class _DeliveryMethodsSectionState extends State<DeliveryMethodsSection> {
   @override
   Widget build(BuildContext context) {
     final deliverOptions =
-        (AuthService().currentUser! as ProducerUser).stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].preferredDeliveryMethod!;
+        (AuthService().currentUser! as ProducerUser)
+            .stores[Provider.of<AuthNotifier>(
+              context,
+              listen: false,
+            ).selectedStoreIndex]
+            .preferredDeliveryMethod;
 
     final List<Map<IconData, DeliveryMethod>> deliveryMethodsList = [
       {Icons.local_shipping: DeliveryMethod.COURIER},

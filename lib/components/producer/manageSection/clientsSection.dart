@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/app_user.dart';
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/auth_service.dart';
 
 class ClientsSection extends StatefulWidget {
@@ -26,7 +26,12 @@ class _ClientsSectionState extends State<ClientsSection> {
     final currentUser = (AuthService().currentUser! as ProducerUser);
     final users = AuthService().users;
     _orders =
-        currentUser.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].orders
+        currentUser
+            .stores[Provider.of<AuthNotifier>(
+              context,
+              listen: false,
+            ).selectedStoreIndex]
+            .orders
             ?.where((o) => o.producerId == currentUser.id)
             .toList() ??
         [];

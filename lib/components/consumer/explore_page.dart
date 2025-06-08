@@ -5,10 +5,11 @@ import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/utils/categories.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/services/auth/auth_notifier.dart';
 
 class ExplorePage extends StatefulWidget {
   ExplorePage({super.key});
@@ -108,7 +109,16 @@ class _ExplorePageState extends State<ExplorePage> {
     final filtered =
         AuthService().users
             .whereType<ProducerUser>()
-            .expand((producer) => producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
+            .expand(
+              (producer) =>
+                  producer
+                      .stores[Provider.of<AuthNotifier>(
+                        context,
+                        listen: false,
+                      ).selectedStoreIndex]
+                      .productsAds ??
+                  [],
+            )
             .where((ad) {
               final product = ad.product;
 
@@ -140,9 +150,13 @@ class _ExplorePageState extends State<ExplorePage> {
                     .whereType<ProducerUser>()
                     .firstWhere(
                       (p) =>
-                          p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.any(
-                            (a) => a.id == ad.id,
-                          ) ??
+                          p
+                              .stores[Provider.of<AuthNotifier>(
+                                context,
+                                listen: false,
+                              ).selectedStoreIndex]
+                              .productsAds
+                              ?.any((a) => a.id == ad.id) ??
                           false,
                     );
               } catch (_) {
@@ -151,7 +165,14 @@ class _ExplorePageState extends State<ExplorePage> {
 
               final cityMatch =
                   _selectedCity.trim().isEmpty ||
-                  (producer?.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city?.trim().toLowerCase() ==
+                  (producer
+                          ?.stores[Provider.of<AuthNotifier>(
+                            context,
+                            listen: false,
+                          ).selectedStoreIndex]
+                          .city
+                          ?.trim()
+                          .toLowerCase() ==
                       _selectedCity.trim().toLowerCase());
 
               final priceMatch =
@@ -231,9 +252,13 @@ class _ExplorePageState extends State<ExplorePage> {
                         .whereType<ProducerUser>()
                         .firstWhere(
                           (p) =>
-                              p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.any(
-                                (a) => a.id == ad.id,
-                              ) ??
+                              p
+                                  .stores[Provider.of<AuthNotifier>(
+                                    context,
+                                    listen: false,
+                                  ).selectedStoreIndex]
+                                  .productsAds
+                                  ?.any((a) => a.id == ad.id) ??
                               false,
                         );
                   } catch (_) {
@@ -668,10 +693,26 @@ class _ExplorePageState extends State<ExplorePage> {
                       .whereType<ProducerUser>()
                       .where(
                         (producer) =>
-                            producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city?.toLowerCase().trim() ==
+                            producer
+                                .stores[Provider.of<AuthNotifier>(
+                                  context,
+                                  listen: false,
+                                ).selectedStoreIndex]
+                                .city
+                                ?.toLowerCase()
+                                .trim() ==
                             _selectedCity.toLowerCase().trim(),
                       )
-                      .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
+                      .expand(
+                        (p) =>
+                            p
+                                .stores[Provider.of<AuthNotifier>(
+                                  context,
+                                  listen: false,
+                                ).selectedStoreIndex]
+                                .productsAds ??
+                            [],
+                      )
                       .where((ad) => ad.product.category == c.name)
                       .length;
 

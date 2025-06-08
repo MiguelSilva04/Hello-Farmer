@@ -8,9 +8,10 @@ import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/services/auth/auth_notifier.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final Order order;
@@ -24,6 +25,7 @@ class OrderDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final date =
         order.deliveryDate != null
             ? DateFormat.yMMMEd('pt_PT').format(order.deliveryDate!)
@@ -32,14 +34,23 @@ class OrderDetailsPage extends StatelessWidget {
     final deliveryMethod =
         (AuthService().users
                     .whereType<ProducerUser>()
-                    .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
+                    .expand(
+                      (p) =>
+                          p
+                              .stores[Provider.of<AuthNotifier>(
+                                context,
+                                listen: false,
+                              ).selectedStoreIndex]
+                              .productsAds ??
+                          [],
+                    )
                     .firstWhere(
                       (ad) => ad.id == products.first.produtctAdId,
                       orElse:
                           () => throw Exception("ProductAd não encontrado."),
                     )
                 as ProductAd)
-            .preferredDeliveryMethods
+            .preferredDeliveryMethods(authNotifier.producerUsers)
             .first;
     return Scaffold(
       appBar: AppBar(title: const Text("Encomenda")),
@@ -163,11 +174,30 @@ class OrderDetailsPage extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundImage:
-                        producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].imageUrl != null
-                            ? AssetImage(producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].imageUrl!)
+                        producer
+                                    .stores[Provider.of<AuthNotifier>(
+                                      context,
+                                      listen: false,
+                                    ).selectedStoreIndex]
+                                    .imageUrl !=
+                                null
+                            ? AssetImage(
+                              producer
+                                  .stores[Provider.of<AuthNotifier>(
+                                    context,
+                                    listen: false,
+                                  ).selectedStoreIndex]
+                                  .imageUrl!,
+                            )
                             : null,
                     child:
-                        producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].imageUrl == null
+                        producer
+                                    .stores[Provider.of<AuthNotifier>(
+                                      context,
+                                      listen: false,
+                                    ).selectedStoreIndex]
+                                    .imageUrl ==
+                                null
                             ? const Icon(Icons.store, size: 30)
                             : null,
                   ),
@@ -177,18 +207,34 @@ class OrderDetailsPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].name!,
+                          producer
+                              .stores[Provider.of<AuthNotifier>(
+                                context,
+                                listen: false,
+                              ).selectedStoreIndex]
+                              .name!,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        if (producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city != null)
+                        if (producer
+                                .stores[Provider.of<AuthNotifier>(
+                                  context,
+                                  listen: false,
+                                ).selectedStoreIndex]
+                                .city !=
+                            null)
                           Row(
                             children: [
                               Icon(Icons.pin_drop_rounded),
                               Text(
-                                producer.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].city!,
+                                producer
+                                    .stores[Provider.of<AuthNotifier>(
+                                      context,
+                                      listen: false,
+                                    ).selectedStoreIndex]
+                                    .city!,
                                 style: TextStyle(
                                   color:
                                       Theme.of(
@@ -270,7 +316,16 @@ class OrderDetailsPage extends StatelessWidget {
                   final ad =
                       AuthService().users
                               .whereType<ProducerUser>()
-                              .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
+                              .expand(
+                                (p) =>
+                                    p
+                                        .stores[Provider.of<AuthNotifier>(
+                                          context,
+                                          listen: false,
+                                        ).selectedStoreIndex]
+                                        .productsAds ??
+                                    [],
+                              )
                               .firstWhere(
                                 (ad) => ad.id == item.produtctAdId,
                                 orElse:

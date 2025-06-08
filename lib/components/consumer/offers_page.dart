@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/models/consumer_user.dart';
 import '../../core/models/offer.dart';
 import '../../core/models/producer_user.dart';
+import '../../core/services/auth/auth_notifier.dart';
 
 class OffersPage extends StatelessWidget {
   const OffersPage({super.key});
@@ -21,12 +21,28 @@ class OffersPage extends StatelessWidget {
       itemBuilder: (context, index) {
         final offer = allOffers[index];
         final ad = producers
-            .expand((p) => p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds ?? [])
+            .expand(
+              (p) =>
+                  p
+                      .stores[Provider.of<AuthNotifier>(
+                        context,
+                        listen: false,
+                      ).selectedStoreIndex]
+                      .productsAds ??
+                  [],
+            )
             .firstWhere((a) => a.id == offer.productAdId);
 
         final producer = producers.firstWhere(
           (p) =>
-              p.stores[Provider.of<ManageSectionNotifier>(context, listen: false).storeIndex].productsAds?.any((prodAd) => prodAd.id == ad.id) ?? false,
+              p
+                  .stores[Provider.of<AuthNotifier>(
+                    context,
+                    listen: false,
+                  ).selectedStoreIndex]
+                  .productsAds
+                  ?.any((prodAd) => prodAd.id == ad.id) ??
+              false,
         );
 
         return Column(
@@ -57,7 +73,11 @@ class OffersPage extends StatelessWidget {
               onTap:
                   () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (ctx) => ProductAdDetailScreen(ad: ad, promotion: offer.value),
+                      builder:
+                          (ctx) => ProductAdDetailScreen(
+                            ad: ad,
+                            promotion: offer.value,
+                          ),
                     ),
                   ),
             ),

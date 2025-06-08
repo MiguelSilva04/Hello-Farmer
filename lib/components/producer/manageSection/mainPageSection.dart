@@ -10,6 +10,7 @@ import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
 import '../../../core/models/product_ad.dart';
 import '../../../core/models/store.dart';
+import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/other/bottom_navigation_notifier.dart';
 
 class MainPageSection extends StatefulWidget {
@@ -21,6 +22,7 @@ class MainPageSection extends StatefulWidget {
 
 class _MainPageSectionState extends State<MainPageSection> {
   late Store store;
+  late AuthNotifier authProvider;
 
   bool _isEditingAd = false;
   ProductAd? _currentAd;
@@ -28,12 +30,10 @@ class _MainPageSectionState extends State<MainPageSection> {
   @override
   void initState() {
     super.initState();
+    authProvider = Provider.of<AuthNotifier>(context, listen: false);
     store =
-        (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<ManageSectionNotifier>(
-          context,
-          listen: false,
-        ).storeIndex];
+        (authProvider.currentUser as ProducerUser).stores[authProvider
+            .selectedStoreIndex];
   }
 
   @override
@@ -156,7 +156,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                     Wrap(
                       spacing: 10,
                       children:
-                          store.preferredDeliveryMethod?.map((method) {
+                          store.preferredDeliveryMethod.map((method) {
                             IconData icon;
                             switch (method) {
                               case DeliveryMethod.COURIER:
@@ -184,8 +184,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                                 ),
                               ),
                             );
-                          }).toList() ??
-                          [],
+                          }).toList(),
                     ),
                   ],
                 ),
@@ -352,7 +351,9 @@ class _MainPageSectionState extends State<MainPageSection> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text("Preço: ${ad.price}"),
+                                      Text(
+                                        "Preço: ${ad.price}€ p/ ${ad.product.unit.toDisplayString()}",
+                                      ),
                                       Text("Categoria: ${ad.product.category}"),
                                     ],
                                   ),
@@ -435,9 +436,8 @@ class _EditAdSectionState extends State<EditAdSection> {
     );
     unit = widget.ad.product.unit.toDisplayString();
 
-    // Initialize isSearch based on the current ad's highlight type
     isSearch = widget.ad.highlightType == HighlightType.SEARCH;
-    isVisible = widget.ad.visibility == AdVisibility.PUBLIC;
+    isVisible = widget.ad.visibility == true;
   }
 
   Widget imageBox(int index) {

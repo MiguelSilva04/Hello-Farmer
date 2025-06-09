@@ -27,7 +27,10 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
     final currentIndex = provider.currentIndex;
     _products =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex]
+            .stores[Provider.of<AuthNotifier>(
+              context,
+              listen: false,
+            ).selectedStoreIndex]
             .productsAds!;
     if (currentIndex == 4) {
       _mode = ManageViewMode.stock;
@@ -93,7 +96,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
           ),
         ),
         SizedBox(
-          height: _products.length * MediaQuery.of(context).size.height * 0.1,
+          height: _products.length * MediaQuery.of(context).size.height * 0.2,
           child: ListView.builder(
             itemCount: _products.length,
             itemBuilder: (context, index) {
@@ -107,7 +110,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                     child: ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
+                        child: Image.network(
                           productAd.product.imageUrl.first,
                           width: 70,
                           height: 70,

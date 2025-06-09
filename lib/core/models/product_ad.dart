@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/review.dart';
 import 'producer_user.dart';
 import 'product.dart';
 import 'store.dart';
+import 'user_view.dart';
 
 enum HighlightType { SEARCH, HOME }
 
@@ -25,7 +27,7 @@ class ProductAd {
   String highlight = "Não está destacado";
   DateTime? highlightDate;
   HighlightType? highlightType;
-  List<Map<DateTime, String>>? viewsByUserDateTime;
+  List<UserView>? viewsByUserDateTime;
   List<String>? keywords;
   bool? visibility;
   List<Review>? adReviews;
@@ -84,7 +86,10 @@ class ProductAd {
 
     return ProductAd(
       id: json['id'] ?? '',
-      createdAt: json['createdAt'] ?? '',
+      createdAt:
+          (json['createdAt'] is cf.Timestamp)
+              ? (json['createdAt'] as cf.Timestamp).toDate()
+              : json['createdAt'],
       product: Product(
         name: json['title'] ?? '',
         imageUrl:
@@ -107,9 +112,9 @@ class ProductAd {
       price: json['price']?.toString(),
       highlight: json['highlight'],
       highlightDate:
-          json['highlightDate'] != null
-              ? DateTime.tryParse(json['highlightDate'])
-              : null,
+          json['highlightDate'] is cf.Timestamp
+              ? (json['highlightDate'] as cf.Timestamp).toDate()
+              : DateTime.tryParse(json['highlightDate']?.toString() ?? ''),
       visibility: json['visibility'] ?? true,
       highlightType:
           json['highlightType'] != null
@@ -120,11 +125,11 @@ class ProductAd {
       viewsByUserDateTime:
           json['viewsByUserDateTime'] != null
               ? (json['viewsByUserDateTime'] as List)
-                  .map<Map<DateTime, String>>(
-                    (item) => {DateTime.parse(item['date']): item['user']},
-                  )
+                  .map((item) => UserView.fromJson(item))
                   .toList()
               : null,
+      keywords:
+          json['keywords'] != null ? List<String>.from(json['keywords']) : null,
     );
   }
 
@@ -159,7 +164,6 @@ class ProductAd {
       highlightDate: $highlightDate,
       highlightType: ${highlightType?.toDisplayString() ?? "Nenhum"},
       visibility: ${visibility.toString().split('.').last}
-      viewsByUserDateTime: ${viewsByUserDateTime?.map((map) => map.entries.map((e) => '${e.key.toIso8601String()} by ${e.value}').join(', ')).join('; ') ?? "Nenhuma"}
     ''';
   }
 }

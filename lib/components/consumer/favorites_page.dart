@@ -168,9 +168,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                               .firstWhereOrNull(
                                 (u) =>
                                     u
-                                        .stores[Provider.of<
-                                          AuthNotifier
-                                        >(
+                                        .stores[Provider.of<AuthNotifier>(
                                           context,
                                           listen: false,
                                         ).selectedStoreIndex]
@@ -191,8 +189,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                   () => Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder:
-                                          (ctx) =>
-                                              ProductAdDetailScreen(ad: ad),
+                                          (ctx) => ProductAdDetailScreen(
+                                            ad: ad,
+                                            producer: producer!,
+                                          ),
                                     ),
                                   ),
                               contentPadding: const EdgeInsets.all(12),

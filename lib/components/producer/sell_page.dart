@@ -136,6 +136,7 @@ class SellPageState extends State<SellPage> {
         double.parse(price!),
         int.parse(stock!),
         selectedStore.id,
+        _selectedKeywords.toList(),
       );
     } catch (e) {
       print('Erro ao publicar anúncio: $e');
@@ -504,10 +505,7 @@ class SellPageState extends State<SellPage> {
 
   Container getMainScreen(BuildContext context) {
     final selectedStoreIndex =
-        Provider.of<AuthNotifier>(
-          context,
-          listen: false,
-        ).selectedStoreIndex;
+        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
     final user = AuthService().currentUser! as ProducerUser;
 
     if (user.stores.isEmpty || selectedStoreIndex >= user.stores.length) {
@@ -518,8 +516,8 @@ class SellPageState extends State<SellPage> {
         (AuthService().currentUser! as ProducerUser).stores.length >
                 selectedStoreIndex
             ? (AuthService().currentUser! as ProducerUser)
-                    .stores[selectedStoreIndex]
-                    .preferredDeliveryMethod 
+                .stores[selectedStoreIndex]
+                .preferredDeliveryMethod
             : [];
     return Container(
       color: Theme.of(context).colorScheme.surface,

@@ -1,4 +1,5 @@
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
+import 'package:harvestly/core/services/auth/store_service.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
@@ -39,13 +40,12 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ChatListNotifier()),
         ChangeNotifierProvider(create: (_) => ChatNotificationService()),
-        ChangeNotifierProvider<ChatService>(
-          create: (_) => ChatService(),
-        ),
+        ChangeNotifierProvider<ChatService>(create: (_) => ChatService()),
         ChangeNotifierProvider(create: (_) => BottomNavigationNotifier()),
         ChangeNotifierProvider(create: (_) => ManageSectionNotifier()),
         ChangeNotifierProvider(create: (_) => SettingsNotifier()),
         ChangeNotifierProvider(create: (_) => AuthNotifier()),
+        ChangeNotifierProvider(create: (_) => StoreService.instance),
         ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
       ],
       child: const MyApp(),
@@ -108,7 +108,7 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.purple,
           outline: Colors.orange.shade50,
           surfaceContainerLowest: const Color.fromRGBO(168, 218, 184, 1),
-          surfaceContainerLow: const Color.fromRGBO(222, 246, 228, 1)
+          surfaceContainerLow: const Color.fromRGBO(222, 246, 228, 1),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromRGBO(42, 129, 94, 1),

@@ -76,6 +76,7 @@ class OffersPage extends StatelessWidget {
                       builder:
                           (ctx) => ProductAdDetailScreen(
                             ad: ad,
+                            producer: producer,
                             promotion: offer.value,
                           ),
                     ),

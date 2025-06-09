@@ -5,6 +5,7 @@ import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/auth/store_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/categories.dart';
@@ -24,28 +25,28 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   late List<ProducerUser> nearbyProducers;
   late final ScrollController _scrollController;
   late final List<String> promoImages;
+  late AuthNotifier authNotifier;
   Timer? _scrollTimer;
 
   @override
   void initState() {
     super.initState();
-    final user = AuthService().currentUser!;
-    userName = user.firstName;
-    final producer =
-        (AuthService().users.where((u) => u.runtimeType == ProducerUser)).first
-            as ProducerUser;
-    recommendedAds =
-        producer
-            .stores[Provider.of<AuthNotifier>(
-              context,
-              listen: false,
-            ).selectedStoreIndex]
-            .productsAds
-            ?.take(5)
-            .toList() ??
-        [];
-    nearbyProducers =
-        AuthService().users.whereType<ProducerUser>().take(5).toList();
+    authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final storeService = Provider.of<StoreService>(context, listen: false);
+    print('Total de lojas: ${storeService.allStores.length}');
+    for (final p in authNotifier.producerUsers) {
+      print('Producer: ${p.firstName} com ${p.stores.length} lojas');
+      for (final s in p.stores) {
+        print('  Store: ${s.name} tem ads? ${s.productsAds?.length}');
+      }
+    }
+
+    final user = AuthService().currentUser;
+    if (user != null) {
+      userName = user.firstName;
+    } else {
+      userName = 'Utilizador';
+    }
 
     promoImages = [
       'assets/images/discounts_images/75%PT.png',
@@ -76,72 +77,100 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              'Olá, $userName!',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: const Text(
-              'Descobre os melhores produtos frescos na tua zona!',
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-          const SizedBox(height: 16),
+    return Consumer<AuthNotifier>(
+      builder: (context, authNotifier, child) {
+        final producers = authNotifier.producerUsers;
 
-          _buildPromotionsBanner(),
-          const SizedBox(height: 16),
-          _buildCategories(),
+        if (producers.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: const Text(
-              'Recomendados para ti',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+        final recommendedAds =
+            producers
+                .expand((producer) => producer.stores)
+                .expand((store) => store.productsAds ?? [])
+                .toList();
+        final seenIds = <String>{};
+        final uniqueAds =
+            recommendedAds.where((ad) => seenIds.add(ad.id)).toList();
+
+        final top5Ads = uniqueAds.take(5).toList();
+        final nearbyProducers = producers.take(5).toList();
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'Olá, $userName!',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'Descobre os melhores produtos frescos na tua zona!',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              _buildPromotionsBanner(),
+              const SizedBox(height: 16),
+              _buildCategories(),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: const Text(
+                  'Recomendados para ti',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 110,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: top5Ads.length,
+                    itemBuilder: (context, index) {
+                      final ad = top5Ads[index];
+                      return _buildProductItem(ad);
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  'Produtores perto de ti',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: nearbyProducers.length,
+                  itemBuilder: (context, index) {
+                    return _buildProducerItem(nearbyProducers[index]);
+                  },
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 110,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: recommendedAds.length,
-              itemBuilder: (context, index) {
-                final ad = recommendedAds[index];
-                return _buildProductItem(ad);
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: const Text(
-              'Produtores perto de ti',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 120,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: nearbyProducers.length,
-              itemBuilder: (context, index) {
-                return _buildProducerItem(nearbyProducers[index]);
-              },
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -242,12 +271,27 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
     );
   }
 
+  ProducerUser? findProducerOfAd(ProductAd ad, List<ProducerUser> producers) {
+    for (final producer in producers) {
+      for (final store in producer.stores) {
+        if (store.productsAds?.any((a) => a.id == ad.id) ?? false) {
+          return producer;
+        }
+      }
+    }
+    return null;
+  }
+
   Widget _buildProductItem(ProductAd ad) {
     final product = ad.product;
+    final producer = findProducerOfAd(ad, authNotifier.producerUsers);
     return InkWell(
       onTap:
           () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => ProductAdDetailScreen(ad: ad)),
+            MaterialPageRoute(
+              builder:
+                  (ctx) => ProductAdDetailScreen(ad: ad, producer: producer!),
+            ),
           ),
       child: Padding(
         padding: const EdgeInsets.only(right: 12.0),
@@ -255,7 +299,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           children: [
             CircleAvatar(
               radius: 35,
-              backgroundImage: AssetImage(product.imageUrl.first),
+              backgroundImage: NetworkImage(product.imageUrl.first),
             ),
             const SizedBox(height: 6),
             SizedBox(
@@ -274,6 +318,10 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   }
 
   Widget _buildProducerItem(ProducerUser user) {
+    final storeIndex =
+        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
+    final userStore =
+        storeIndex < user.stores.length ? user.stores[storeIndex] : null;
     return InkWell(
       onTap:
           () => Navigator.of(
@@ -285,7 +333,11 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundImage: NetworkImage(user.imageUrl),
+              backgroundImage:
+                  user.imageUrl.isNotEmpty
+                      ? NetworkImage(user.imageUrl)
+                      : const AssetImage('assets/images/default_user.png')
+                          as ImageProvider,
             ),
             const SizedBox(height: 6),
             Text(
@@ -294,13 +346,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              user
-                      .stores[Provider.of<AuthNotifier>(
-                        context,
-                        listen: false,
-                      ).selectedStoreIndex]
-                      .city ??
-                  'Cidade desconhecida',
+              userStore?.city ?? 'Cidade desconhecida',
               style: const TextStyle(fontSize: 10),
             ),
             Row(
@@ -309,7 +355,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                 Text(user.rating.toString(), style: TextStyle(fontSize: 10)),
                 const Icon(Icons.star, size: 12, color: Colors.amber),
                 Text(
-                  '(${user.stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex].storeReviews?.length ?? 0})',
+                  '(${userStore?.storeReviews?.length ?? 0})',
                   style: const TextStyle(fontSize: 10),
                 ),
               ],

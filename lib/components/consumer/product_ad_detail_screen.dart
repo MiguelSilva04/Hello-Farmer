@@ -16,25 +16,19 @@ import '../../core/services/auth/auth_notifier.dart';
 // ignore: must_be_immutable
 class ProductAdDetailScreen extends StatelessWidget {
   final ProductAd ad;
+  final ProducerUser producer;
   int? promotion;
 
-  ProductAdDetailScreen({Key? key, this.promotion, required this.ad})
-    : super(key: key);
+  ProductAdDetailScreen({
+    Key? key,
+    this.promotion,
+    required this.ad,
+    required this.producer,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final producer = AuthService().users.whereType<ProducerUser>().firstWhere(
-      (p) =>
-          p
-              .stores[Provider.of<AuthNotifier>(
-                context,
-                listen: false,
-              ).selectedStoreIndex]
-              .productsAds
-              ?.any((a) => a.id == ad.id) ??
-          false,
-    );
     final store =
         producer.stores[Provider.of<AuthNotifier>(
           context,
@@ -161,29 +155,38 @@ class ProductAdDetailScreen extends StatelessWidget {
                   Wrap(
                     spacing: 8.0,
                     children:
-                        ad.preferredDeliveryMethods(authNotifier.producerUsers).map((method) {
-                          return Chip(
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  store.deliveryIcon(method),
-                                  size: 16,
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
+                        ad
+                            .preferredDeliveryMethods(
+                              authNotifier.producerUsers,
+                            )
+                            .map((method) {
+                              return Chip(
+                                label: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      store.deliveryIcon(method),
+                                      size: 16,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      method.toDisplayString().split('.').last,
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  method.toDisplayString().split('.').last,
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.secondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
+                              );
+                            })
+                            .toList(),
                   ),
                 ],
               ),
@@ -230,7 +233,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(50),
-                              child: Image.asset(
+                              child: Image.network(
                                 store.imageUrl!,
                                 width: 50,
                                 height: 50,
@@ -623,7 +626,7 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                   )
-                  : Image.asset(
+                  : Image.network(
                     imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,

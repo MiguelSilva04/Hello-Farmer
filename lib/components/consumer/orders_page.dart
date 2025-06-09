@@ -19,33 +19,31 @@ class _OrdersPageState extends State<OrdersPage> {
   late final String? currentUserId;
   late final List<Order> orders;
   late final List<ProductAd> allAds;
+  late AuthNotifier authNotifier;
   OrderState? state = null;
 
   @override
   void initState() {
     super.initState();
-    final users = AuthService().users;
-    currentUserId = AuthService().currentUser?.id;
+    authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final users = authNotifier.allUsers;
+    currentUserId = authNotifier.currentUser?.id;
 
     allAds =
         users
             .whereType<ProducerUser>()
+            .where((p) => p.stores.isNotEmpty)
             .expand(
               (p) =>
-                  p
-                      .stores[Provider.of<AuthNotifier>(
-                        context,
-                        listen: false,
-                      ).selectedStoreIndex]
-                      .productsAds ??
-                  [],
+                  p.stores[authNotifier.selectedStoreIndex].productsAds ?? [],
             )
-            .cast<ProductAd>()
-            .toList();
+            .toList()
+            .cast<ProductAd>();
 
     orders =
         users
             .whereType<ProducerUser>()
+            .where((p) => p.stores.isNotEmpty && p.stores.isNotEmpty)
             .expand(
               (p) =>
                   p
@@ -73,186 +71,201 @@ class _OrdersPageState extends State<OrdersPage> {
   Widget build(BuildContext context) {
     final filteredOrders =
         orders.where((order) => state == null || order.state == state).toList();
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    onTap: () => setState(() => state = null),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            state == null
-                                ? Theme.of(context).colorScheme.tertiary
-                                : Theme.of(context).colorScheme.inverseSurface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          "Todas",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+    return orders.length == 0
+        ? Center(child: Text("Não tem encomendas efetuadas ainda..."))
+        : SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InkWell(
+                        onTap: () => setState(() => state = null),
+                        child: Container(
+                          decoration: BoxDecoration(
                             color:
-                                state != null
+                                state == null
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(
                                       context,
                                     ).colorScheme.inverseSurface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Text(
+                              "Todas",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    state != null
+                                        ? Theme.of(context).colorScheme.tertiary
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.inverseSurface,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  InkWell(
-                    onTap: () => setState(() => state = OrderState.Pendent),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            state == OrderState.Pendent
-                                ? Theme.of(context).colorScheme.tertiary
-                                : Theme.of(context).colorScheme.inverseSurface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          "Pendente",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                      const SizedBox(width: 5),
+                      InkWell(
+                        onTap: () => setState(() => state = OrderState.Pendent),
+                        child: Container(
+                          decoration: BoxDecoration(
                             color:
-                                state != OrderState.Pendent
+                                state == OrderState.Pendent
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(
                                       context,
                                     ).colorScheme.inverseSurface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Text(
+                              "Pendente",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    state != OrderState.Pendent
+                                        ? Theme.of(context).colorScheme.tertiary
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.inverseSurface,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  InkWell(
-                    onTap: () => setState(() => state = OrderState.Sent),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            state == OrderState.Sent
-                                ? Theme.of(context).colorScheme.tertiary
-                                : Theme.of(context).colorScheme.inverseSurface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          "Enviada",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                      const SizedBox(width: 5),
+                      InkWell(
+                        onTap: () => setState(() => state = OrderState.Sent),
+                        child: Container(
+                          decoration: BoxDecoration(
                             color:
-                                state != OrderState.Sent
+                                state == OrderState.Sent
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(
                                       context,
                                     ).colorScheme.inverseSurface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Text(
+                              "Enviada",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    state != OrderState.Sent
+                                        ? Theme.of(context).colorScheme.tertiary
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.inverseSurface,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  InkWell(
-                    onTap: () => setState(() => state = OrderState.Delivered),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            state == OrderState.Delivered
-                                ? Theme.of(context).colorScheme.tertiary
-                                : Theme.of(context).colorScheme.inverseSurface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          "Entregue",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                      const SizedBox(width: 5),
+                      InkWell(
+                        onTap:
+                            () => setState(() => state = OrderState.Delivered),
+                        child: Container(
+                          decoration: BoxDecoration(
                             color:
-                                state != OrderState.Delivered
+                                state == OrderState.Delivered
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(
                                       context,
                                     ).colorScheme.inverseSurface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Text(
+                              "Entregue",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    state != OrderState.Delivered
+                                        ? Theme.of(context).colorScheme.tertiary
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.inverseSurface,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  InkWell(
-                    onTap: () => setState(() => state = OrderState.Abandonned),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            state == OrderState.Abandonned
-                                ? Theme.of(context).colorScheme.tertiary
-                                : Theme.of(context).colorScheme.inverseSurface,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          "Abandonada",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                      const SizedBox(width: 5),
+                      InkWell(
+                        onTap:
+                            () => setState(() => state = OrderState.Abandonned),
+                        child: Container(
+                          decoration: BoxDecoration(
                             color:
-                                state != OrderState.Abandonned
+                                state == OrderState.Abandonned
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(
                                       context,
                                     ).colorScheme.inverseSurface,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Text(
+                              "Abandonada",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color:
+                                    state != OrderState.Abandonned
+                                        ? Theme.of(context).colorScheme.tertiary
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.inverseSurface,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(12),
-            itemCount: filteredOrders.length,
-            itemBuilder: (context, index) {
-              final Order order = filteredOrders[index];
-              final ordersAds =
-                  order.productsAds
-                      .map(
-                        (ad) =>
-                            allAds.firstWhere((a) => a.id == ad.produtctAdId),
-                      )
-                      .toList()
-                      .cast<ProductAd>();
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(12),
+                itemCount: filteredOrders.length,
+                itemBuilder: (context, index) {
+                  final Order order = filteredOrders[index];
+                  final ordersAds =
+                      order.productsAds
+                          .map(
+                            (ad) => allAds.firstWhere(
+                              (a) => a.id == ad.produtctAdId,
+                            ),
+                          )
+                          .toList()
+                          .cast<ProductAd>();
 
-              return OrderCard(order: order, ads: ordersAds);
-            },
+                  return OrderCard(order: order, ads: ordersAds);
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
   }
 }
 

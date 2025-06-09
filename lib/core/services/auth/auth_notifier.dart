@@ -7,6 +7,7 @@ import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
 import 'auth_service.dart';
+import 'store_service.dart';
 
 class AuthNotifier extends ChangeNotifier {
   AppUser? _currentUser;
@@ -26,25 +27,34 @@ class AuthNotifier extends ChangeNotifier {
       _allUsers.whereType<ProducerUser>().toList();
 
   Future<void> loadAllUsers() async {
-    final snapshot = await FirebaseFirestore.instance.collection('users').get();
+    final userSnapshot =
+        await FirebaseFirestore.instance.collection('users').get();
 
     _allUsers =
-        snapshot.docs.map((doc) {
+        userSnapshot.docs.map((doc) {
           final data = doc.data();
-          final userType = data['type'];
+          final isProducer = data['isProducer'] == true;
+          final userId = doc.id;
 
-          if (userType == 'producer') {
-            return ProducerUser.fromJson({...data, 'id': doc.id});
+          if (isProducer) {
+            return ProducerUser.fromJson({...data, 'id': userId});
           } else {
-            return ConsumerUser.fromJson({...data, 'id': doc.id});
+            return ConsumerUser.fromJson({...data, 'id': userId});
           }
         }).toList();
+
+    for (final user in _allUsers.whereType<ProducerUser>()) {
+      await _loadStoresAndAdsForProducer(user);
+    }
 
     notifyListeners();
   }
 
   Future<AppUser> loadUser() async {
     _currentUser = await AuthService().getCurrentUser();
+
+    loadAllUsers();
+    StoreService.instance.loadStores();
 
     if (_currentUser is ProducerUser) {
       await _loadProducerStoresAndAds();
@@ -53,6 +63,52 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
 
     return _currentUser!;
+  }
+
+  Future<void> _loadStoresAndAdsForProducer(ProducerUser producer) async {
+    final storeSnapshot =
+        await FirebaseFirestore.instance
+            .collection('stores')
+            .where('ownerId', isEqualTo: producer.id)
+            .get();
+
+    producer.stores.clear();
+
+    for (final doc in storeSnapshot.docs) {
+      final data = doc.data();
+
+      final store = Store.fromJson({
+        ...data,
+        'id': doc.id,
+        if (data['createdAt'] is Timestamp)
+          'createdAt': (data['createdAt'] as Timestamp).toDate(),
+        if (data['updatedAt'] is Timestamp)
+          'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+      });
+
+      final adSnapshot =
+          await FirebaseFirestore.instance
+              .collection('stores')
+              .doc(store.id)
+              .collection('ads')
+              .get();
+
+      final ads =
+          adSnapshot.docs.map((adDoc) {
+            final adData = adDoc.data();
+            return ProductAd.fromJson({
+              ...adData,
+              'id': adDoc.id,
+              if (adData['createdAt'] is Timestamp)
+                'createdAt': (adData['createdAt'] as Timestamp).toDate(),
+              if (adData['updatedAt'] is Timestamp)
+                'updatedAt': (adData['updatedAt'] as Timestamp).toDate(),
+            });
+          }).toList();
+
+      store.productsAds = ads;
+      producer.stores.add(store);
+    }
   }
 
   Future<void> _loadProducerStoresAndAds() async {

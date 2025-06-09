@@ -6,6 +6,7 @@ import 'basket.dart';
 import 'order.dart';
 import 'product_ad.dart';
 import 'review.dart';
+import 'user_view.dart';
 
 enum DeliveryMethod { HOME_DELIVERY, COURIER, PICKUP }
 
@@ -37,6 +38,7 @@ extension DeliveryMethodExtension on DeliveryMethod {
 
 class Store {
   final String id;
+  final String ownerId;
   final DateTime? createdAt;
   String? backgroundImageUrl;
   String? imageUrl;
@@ -51,10 +53,11 @@ class Store {
   List<Order>? orders;
   List<DeliveryMethod> preferredDeliveryMethod;
   List<Basket>? baskets;
-  List<Map<DateTime, String>>? viewsByUserDateTime;
+  List<UserView>? viewsByUserDateTime;
 
   Store({
     required this.id,
+    required this.ownerId,
     this.createdAt,
     this.backgroundImageUrl,
     this.imageUrl,
@@ -71,6 +74,10 @@ class Store {
     this.baskets,
     this.viewsByUserDateTime,
   });
+
+  void set setPreferredDeliveryMethod(
+    List<DeliveryMethod> preferredDeliveryMethod,
+  ) => this.preferredDeliveryMethod = preferredDeliveryMethod;
 
   List<Review>? get storeReviews {
     return productsAds
@@ -103,6 +110,7 @@ class Store {
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
       id: json['id'],
+      ownerId: json['ownerId'],
       createdAt:
           (json['createdAt'] is cf.Timestamp)
               ? (json['createdAt'] as cf.Timestamp).toDate()
@@ -131,13 +139,11 @@ class Store {
               : [],
       viewsByUserDateTime:
           json['viewsByUserDateTime'] != null
-              ? List<Map<DateTime, String>>.from(
-                (json['viewsByUserDateTime'] as List).map((item) {
-                  final key = DateTime.parse(item.keys.first);
-                  final value = item.values.first;
-                  return {key: value};
-                }),
-              )
+              ? (json['viewsByUserDateTime'] as List).map((item) {
+                final key = DateTime.parse(item.keys.first);
+                final value = item.values.first;
+                return UserView(date: key,user: value,);
+              }).toList()
               : [],
       preferredDeliveryMethod:
           json['deliveryMethods'] != null

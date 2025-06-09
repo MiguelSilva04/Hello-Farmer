@@ -560,6 +560,7 @@ class AuthService {
     double price,
     int stock,
     String storeId,
+    List<String> keywords,
   ) async {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -591,6 +592,7 @@ class AuthService {
         'stock': stock,
         'storeId': storeId,
         'visibility': true,
+        'keywords': keywords
       });
 
       print("Anúncio publicado com sucesso!");

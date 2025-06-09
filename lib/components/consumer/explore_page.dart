@@ -34,6 +34,8 @@ class _ExplorePageState extends State<ExplorePage> {
   List<ProductAd> allFavorites = [];
   List<ProductAd> displayedAds = [];
 
+  late AuthNotifier authNotifier;
+
   Widget _buildSeasonalCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -105,21 +107,22 @@ class _ExplorePageState extends State<ExplorePage> {
 
   void applyFilters() {
     final currentSeason = calculateCurrentSeason();
+    authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final selectedIndex = authNotifier.selectedStoreIndex;
 
     final filtered =
-        AuthService().users
+        authNotifier.allUsers
             .whereType<ProducerUser>()
-            .expand(
+            .where(
               (producer) =>
-                  producer
-                      .stores[Provider.of<AuthNotifier>(
-                        context,
-                        listen: false,
-                      ).selectedStoreIndex]
-                      .productsAds ??
-                  [],
+                  producer.stores.isNotEmpty &&
+                  selectedIndex < producer.stores.length &&
+                  (producer.stores[selectedIndex].productsAds?.isNotEmpty ??
+                      false),
             )
+            .expand((producer) => producer.stores[selectedIndex].productsAds!)
             .where((ad) {
+              print("Anuncio: $ad");
               final product = ad.product;
 
               if (_searchText == "Season") {
@@ -146,18 +149,15 @@ class _ExplorePageState extends State<ExplorePage> {
 
               ProducerUser? producer;
               try {
-                producer = AuthService().users
+                producer = authNotifier.allUsers
                     .whereType<ProducerUser>()
                     .firstWhere(
                       (p) =>
-                          p
-                              .stores[Provider.of<AuthNotifier>(
-                                context,
-                                listen: false,
-                              ).selectedStoreIndex]
-                              .productsAds
-                              ?.any((a) => a.id == ad.id) ??
-                          false,
+                          p.stores.length > selectedIndex &&
+                          (p.stores[selectedIndex].productsAds?.any(
+                                (a) => a.id == ad.id,
+                              ) ??
+                              false),
                     );
               } catch (_) {
                 producer = null;
@@ -165,14 +165,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
               final cityMatch =
                   _selectedCity.trim().isEmpty ||
-                  (producer
-                          ?.stores[Provider.of<AuthNotifier>(
-                            context,
-                            listen: false,
-                          ).selectedStoreIndex]
-                          .city
-                          ?.trim()
-                          .toLowerCase() ==
+                  (producer?.stores[selectedIndex].city?.trim().toLowerCase() ==
                       _selectedCity.trim().toLowerCase());
 
               final priceMatch =
@@ -208,6 +201,17 @@ class _ExplorePageState extends State<ExplorePage> {
           return 0;
       }
     });
+  }
+
+  ProducerUser? findProducerOfAd(ProductAd ad, List<ProducerUser> producers) {
+    for (final producer in producers) {
+      for (final store in producer.stores) {
+        if (store.productsAds?.any((a) => a.id == ad.id) ?? false) {
+          return producer;
+        }
+      }
+    }
+    return null;
   }
 
   Widget _buildSearchResults(List<ProductAd> ads) {
@@ -246,24 +250,11 @@ class _ExplorePageState extends State<ExplorePage> {
                 const SizedBox(height: 8),
                 ...categoryAds.map((ad) {
                   final product = ad.product;
-                  ProducerUser? producer;
-                  try {
-                    producer = AuthService().users
-                        .whereType<ProducerUser>()
-                        .firstWhere(
-                          (p) =>
-                              p
-                                  .stores[Provider.of<AuthNotifier>(
-                                    context,
-                                    listen: false,
-                                  ).selectedStoreIndex]
-                                  .productsAds
-                                  ?.any((a) => a.id == ad.id) ??
-                              false,
-                        );
-                  } catch (_) {
-                    producer = null;
-                  }
+                  final producer = findProducerOfAd(
+                    ad,
+                    authNotifier.producerUsers,
+                  );
+                  print(producer);
 
                   final keywordMap = {
                     for (var k in Keywords.keywords) k.name: k.icon,
@@ -272,7 +263,11 @@ class _ExplorePageState extends State<ExplorePage> {
                     onTap:
                         () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (ctx) => ProductAdDetailScreen(ad: ad),
+                            builder:
+                                (ctx) => ProductAdDetailScreen(
+                                  ad: ad,
+                                  producer: producer!,
+                                ),
                           ),
                         ),
                     child: Column(
@@ -287,7 +282,7 @@ class _ExplorePageState extends State<ExplorePage> {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.asset(
+                                  child: Image.network(
                                     product.imageUrl.first,
                                     width: 80,
                                     height: 80,
@@ -688,34 +683,26 @@ class _ExplorePageState extends State<ExplorePage> {
             ),
             const SizedBox(height: 16),
             ...Categories.categories.map((c) {
+              final selectedIndex =
+                  Provider.of<AuthNotifier>(
+                    context,
+                    listen: false,
+                  ).selectedStoreIndex;
+
               final count =
                   AuthService().users
                       .whereType<ProducerUser>()
                       .where(
                         (producer) =>
-                            producer
-                                .stores[Provider.of<AuthNotifier>(
-                                  context,
-                                  listen: false,
-                                ).selectedStoreIndex]
-                                .city
-                                ?.toLowerCase()
-                                .trim() ==
-                            _selectedCity.toLowerCase().trim(),
+                            producer.stores.length > selectedIndex &&
+                            producer.stores[selectedIndex].city
+                                    ?.toLowerCase()
+                                    .trim() ==
+                                _selectedCity.toLowerCase().trim(),
                       )
-                      .expand(
-                        (p) =>
-                            p
-                                .stores[Provider.of<AuthNotifier>(
-                                  context,
-                                  listen: false,
-                                ).selectedStoreIndex]
-                                .productsAds ??
-                            [],
-                      )
+                      .expand((p) => p.stores[selectedIndex].productsAds ?? [])
                       .where((ad) => ad.product.category == c.name)
                       .length;
-
               return GestureDetector(
                 onTap: () {
                   setState(() {

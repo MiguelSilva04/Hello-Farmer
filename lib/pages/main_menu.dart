@@ -13,6 +13,7 @@ import '../components/consumer/home_page.dart';
 import '../components/consumer/map_page.dart';
 import '../components/consumer/orders_page.dart';
 import '../core/services/auth/auth_notifier.dart';
+import '../core/services/auth/store_service.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/manage_page.dart';
 import '../utils/app_routes.dart';
@@ -46,14 +47,6 @@ class _MainMenuState extends State<MainMenu>
   void initState() {
     super.initState();
     authProvider = Provider.of<AuthNotifier>(context, listen: false);
-    authProvider.loadUser().then((val) {
-      // print(authProvider.currentUser);
-      // print(
-      //   (authProvider.currentUser as ProducerUser)
-      //       .stores[authProvider.selectedStoreIndex]
-      //       .productsAds,
-      // );
-    });
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -119,19 +112,23 @@ class _MainMenuState extends State<MainMenu>
       OffersPage(),
     ];
 
+    Future<AppUser> _initializeApp() async {
+      final user = await authProvider.loadUser();
+
+      final storeService = Provider.of<StoreService>(context, listen: false);
+      await storeService.loadStores();
+
+      await authProvider.loadAllUsers();
+
+      return user;
+    }
+
     return FutureBuilder(
-      future: authProvider.loadUser(),
+      future: _initializeApp(),
       builder: (ctx, snapshot) {
         if (!snapshot.hasData) return LoadingPage();
 
         final user = snapshot.data!;
-        final isProducer = user.isProducer;
-        print(
-          (user as ProducerUser)
-              .stores[authProvider.selectedStoreIndex]
-              .productsAds!
-              .length,
-        );
         _profileImageUrl = user.imageUrl;
         return Scaffold(
           appBar: AppBar(
@@ -161,7 +158,9 @@ class _MainMenuState extends State<MainMenu>
               ],
             ),
             actions: [
-              if (user.isProducer && (user as ProducerUser).stores.length > 0)
+              if ((user.isProducer &&
+                      (user as ProducerUser).stores.length > 0) ||
+                  (!user.isProducer))
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   transitionBuilder: (child, animation) {
@@ -358,20 +357,19 @@ class _MainMenuState extends State<MainMenu>
           body: FadeTransition(
             opacity: _opacityAnimation,
             child:
-                isProducer && (user as ProducerUser).stores.length == 0
-                    ? CreateStore(isFirstTime: true)
-                    : (user as ProducerUser).stores.length > 0
-                    ? _producerPages[Provider.of<BottomNavigationNotifier>(
-                      context,
-                    ).currentIndex]
+                user is ProducerUser
+                    ? user.stores.isEmpty
+                        ? CreateStore(isFirstTime: true)
+                        : _producerPages[Provider.of<BottomNavigationNotifier>(
+                          context,
+                        ).currentIndex]
                     : _consumerPages[Provider.of<BottomNavigationNotifier>(
                       context,
                     ).currentIndex],
           ),
+
           bottomNavigationBar:
-              (Provider.of<BottomNavigationNotifier>(context).currentIndex <
-                          5 &&
-                      (user.isProducer && user.stores.length > 0))
+              Provider.of<BottomNavigationNotifier>(context).currentIndex < 5
                   ? BottomNavigationBar(
                     selectedItemColor:
                         Theme.of(context).bottomAppBarTheme.color,
@@ -388,7 +386,7 @@ class _MainMenuState extends State<MainMenu>
                       ).setIndex(index);
                     },
                     items:
-                        isProducer
+                        user is ProducerUser && user.stores.isNotEmpty
                             ? const [
                               BottomNavigationBarItem(
                                 icon: Icon(Icons.home),

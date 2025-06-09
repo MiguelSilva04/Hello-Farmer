@@ -55,31 +55,34 @@ class _AuthFormState extends State<AuthForm> {
     _formData.image = image;
   }
 
-  void _showErrorDialog(String msg, bool? emailAlreadyExists) {
-    showDialog(
+  Future<void> _showErrorDialog(String message, bool emailAlreadyExists) async {
+    await showDialog(
       context: context,
       builder:
           (ctx) => AlertDialog(
+            icon: Icon(Icons.warning, color: Colors.amber),
             title: const Text('Ocorreu um Erro'),
-            content: Text(msg),
+            content: Text(message),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => Navigator.of(ctx).pop(),
                 child: const Text('Fechar'),
               ),
-              if (emailAlreadyExists!)
+              if (emailAlreadyExists)
                 TextButton(
                   onPressed: () {
-                    setState(() {
-                      _isFirstInfoSignup = false;
-                      _isSecondInfoSignup = false;
-                      _isThirdInfoSignup = false;
-                      _isRecovery = false;
-                      _formData.toggleAuthMode();
-                    });
-                    Navigator.of(context).pop();
+                    Navigator.of(ctx).pop();
+                    if (mounted) {
+                      setState(() {
+                        _isFirstInfoSignup = false;
+                        _isSecondInfoSignup = false;
+                        _isThirdInfoSignup = false;
+                        _isRecovery = false;
+                        _formData.toggleAuthMode();
+                      });
+                    }
                   },
-                  child: Text("Fazer login"),
+                  child: const Text("Fazer login"),
                 ),
             ],
           ),
@@ -87,12 +90,17 @@ class _AuthFormState extends State<AuthForm> {
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: Theme.of(context).colorScheme.error,
-      ),
-    );
+    final scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+    if (scaffoldMessenger != null) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    } else {
+      debugPrint("Erro: $msg (ScaffoldMessenger não disponível)");
+    }
   }
 
   bool _validateFields() {
@@ -185,6 +193,7 @@ class _AuthFormState extends State<AuthForm> {
 
   Future<void> _submit([String typeOfLogin = ""]) async {
     setState(() => _isLoading = true);
+    bool hasError = false;
 
     if ((typeOfLogin == "" || typeOfLogin == "Normal")) {
       if (!_validateFields()) {
@@ -202,6 +211,7 @@ class _AuthFormState extends State<AuthForm> {
     try {
       if (!mounted) return;
       setState(() => _isLoading = true);
+
       if (_formData.isLogin && !_isRecovery && typeOfLogin != "") {
         await AuthService().login(
           _formData.email,
@@ -226,26 +236,28 @@ class _AuthFormState extends State<AuthForm> {
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
+
       final errorMessage =
           AuthException.errors[e.code] ?? 'Ocorreu um erro inesperado!';
-      (e.code == "email-already-in-use")
-          ? _showErrorDialog(errorMessage, true)
-          : _showErrorDialog(errorMessage, false);
+      final emailAlreadyExists = e.code == "email-already-in-use";
 
-      setState(() => _isLoading = false);
+      hasError = true;
+      await _showErrorDialog(errorMessage, emailAlreadyExists);
     } catch (error) {
       if (!mounted) return;
-      _showErrorDialog(
-        'Ocorreu um erro inesperado! Contacte o suporte!\n O erro foi o seguinte: $error.message',
+
+      hasError = true;
+      await _showErrorDialog(
+        'Ocorreu um erro inesperado! Contacte o suporte!\n O erro foi o seguinte: $error',
         false,
       );
-      setState(() => _isLoading = false);
     } finally {
       if (!mounted) return;
       setState(() => _isLoading = false);
     }
 
-    if (_isRecovery) {
+    // Diálogo de recuperação de password
+    if (_isRecovery && !hasError) {
       bool? confirmed = await showDialog(
         context: context,
         builder:
@@ -275,8 +287,12 @@ class _AuthFormState extends State<AuthForm> {
       if (confirmed != true) return;
     }
 
-    setState(() => _isLoading = false);
-    Navigator.of(context).pop();
+    // Apenas fecha a página se não houve erro e se for login/signup (não recovery)
+    if (!hasError &&
+        (_formData.isLogin || _formData.isSignup) &&
+        !_isRecovery) {
+      if (mounted) Navigator.of(context).pop();
+    }
   }
 
   Widget getTextFormField(

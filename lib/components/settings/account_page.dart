@@ -32,13 +32,13 @@ class AccountPage extends StatelessWidget {
     );
 
     if (shouldLogout == true) {
+      Provider.of<ManageSectionNotifier>(context, listen: false).setIndex(0);
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         context.read<ChatListNotifier>().clearChats();
         await AuthService().logout();
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil(AppRoutes.AUTH_OR_APP_PAGE, (route) => false);
-        Provider.of<ManageSectionNotifier>(context, listen: false).setIndex(0);
       });
     }
   }

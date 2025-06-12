@@ -142,7 +142,6 @@ class AuthNotifier extends ChangeNotifier {
       final ads =
           adSnapshot.docs.map((adDoc) {
             final adData = adDoc.data();
-            // print(adData);
             return ProductAd.fromJson({
               ...adData,
               'id': adDoc.id,
@@ -152,8 +151,6 @@ class AuthNotifier extends ChangeNotifier {
                 'updatedAt': (adData['updatedAt'] as Timestamp).toDate(),
             });
           }).toList();
-
-      ads.forEach((a) => print(a.toString()));
 
       store.productsAds = ads;
       (currentUser as ProducerUser).stores.add(store);

@@ -32,15 +32,6 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   void initState() {
     super.initState();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final storeService = Provider.of<StoreService>(context, listen: false);
-    print('Total de lojas: ${storeService.allStores.length}');
-    for (final p in authNotifier.producerUsers) {
-      print('Producer: ${p.firstName} com ${p.stores.length} lojas');
-      for (final s in p.stores) {
-        print('  Store: ${s.name} tem ads? ${s.productsAds?.length}');
-      }
-    }
-
     final user = AuthService().currentUser;
     if (user != null) {
       userName = user.firstName;

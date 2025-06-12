@@ -174,10 +174,12 @@ class AuthService {
     String email,
     String password,
     File? image,
-    String gender,
     String phone,
     String recoveryEmail,
     String dateOfBirth,
+    String country,
+    String city,
+    String municipality,
   ) async {
     final signup = await Firebase.initializeApp(
       name: 'userSignup',
@@ -205,12 +207,14 @@ class AuthService {
         credential.user!,
         firstName,
         lastName,
-        gender,
         phone,
         recoveryEmail,
         imageUrl,
         dateOfBirth,
         _isProducer ?? false,
+        country,
+        city,
+        municipality,
       );
       await _saveAppUser(_currentUser!);
 
@@ -327,7 +331,6 @@ class AuthService {
     String? phone,
     String? aboutMe,
     String? dateOfBirth,
-    String? gender,
     String? recoveryEmail,
     String? customIconStatus,
     String? customStatus,
@@ -373,10 +376,6 @@ class AuthService {
     if (dateOfBirth != null) {
       await docRef.update({'dateOfBirth': dateOfBirth});
       _currentUser!.dateOfBirth = dateOfBirth;
-    }
-    if (gender != null) {
-      await docRef.update({'gender': gender});
-      _currentUser!.gender = gender;
     }
     if (recoveryEmail != null) {
       await docRef.update({'recoveryEmail': recoveryEmail});
@@ -429,7 +428,6 @@ class AuthService {
       'firstName': user.firstName,
       'lastName': user.lastName,
       'email': user.email,
-      'gender': user.gender,
       'phone': user.phone,
       'recoveryEmail': user.recoveryEmail,
       'imageUrl': user.imageUrl,
@@ -437,6 +435,9 @@ class AuthService {
       'isProducer': user.isProducer,
       'aboutMe': user.aboutMe,
       'backgroundImageUrl': user.backgroundUrl,
+      'country': user.country,
+      'city': user.city,
+      'municipality': user.municipality,
     });
   }
 
@@ -444,12 +445,14 @@ class AuthService {
     User user, [
     String? firstName,
     String? lastName,
-    String? gender,
     String? phone,
     String? recoveryEmail,
     String? imageUrl,
     String? dateOfBirth,
     bool? isProducer,
+    String? country,
+    String? city,
+    String? municipality,
   ]) {
     final bool producer = isProducer ?? false;
     if (producer) {
@@ -468,11 +471,13 @@ class AuthService {
             "",
         isProducer: true,
         phone: phone ?? '',
-        gender: gender ?? '',
         imageUrl: imageUrl ?? user.photoURL ?? 'assets/images/avatar.png',
         recoveryEmail: recoveryEmail ?? '',
         dateOfBirth: dateOfBirth ?? '',
         baskets: [],
+        country: country ?? '',
+        city: city ?? '',
+        municipality: municipality ?? "",
       );
     } else {
       return ConsumerUser(
@@ -490,7 +495,6 @@ class AuthService {
             "",
         isProducer: false,
         phone: phone ?? '',
-        gender: gender ?? '',
         imageUrl: imageUrl ?? user.photoURL ?? 'assets/images/avatar.png',
         recoveryEmail: recoveryEmail ?? '',
         dateOfBirth: dateOfBirth ?? '',

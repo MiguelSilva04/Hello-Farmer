@@ -13,6 +13,7 @@ import '../exceptions/auth_exception.dart';
 import 'package:flutter/material.dart';
 
 import 'birth_picker.dart';
+import 'country_state_picker.dart';
 
 class AuthForm extends StatefulWidget {
   const AuthForm({super.key});
@@ -30,6 +31,7 @@ class _AuthFormState extends State<AuthForm> {
   bool _isFirstInfoSignup = true;
   bool _isSecondInfoSignup = false;
   bool _isThirdInfoSignup = false;
+  bool _isFourthInfoSignup = false;
 
   bool _isRecovery = false;
 
@@ -50,6 +52,10 @@ class _AuthFormState extends State<AuthForm> {
   String selectedDialCode = '+351';
   String selectedCountryCode = 'PT';
   String selectedFlagEmoji = '🇵🇹';
+
+  String countryValue = '';
+  String municipalityValue = '';
+  String cityValue = '';
 
   void _handleImagePick(File image) {
     _formData.image = image;
@@ -186,6 +192,10 @@ class _AuthFormState extends State<AuthForm> {
         _showError('O email de recuperação precisa de ser preenchido.');
         return false;
       }
+      if (countryValue == "" || cityValue == "" || municipalityValue == "") {
+        _showError('A localidade precisa de ser preenchida toda corretamente.');
+        return false;
+      }
     }
 
     return true;
@@ -226,10 +236,12 @@ class _AuthFormState extends State<AuthForm> {
           _formData.email,
           _formData.password,
           _formData.image,
-          _formData.gender,
           _formData.phone,
           _formData.recoverEmail,
           _formData.dateOfBirth,
+          countryValue,
+          cityValue,
+          municipalityValue,
         );
       } else if (_isRecovery) {
         await AuthService().recoverPassword(_formData.recoverPasswordEmail);
@@ -256,7 +268,6 @@ class _AuthFormState extends State<AuthForm> {
       setState(() => _isLoading = false);
     }
 
-    // Diálogo de recuperação de password
     if (_isRecovery && !hasError) {
       bool? confirmed = await showDialog(
         context: context,
@@ -287,7 +298,6 @@ class _AuthFormState extends State<AuthForm> {
       if (confirmed != true) return;
     }
 
-    // Apenas fecha a página se não houve erro e se for login/signup (não recovery)
     if (!hasError &&
         (_formData.isLogin || _formData.isSignup) &&
         !_isRecovery) {
@@ -531,6 +541,42 @@ class _AuthFormState extends State<AuthForm> {
                       SizedBox(height: 10),
                     ],
                   ],
+                  if (_formData.isSignup && _isFourthInfoSignup) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Localidade:",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ),
+                    SelectState(
+                      iconColor: Theme.of(context).colorScheme.secondary,
+                      dropdownColor:
+                          Theme.of(context).colorScheme.secondaryFixed,
+                      inStyle: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+
+                      onCountryChanged: (value) {
+                        setState(() {
+                          countryValue = value;
+                        });
+                      },
+                      onStateChanged: (value) {
+                        setState(() {
+                          municipalityValue = value;
+                        });
+                      },
+                      onCityChanged: (value) {
+                        setState(() {
+                          cityValue = value;
+                        });
+                      },
+                    ),
+                  ],
                   if (_formData.isLogin && !_isRecovery ||
                       (_formData.isSignup && _isSecondInfoSignup)) ...[
                     getTextFormField(
@@ -633,26 +679,6 @@ class _AuthFormState extends State<AuthForm> {
                                 : MainAxisAlignment.center,
                         children: [
                           if (_formData.isSignup || _formData.isLogin)
-                            // Opacity(
-                            //   opacity:
-                            //       _isSecondInfoSignup || _isThirdInfoSignup
-                            //           ? 1
-                            //           : 0,
-                            //   child: IconButton(
-                            //     onPressed:
-                            //         () => setState(() {
-                            //           if (_isSecondInfoSignup) {
-                            //             _isSecondInfoSignup = false;
-                            //             _isFirstInfoSignup = true;
-                            //           } else if (_isThirdInfoSignup) {
-                            //             _isThirdInfoSignup = false;
-                            //             _isSecondInfoSignup = true;
-                            //           }
-                            //         }),
-                            //     icon: Icon(Icons.arrow_circle_left_rounded),
-                            //     alignment: Alignment.centerRight,
-                            //   ),
-                            // ),
                             InkWell(
                               onTap: () {
                                 if (_formData.isSignup && _isFirstInfoSignup) {
@@ -665,6 +691,12 @@ class _AuthFormState extends State<AuthForm> {
                                   setState(() {
                                     _isSecondInfoSignup = false;
                                     _isThirdInfoSignup = true;
+                                  });
+                                } else if (_formData.isSignup &&
+                                    _isThirdInfoSignup) {
+                                  setState(() {
+                                    _isThirdInfoSignup = false;
+                                    _isFourthInfoSignup = true;
                                   });
                                 } else {
                                   _formData.isSignup
@@ -688,10 +720,10 @@ class _AuthFormState extends State<AuthForm> {
                                       _formData.isLogin && !_isRecovery
                                           ? 'Entrar'
                                           : _formData.isSignup &&
-                                              _isThirdInfoSignup
+                                              _isFourthInfoSignup
                                           ? 'Criar Conta'
                                           : _formData.isSignup &&
-                                              !_isThirdInfoSignup
+                                              !_isFourthInfoSignup
                                           ? 'Continuar'
                                           : "Recuperar Senha",
                                       style: TextStyle(
@@ -898,6 +930,11 @@ class _AuthFormState extends State<AuthForm> {
                         setState(() {
                           _isFirstInfoSignup = true;
                           _isSecondInfoSignup = false;
+                        });
+                      } else if (_formData.isSignup && _isFourthInfoSignup) {
+                        setState(() {
+                          _isThirdInfoSignup = true;
+                          _isFourthInfoSignup = false;
                         });
                       } else {
                         Navigator.of(context).pop();

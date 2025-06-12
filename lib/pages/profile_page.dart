@@ -510,7 +510,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          _buildTextField("Morada", user!.address),
+          _buildTextField("Cidade", user!.city ?? ""),
 
           Align(
             alignment: Alignment.centerLeft,
@@ -618,7 +618,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder:
-                        (ctx) => StorePage(store: (user as ProducerUser).stores.first),
+                        (ctx) => StorePage(
+                          store: (user as ProducerUser).stores.first,
+                        ),
                   ),
                 ),
             child: Row(

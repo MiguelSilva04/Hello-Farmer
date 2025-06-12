@@ -14,6 +14,8 @@ class SelectState extends StatefulWidget {
   final ValueChanged<String> onStateChanged;
   final ValueChanged<String> onCityChanged;
   final TextStyle? style;
+  final TextStyle? inStyle;
+  final Color? iconColor;
   final Color? dropdownColor;
 
   const SelectState({
@@ -22,7 +24,9 @@ class SelectState extends StatefulWidget {
     required this.onStateChanged,
     required this.onCityChanged,
     this.style,
+    this.inStyle,
     this.dropdownColor,
+    this.iconColor,
   }) : super(key: key);
 
   @override
@@ -42,7 +46,8 @@ class _SelectStateState extends State<SelectState> {
   void initState() {
     getCounty();
     super.initState();
-    getCountryFromPhone(AuthService().currentUser!.phone);
+    if (AuthService().currentUser != null)
+      getCountryFromPhone(AuthService().currentUser!.phone);
   }
 
   Future<void> getCountryFromPhone(String phone) async {
@@ -179,6 +184,8 @@ class _SelectStateState extends State<SelectState> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         DropdownButton<String>(
+          iconEnabledColor: widget.iconColor,
+          style: widget.style,
           dropdownColor: widget.dropdownColor,
           isExpanded: true,
           items:
@@ -186,7 +193,17 @@ class _SelectStateState extends State<SelectState> {
                 return DropdownMenuItem<String>(
                   value: dropDownStringItem,
                   child: Row(
-                    children: [Text(dropDownStringItem, style: widget.style)],
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            dropDownStringItem,
+                            style: widget.inStyle,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }).toList(),
@@ -194,26 +211,54 @@ class _SelectStateState extends State<SelectState> {
           value: _selectedCountry,
         ),
         DropdownButton<String>(
+          iconEnabledColor: widget.iconColor,
+          style: widget.style,
           dropdownColor: widget.dropdownColor,
           isExpanded: true,
           items:
               _states.map((String dropDownStringItem) {
                 return DropdownMenuItem<String>(
                   value: dropDownStringItem,
-                  child: Text(dropDownStringItem, style: widget.style),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            dropDownStringItem,
+                            style: widget.inStyle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }).toList(),
           onChanged: (value) => _onSelectedState(value!),
           value: _selectedState,
         ),
         DropdownButton<String>(
+          iconEnabledColor: widget.iconColor,
+          style: widget.style,
           dropdownColor: widget.dropdownColor,
           isExpanded: true,
           items:
               _cities.map((String dropDownStringItem) {
                 return DropdownMenuItem<String>(
                   value: dropDownStringItem,
-                  child: Text(dropDownStringItem, style: widget.style),
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            dropDownStringItem,
+                            style: widget.inStyle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               }).toList(),
           onChanged: (value) => _onSelectedCity(value!),

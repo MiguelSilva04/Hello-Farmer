@@ -22,7 +22,7 @@ class _ExplorePageState extends State<ExplorePage> {
   String _searchText = '';
   String _categoryText = '';
   String? _selectedKeyword;
-  String _selectedCity = AuthService().currentUser!.city;
+  String _selectedCity = AuthService().currentUser!.city ?? "";
   TextEditingController searchEditingController = TextEditingController();
   double _minPrice = 0;
   double _maxPrice = 30;
@@ -122,7 +122,6 @@ class _ExplorePageState extends State<ExplorePage> {
             )
             .expand((producer) => producer.stores[selectedIndex].productsAds!)
             .where((ad) {
-              print("Anuncio: $ad");
               final product = ad.product;
 
               if (_searchText == "Season") {
@@ -254,7 +253,6 @@ class _ExplorePageState extends State<ExplorePage> {
                     ad,
                     authNotifier.producerUsers,
                   );
-                  print(producer);
 
                   final keywordMap = {
                     for (var k in Keywords.keywords) k.name: k.icon,
@@ -761,7 +759,7 @@ class _ExplorePageState extends State<ExplorePage> {
       _searchText = "";
       _categoryText = '';
       _selectedKeyword = null;
-      _selectedCity = AuthService().currentUser!.city;
+      _selectedCity = AuthService().currentUser!.city ?? "";
       searchEditingController;
       _minPrice = 0;
       _maxPrice = 30;

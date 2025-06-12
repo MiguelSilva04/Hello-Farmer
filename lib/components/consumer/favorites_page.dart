@@ -36,16 +36,17 @@ class _FavoritesPageState extends State<FavoritesPage> {
   void loadFavorites() {
     final favoritesIds = favoritesProductsIds;
 
-    final allAds = AuthService().users.whereType<ProducerUser>().expand(
-      (producer) =>
-          producer
-              .stores[Provider.of<AuthNotifier>(
-                context,
-                listen: false,
-              ).selectedStoreIndex]
-              .productsAds ??
-          [],
-    );
+    final selectedIndex = Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
+
+    final allAds = AuthService().users
+    .whereType<ProducerUser>()
+    .expand((producer) {
+      if (producer.stores.isNotEmpty && selectedIndex < producer.stores.length) {
+        return producer.stores[selectedIndex].productsAds ?? [];
+      } else {
+        return <ProductAd>[];
+      }
+    });
 
     final uniqueFavorites = {
       for (var ad in allAds)

@@ -34,15 +34,12 @@ class StoreService with ChangeNotifier {
 
       final ads =
           adsSnapshot.docs.map((adDoc) {
-            print(adDoc.data());
             return ProductAd.fromJson(adDoc.data());
           }).toList();
 
       store.productsAds = ads;
 
       _allStores.add(store);
-
-      print('Store: ${store.name} tem ads? ${ads.length}');
     }
 
     notifyListeners();

@@ -15,77 +15,81 @@ class OffersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final producers = AuthService().users.whereType<ProducerUser>().toList();
     final allOffers = (AuthService().currentUser as ConsumerUser).offers;
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: allOffers!.length,
-      itemBuilder: (context, index) {
-        final offer = allOffers[index];
-        final ad = producers
-            .expand(
+    return (allOffers != null)
+        ? ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: allOffers!.length,
+          itemBuilder: (context, index) {
+            final offer = allOffers[index];
+            final ad = producers
+                .expand(
+                  (p) =>
+                      p
+                          .stores[Provider.of<AuthNotifier>(
+                            context,
+                            listen: false,
+                          ).selectedStoreIndex]
+                          .productsAds ??
+                      [],
+                )
+                .firstWhere((a) => a.id == offer.productAdId);
+
+            final producer = producers.firstWhere(
               (p) =>
                   p
                       .stores[Provider.of<AuthNotifier>(
                         context,
                         listen: false,
                       ).selectedStoreIndex]
-                      .productsAds ??
-                  [],
-            )
-            .firstWhere((a) => a.id == offer.productAdId);
+                      .productsAds
+                      ?.any((prodAd) => prodAd.id == ad.id) ??
+                  false,
+            );
 
-        final producer = producers.firstWhere(
-          (p) =>
-              p
-                  .stores[Provider.of<AuthNotifier>(
-                    context,
-                    listen: false,
-                  ).selectedStoreIndex]
-                  .productsAds
-                  ?.any((prodAd) => prodAd.id == ad.id) ??
-              false,
-        );
-
-        return Column(
-          children: [
-            ListTile(
-              contentPadding: const EdgeInsets.all(10),
-              leading: Container(
-                width: 60,
-                height: 120,
-                child: Image.asset(offer.discountValue.imagePath),
-              ),
-              title: Text(
-                ad.product.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Oferta: ${offer.discountValue.toDisplayString()}'),
-                  const SizedBox(height: 4),
-                  Text('Produtor: ${producer.firstName} ${producer.lastName}'),
-                ],
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-              onTap:
-                  () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:
-                          (ctx) => ProductAdDetailScreen(
-                            ad: ad,
-                            producer: producer,
-                            promotion: offer.value,
-                          ),
+            return Column(
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.all(10),
+                  leading: Container(
+                    width: 60,
+                    height: 120,
+                    child: Image.asset(offer.discountValue.imagePath),
+                  ),
+                  title: Text(
+                    ad.product.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
                   ),
-            ),
-            const Divider(),
-          ],
-        );
-      },
-    );
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Oferta: ${offer.discountValue.toDisplayString()}'),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Produtor: ${producer.firstName} ${producer.lastName}',
+                      ),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                  onTap:
+                      () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder:
+                              (ctx) => ProductAdDetailScreen(
+                                ad: ad,
+                                producer: producer,
+                                promotion: offer.value,
+                              ),
+                        ),
+                      ),
+                ),
+                const Divider(),
+              ],
+            );
+          },
+        )
+        : Center(child: Text("Sem ofertas"));
   }
 }

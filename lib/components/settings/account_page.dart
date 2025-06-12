@@ -32,7 +32,7 @@ class AccountPage extends StatelessWidget {
     );
 
     if (shouldLogout == true) {
-      Provider.of<ManageSectionNotifier>(context, listen: false).setIndex(0);
+      // Provider.of<ManageSectionNotifier>(context, listen: false).setIndex(0);
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         context.read<ChatListNotifier>().clearChats();
         await AuthService().logout();
@@ -89,7 +89,7 @@ class AccountPage extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
               ),
               Text(
-                "${currentUser.taxpayerNumber!}",
+                "${currentUser.taxpayerNumber ?? ""}",
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
               ),
             ],
@@ -99,11 +99,11 @@ class AccountPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Morada",
+                "Cidade",
                 style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
               ),
               Text(
-                "${currentUser.address}",
+                "${currentUser.city}",
                 style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
               ),
             ],

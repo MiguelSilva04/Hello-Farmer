@@ -1,5 +1,11 @@
+class ProductRegist {
+  String productAdId;
+  int quantity;
+  ProductRegist({required this.productAdId, required this.quantity});
+}
+
 class ShoppingCart {
-  List<Map<String, int>>? productsQty;
+  List<ProductRegist>? productsQty;
   int? totalPrice;
 
   ShoppingCart({this.productsQty, this.totalPrice});

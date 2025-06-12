@@ -27,7 +27,7 @@ class AnalysisReportsSection extends StatelessWidget {
       // Soma a quantidade total vendida em todos os pedidos
       double totalVendido = 0.0;
       for (var order in orders) {
-        for (var produtoAd in order.productsAds) {
+        for (var produtoAd in order.ordersItems) {
           totalVendido += produtoAd.qty;
         }
       }
@@ -334,7 +334,7 @@ class AnalysisReportsSection extends StatelessWidget {
       DateTime? lastOrderDate;
 
       for (var order in orders) {
-        final hasProduct = order.productsAds.any((p) {
+        final hasProduct = order.ordersItems.any((p) {
           final finalProductAd =
               (AuthService().currentUser! as ProducerUser)
                   .stores[Provider.of<AuthNotifier>(

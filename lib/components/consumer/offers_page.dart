@@ -18,7 +18,7 @@ class OffersPage extends StatelessWidget {
     return (allOffers != null)
         ? ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: allOffers!.length,
+          itemCount: allOffers.length,
           itemBuilder: (context, index) {
             final offer = allOffers[index];
             final ad = producers

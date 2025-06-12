@@ -242,6 +242,7 @@ class _AuthFormState extends State<AuthForm> {
           countryValue,
           cityValue,
           municipalityValue,
+          []
         );
       } else if (_isRecovery) {
         await AuthService().recoverPassword(_formData.recoverPasswordEmail);

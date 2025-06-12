@@ -128,7 +128,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                   Expanded(
                     child: Builder(
                       builder: (context) {
-                        final products = order.productsAds;
+                        final products = order.ordersItems;
                         final productCount = products.length;
 
                         double imageSize;

@@ -30,7 +30,7 @@ class OrderDetailsPage extends StatelessWidget {
         order.deliveryDate != null
             ? DateFormat.yMMMEd('pt_PT').format(order.deliveryDate!)
             : null;
-    final products = order.productsAds;
+    final products = order.ordersItems;
     final deliveryMethod =
         (AuthService().users
                     .whereType<ProducerUser>()

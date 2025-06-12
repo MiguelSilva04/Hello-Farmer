@@ -171,7 +171,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
       final Map<String, ProductStats> statsMap = {};
 
       for (final order in orders) {
-        for (final ad in order.productsAds) {
+        for (final ad in order.ordersItems) {
           final productAd =
               currentStore.productsAds!
                   .where((p) => p.id == ad.produtctAdId)

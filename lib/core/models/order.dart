@@ -28,7 +28,7 @@ class Order {
   DateTime? deliveryDate;
   final String address;
   final OrderState state;
-  final List<OrderItem> productsAds;
+  final List<OrderItem> ordersItems;
   final double totalPrice;
   final String consumerId;
   final String producerId;
@@ -39,7 +39,7 @@ class Order {
     required this.deliveryDate,
     required this.address,
     required this.state,
-    required this.productsAds,
+    required this.ordersItems,
     required this.totalPrice,
     required this.consumerId,
     required this.producerId,

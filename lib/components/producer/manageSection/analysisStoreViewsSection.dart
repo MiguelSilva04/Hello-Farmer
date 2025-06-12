@@ -570,7 +570,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                       show: true,
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.3),
+                      ).colorScheme.primary.withValues(alpha: 0.3),
                     ),
                   ),
                 ],

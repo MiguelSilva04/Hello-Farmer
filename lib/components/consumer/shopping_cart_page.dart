@@ -34,7 +34,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   @override
   void initState() {
     super.initState();
-    cart = (AuthService().currentUser as ConsumerUser).shoppingCart;
+    cart = (AuthService().currentUser as ConsumerUser).shoppingCart ?? ShoppingCart();
     users = AuthService().users;
     finder = ProductAdFinder(users);
     productAdQuantities = {};
@@ -118,9 +118,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   }
 
   void _updateCartFromState() {
-    final List<Map<String, int>> updatedList = [];
+    final List<ProductRegist> updatedList = [];
     productAdQuantities.forEach((ad, qty) {
-      updatedList.add({ad.id: qty});
+      updatedList.add(ProductRegist(productAdId: ad.id, quantity: qty));
     });
 
     cart.productsQty = updatedList;
@@ -340,7 +340,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                 elevation: 8,
                 shadowColor: Theme.of(
                   context,
-                ).colorScheme.primary.withOpacity(0.5),
+                ).colorScheme.primary.withValues(alpha: 0.5),
               ),
               onPressed: () {
                 ScaffoldMessenger.of(

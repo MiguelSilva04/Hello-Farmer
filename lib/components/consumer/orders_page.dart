@@ -251,7 +251,7 @@ class _OrdersPageState extends State<OrdersPage> {
                 itemBuilder: (context, index) {
                   final Order order = filteredOrders[index];
                   final ordersAds =
-                      order.productsAds
+                      order.ordersItems
                           .map(
                             (ad) => allAds.firstWhere(
                               (a) => a.id == ad.produtctAdId,

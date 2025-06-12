@@ -5,7 +5,6 @@ import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
-import 'package:harvestly/core/services/auth/store_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/categories.dart';
@@ -337,7 +336,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              userStore?.city ?? 'Cidade desconhecida',
+              user.city ?? 'Cidade desconhecida',
               style: const TextStyle(fontSize: 10),
             ),
             Row(

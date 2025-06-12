@@ -67,7 +67,7 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
       }
 
       for (var order in deliveredOrders) {
-        for (var ad in order.productsAds) {
+        for (var ad in order.ordersItems) {
           final productAd =
               currentStore.productsAds!
                   .where((p) => p.id == ad.produtctAdId)

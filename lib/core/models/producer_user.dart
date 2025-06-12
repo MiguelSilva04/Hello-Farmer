@@ -1,12 +1,7 @@
-// import 'package:harvestly/core/models/product.dart';
-
 import '../services/auth/store_service.dart';
 import 'app_user.dart';
 import 'basket.dart';
-// import 'order.dart';
-// import 'product_ad.dart';
 import 'store.dart';
-// import 'review.dart';
 
 class ProducerUser extends AppUser {
   final String? billingAddress;
@@ -30,7 +25,8 @@ class ProducerUser extends AppUser {
     super.backgroundUrl,
     super.aboutMe,
     required this.baskets,
-  }) : billingAddress = "Rua Principal, 458\n2000-789 Santarém, Portugal";
+    this.billingAddress,
+  });
   factory ProducerUser.fromMap(Map<String, dynamic> map) {
     return ProducerUser(
       id: map['id'] as String,
@@ -47,6 +43,7 @@ class ProducerUser extends AppUser {
               ?.map((e) => Basket.fromMap(e as Map<String, dynamic>))
               .toList() ??
           [],
+      billingAddress: map['billingAddress'] as String?,
     );
   }
 
@@ -56,6 +53,9 @@ class ProducerUser extends AppUser {
       email: json['email'] as String,
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
+      country: json['country'] as String,
+      city: json['city'] as String,
+      municipality: json['municipality'] as String,
       isProducer: json['isProducer'] as bool,
       phone: json['phone'] as String,
       imageUrl: json['imageUrl'] as String,

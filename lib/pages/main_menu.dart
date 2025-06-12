@@ -341,11 +341,9 @@ class _MainMenuState extends State<MainMenu>
                     padding: const EdgeInsets.all(8.0),
                     child: Badge.count(
                       count:
-                          (user as ConsumerUser)
-                              .shoppingCart
-                              .productsQty
-                              ?.length ??
-                          0,
+                          ((user as ConsumerUser).shoppingCart != null)
+                              ? user.shoppingCart!.productsQty!.length
+                              : 0,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Icon(Icons.shopping_cart_rounded),

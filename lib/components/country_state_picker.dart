@@ -180,92 +180,98 @@ class _SelectStateState extends State<SelectState> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        DropdownButton<String>(
-          iconEnabledColor: widget.iconColor,
-          style: widget.style,
-          dropdownColor: widget.dropdownColor,
-          isExpanded: true,
-          items:
-              _country.map((String dropDownStringItem) {
-                return DropdownMenuItem<String>(
-                  value: dropDownStringItem,
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            dropDownStringItem,
-                            style: widget.inStyle,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(50)
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          DropdownButton<String>(
+            iconEnabledColor: widget.iconColor,
+            style: widget.style,
+            dropdownColor: widget.dropdownColor,
+            isExpanded: true,
+            items:
+                _country.map((String dropDownStringItem) {
+                  return DropdownMenuItem<String>(
+                    value: dropDownStringItem,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              dropDownStringItem,
+                              style: widget.inStyle,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-          onChanged: (value) => _onSelectedCountry(value!),
-          value: _selectedCountry,
-        ),
-        DropdownButton<String>(
-          iconEnabledColor: widget.iconColor,
-          style: widget.style,
-          dropdownColor: widget.dropdownColor,
-          isExpanded: true,
-          items:
-              _states.map((String dropDownStringItem) {
-                return DropdownMenuItem<String>(
-                  value: dropDownStringItem,
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            dropDownStringItem,
-                            style: widget.inStyle,
+                      ],
+                    ),
+                  );
+                }).toList(),
+            onChanged: (value) => _onSelectedCountry(value!),
+            value: _selectedCountry,
+          ),
+          DropdownButton<String>(
+            iconEnabledColor: widget.iconColor,
+            style: widget.style,
+            dropdownColor: widget.dropdownColor,
+            isExpanded: true,
+            items:
+                _states.map((String dropDownStringItem) {
+                  return DropdownMenuItem<String>(
+                    value: dropDownStringItem,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              dropDownStringItem,
+                              style: widget.inStyle,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-          onChanged: (value) => _onSelectedState(value!),
-          value: _selectedState,
-        ),
-        DropdownButton<String>(
-          iconEnabledColor: widget.iconColor,
-          style: widget.style,
-          dropdownColor: widget.dropdownColor,
-          isExpanded: true,
-          items:
-              _cities.map((String dropDownStringItem) {
-                return DropdownMenuItem<String>(
-                  value: dropDownStringItem,
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            dropDownStringItem,
-                            style: widget.inStyle,
+                      ],
+                    ),
+                  );
+                }).toList(),
+            onChanged: (value) => _onSelectedState(value!),
+            value: _selectedState,
+          ),
+          DropdownButton<String>(
+            iconEnabledColor: widget.iconColor,
+            style: widget.style,
+            dropdownColor: widget.dropdownColor,
+            isExpanded: true,
+            items:
+                _cities.map((String dropDownStringItem) {
+                  return DropdownMenuItem<String>(
+                    value: dropDownStringItem,
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              dropDownStringItem,
+                              style: widget.inStyle,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-          onChanged: (value) => _onSelectedCity(value!),
-          value: _selectedCity,
-        ),
-        SizedBox(height: 10.0),
-      ],
+                      ],
+                    ),
+                  );
+                }).toList(),
+            onChanged: (value) => _onSelectedCity(value!),
+            value: _selectedCity,
+          ),
+          SizedBox(height: 10.0),
+        ],
+      ),
     );
   }
 }

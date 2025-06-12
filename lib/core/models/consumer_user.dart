@@ -3,11 +3,13 @@ import 'package:harvestly/core/models/shopping_cart.dart';
 
 import 'app_user.dart';
 import 'offer.dart';
+import 'order.dart';
 
 class ConsumerUser extends AppUser {
   List<Offer>? offers;
-  ShoppingCart shoppingCart = ShoppingCart();
+  ShoppingCart? shoppingCart;
   List<String>? favouritesProductsIds;
+  List<Order>? orders;
 
   ConsumerUser({
     required super.id,
@@ -17,83 +19,15 @@ class ConsumerUser extends AppUser {
     required super.isProducer,
     required super.phone,
     required super.imageUrl,
+    required super.country,
+    required super.city,
+    required super.municipality,
     super.recoveryEmail,
     super.dateOfBirth,
     this.offers,
+    this.shoppingCart,
+    this.orders,
   });
-  // }) : favouritesProductsIds = ["idCenteio", "idTrigo"],
-  //      offers = [
-  //        Offer(
-  //          id: 'offer1',
-  //          discountValue: DiscountValue.TEN,
-  //          productAdId: "idCenteio",
-  //          startDate: DateTime.now().subtract(Duration(days: 2)),
-  //          endDate: DateTime.now().add(Duration(days: 5)),
-  //        ),
-  //        Offer(
-  //          id: 'offer2',
-  //          discountValue: DiscountValue.FIFTY,
-  //          productAdId: "idTrigo",
-  //          startDate: DateTime.now().subtract(Duration(days: 1)),
-  //          endDate: DateTime.now().add(Duration(days: 10)),
-  //        ),
-  //        Offer(
-  //          id: 'offer3',
-  //          discountValue: DiscountValue.TWENTY_FIVE,
-  //          productAdId: "idCenourasBaby",
-  //          startDate: DateTime.now().subtract(Duration(days: 3)),
-  //          endDate: DateTime.now().add(Duration(days: 7)),
-  //        ),
-  //        Offer(
-  //          id: 'offer4',
-  //          discountValue: DiscountValue.FIVE,
-  //          productAdId: "idAlfaceRomana",
-  //          startDate: DateTime.now().subtract(Duration(days: 4)),
-  //          endDate: DateTime.now().add(Duration(days: 8)),
-  //        ),
-  //        Offer(
-  //          id: 'offer5',
-  //          discountValue: DiscountValue.NINETY,
-  //          productAdId: "idOvos",
-  //          startDate: DateTime.now().subtract(Duration(days: 5)),
-  //          endDate: DateTime.now().add(Duration(days: 12)),
-  //        ),
-  //        Offer(
-  //          id: 'offer6',
-  //          discountValue: DiscountValue.TEN,
-  //          productAdId: "idCenteio",
-  //          startDate: DateTime.now().subtract(Duration(days: 6)),
-  //          endDate: DateTime.now().add(Duration(days: 15)),
-  //        ),
-  //        Offer(
-  //          id: 'offer7',
-  //          discountValue: DiscountValue.TWENTY_FIVE,
-  //          productAdId: "idTomateCherry",
-  //          startDate: DateTime.now().subtract(Duration(days: 7)),
-  //          endDate: DateTime.now().add(Duration(days: 9)),
-  //        ),
-  //        Offer(
-  //          id: 'offer8',
-  //          discountValue: DiscountValue.FIFTY,
-  //          productAdId: "idOvos",
-  //          startDate: DateTime.now().subtract(Duration(days: 8)),
-  //          endDate: DateTime.now().add(Duration(days: 11)),
-  //        ),
-  //        Offer(
-  //          id: 'offer9',
-  //          discountValue: DiscountValue.FIVE,
-  //          productAdId: "idAlfaceRomana",
-  //          startDate: DateTime.now().subtract(Duration(days: 9)),
-  //          endDate: DateTime.now().add(Duration(days: 13)),
-  //        ),
-  //        Offer(
-  //          id: 'offer10',
-  //          discountValue: DiscountValue.SEVENTY_FIVE,
-  //          productAdId: "idTrigo",
-  //          startDate: DateTime.now().subtract(Duration(days: 10)),
-  //          endDate: DateTime.now().add(Duration(days: 14)),
-  //        ),
-  //      ];
 
   factory ConsumerUser.fromMap(Map<String, dynamic> map) {
     return ConsumerUser(
@@ -101,11 +35,17 @@ class ConsumerUser extends AppUser {
       email: map['email'] as String,
       firstName: map['firstName'] as String,
       lastName: map['lastName'] as String,
+      country: map['country'] as String,
+      city: map['city'] as String,
+      municipality: map['municipality'] as String,
       isProducer: map['isProducer'] as bool,
       phone: map['phone'] as String,
       imageUrl: map['imageUrl'] as String,
       recoveryEmail: map['recoveryEmail'] as String?,
       dateOfBirth: map['dateOfBirth'] as String?,
+      offers: map['offers'] as List<Offer>?,
+      shoppingCart: map['shoppingCart'] as ShoppingCart?,
+      orders: map['orders'] as List<Order>?,
     );
   }
 

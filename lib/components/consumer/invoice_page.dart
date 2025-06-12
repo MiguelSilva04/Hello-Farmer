@@ -27,7 +27,7 @@ class InvoicePageConsumer extends StatelessWidget {
           context,
           listen: false,
         ).selectedStoreIndex;
-    final subtotal = order.productsAds.fold<double>(0.0, (sum, item) {
+    final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
       final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(
         (ad) => ad.id == item.produtctAdId,
       );
@@ -172,7 +172,7 @@ class InvoicePageConsumer extends StatelessWidget {
                       ),
                     ],
                   ),
-                  ...order.productsAds.map((item) {
+                  ...order.ordersItems.map((item) {
                     final ad = producer.stores[selectedStoreIndex].productsAds!
                         .firstWhere((ad) => ad.id == item.produtctAdId);
                     final product = ad.product;
@@ -367,7 +367,7 @@ class InvoicePageConsumer extends StatelessWidget {
           listen: false,
         ).selectedStoreIndex;
 
-    final subtotal = order.productsAds.fold<double>(0.0, (sum, item) {
+    final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
       final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(
         (ad) => ad.id == item.produtctAdId,
       );
@@ -410,7 +410,7 @@ class InvoicePageConsumer extends StatelessWidget {
                   pw.TableHelper.fromTextArray(
                     headers: ["Descrição", "Qtd.", "Custo/un."],
                     data:
-                        order.productsAds.map((item) {
+                        order.ordersItems.map((item) {
                           final ad = producer
                               .stores[selectedStoreIndex]
                               .productsAds!

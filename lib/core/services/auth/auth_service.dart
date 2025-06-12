@@ -9,6 +9,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../models/consumer_user.dart';
+import '../../models/offer.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
@@ -180,6 +181,7 @@ class AuthService {
     String country,
     String city,
     String municipality,
+    List<Offer>? offers
   ) async {
     final signup = await Firebase.initializeApp(
       name: 'userSignup',
@@ -215,6 +217,7 @@ class AuthService {
         country,
         city,
         municipality,
+        offers
       );
       await _saveAppUser(_currentUser!);
 
@@ -453,6 +456,7 @@ class AuthService {
     String? country,
     String? city,
     String? municipality,
+    List<Offer>? offers,
   ]) {
     final bool producer = isProducer ?? false;
     if (producer) {
@@ -498,6 +502,10 @@ class AuthService {
         imageUrl: imageUrl ?? user.photoURL ?? 'assets/images/avatar.png',
         recoveryEmail: recoveryEmail ?? '',
         dateOfBirth: dateOfBirth ?? '',
+        country: country ?? '',
+        city: city ?? '',
+        municipality: municipality ?? '',
+        offers: offers ?? [],
       );
     }
   }

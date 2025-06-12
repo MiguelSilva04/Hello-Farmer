@@ -57,7 +57,7 @@ class ChatListNotifier with ChangeNotifier {
   Future<List<Chat>> _fetchLastMessagesForChats(List<Chat> chatList) async {
     return await Future.wait(
       chatList.map((chat) async {
-        final lastMessage = await getLastMessage(chat.id!);
+        final lastMessage = await getLastMessage(chat.id);
         chat.lastMessage = lastMessage;
         return chat;
       }).toList(),
@@ -82,11 +82,8 @@ class ChatListNotifier with ChangeNotifier {
     }
   }
 
-  Future<void> removeChat(Chat chat) async {
-    final currentUser = AuthService().currentUser;
-    if (currentUser != null) {
-      await _chatService.removeMemberFromChat(chat.id!, currentUser.id);
-    }
+  Future<void> removeChat(Chat? chat) async {
+    await _chatService.removeChat(chat);
   }
 
   Future<ChatMessage?> getLastMessage(String chatId) async {

@@ -2,37 +2,52 @@ import 'dart:io';
 import 'package:harvestly/core/models/chat_message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Chat {
+class ChatData {
   String? id;
   String? name;
   String? description;
-  List<String>? adminIds;
-  List<String> membersIds;
+  String? consumerId;
+  String? producerId;
+  String? imageUrl;
+  File? localImageFile;
+  DateTime? createdAt;
+  ChatMessage? lastMessage;
+
+  ChatData({
+    this.id,
+    this.name,
+    this.description,
+    this.consumerId,
+    this.producerId,
+    this.imageUrl,
+    this.localImageFile,
+    this.createdAt,
+    this.lastMessage,
+  });
+}
+
+class Chat {
+  final String id;
+  String? name;
+  String? description;
+  String consumerId;
+  String producerId;
   String? imageUrl;
   File? localImageFile;
   DateTime? createdAt;
   ChatMessage? lastMessage;
 
   Chat({
-    this.id,
+    required this.id,
     this.name,
     this.description,
-    this.adminIds,
-    List<String>? membersIds,
+    required this.consumerId,
+    required this.producerId,
     this.imageUrl,
     this.localImageFile,
     this.createdAt,
     this.lastMessage,
-  }) : membersIds = membersIds ?? [];
-
-  void addMember(String newUserId) {
-    final userAlreadyExists = membersIds.contains(newUserId);
-    if (userAlreadyExists) {
-      print("Erro! Usuário já é membro.");
-      return;
-    }
-    membersIds.add(newUserId);
-  }
+  });
 
   String getName() => name ?? '';
 
@@ -52,7 +67,9 @@ class Chat {
 
     ChatMessage? lastMessage;
     if (data['lastMessage'] != null) {
-      lastMessage = ChatMessage.fromMap(Map<String, dynamic>.from(data['lastMessage']));
+      lastMessage = ChatMessage.fromMap(
+        Map<String, dynamic>.from(data['lastMessage']),
+      );
     }
 
     return Chat(
@@ -61,9 +78,9 @@ class Chat {
       description: data['description'],
       imageUrl: data['imageUrl'],
       createdAt: createdAt,
-      membersIds: List<String>.from(data['membersIds'] ?? []),
-      adminIds: data['adminIds'] != null ? List<String>.from(data['adminIds']) : [],
       lastMessage: lastMessage,
+      consumerId: data['consumerId'],
+      producerId: data['producerId'],
     );
   }
 
@@ -73,9 +90,9 @@ class Chat {
       'description': description,
       'imageUrl': imageUrl,
       'createdAt': createdAt?.toIso8601String(),
-      'membersIds': membersIds,
-      'adminIds': adminIds ?? [],
       'lastMessage': lastMessage?.toMap(),
+      'consumerId': consumerId,
+      'producerId': producerId,
     };
   }
 }

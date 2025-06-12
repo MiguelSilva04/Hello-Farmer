@@ -36,13 +36,19 @@ class _MessagesState extends State<Messages> {
   Future<void> _loadUserEntryDates() async {
     chat = provider!.currentChat;
     if (chat != null) {
-      for (var memberId in chat!.membersIds) {
-        final joinedDate = await provider!.getUserJoinDate(memberId, chat!.id!);
-        if (joinedDate != null) {
-          userEntryDates[memberId] = joinedDate;
-        }
-      }
-      setState(() {});
+      final joinedConsumerDate = await provider!.getUserJoinDate(
+        chat!.consumerId,
+        chat!.id,
+      );
+      final joinedProducerDate = await provider!.getUserJoinDate(
+        chat!.producerId,
+        chat!.id,
+      );
+
+      setState(() {
+        userEntryDates[chat!.consumerId] = joinedConsumerDate!;
+        userEntryDates[chat!.producerId] = joinedProducerDate!;
+      });
     }
   }
 
@@ -110,18 +116,7 @@ class _MessagesState extends State<Messages> {
           );
         }
 
-        // Carregar os userEntryDates dinamicamente
-        if (chat != null && userEntryDates.isEmpty) {
-          for (var memberId in chat!.membersIds) {
-            provider!.getUserJoinDate(memberId, chat!.id!).then((joinedDate) {
-              if (joinedDate != null) {
-                setState(() {
-                  userEntryDates[memberId] = joinedDate;
-                });
-              }
-            });
-          }
-        }
+        _loadUserEntryDates();
 
         for (var entry in userEntryDates.entries) {
           final user = chatUsers.firstWhereOrNull((u) => u.id == entry.key);

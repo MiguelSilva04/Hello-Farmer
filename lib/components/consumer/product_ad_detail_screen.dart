@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 import '../../core/services/auth/auth_notifier.dart';
 
 // ignore: must_be_immutable
-class ProductAdDetailScreen extends StatelessWidget {
+class ProductAdDetailScreen extends StatefulWidget {
   final ProductAd ad;
   final ProducerUser producer;
   int? promotion;
@@ -27,10 +27,20 @@ class ProductAdDetailScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<ProductAdDetailScreen> createState() => _ProductAdDetailScreenState();
+}
+
+class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
+
+  Future<void> addToCart() async {
+    
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final store =
-        producer.stores[Provider.of<AuthNotifier>(
+        widget.producer.stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
         ).selectedStoreIndex];
@@ -58,12 +68,12 @@ class ProductAdDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ProductImageCarousel(imageUrls: ad.product.imageUrl),
+            ProductImageCarousel(imageUrls: widget.ad.product.imageUrl),
             const SizedBox(height: 5),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
-                ad.product.name,
+                widget.ad.product.name,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -74,11 +84,11 @@ class ProductAdDetailScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child:
-                  promotion != null
+                  widget.promotion != null
                       ? Row(
                         children: [
                           Text(
-                            "${ad.product.price.toStringAsFixed(2)} €",
+                            "${widget.ad.product.price.toStringAsFixed(2)} €",
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w500,
@@ -88,7 +98,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            "${(ad.product.price * (1 - promotion! / 100)).toStringAsFixed(2)} €/${ad.product.unit.toDisplayString()}",
+                            "${(widget.ad.product.price * (1 - widget.promotion! / 100)).toStringAsFixed(2)} €/${widget.ad.product.unit.toDisplayString()}",
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
@@ -98,7 +108,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                         ],
                       )
                       : Text(
-                        "${ad.product.price.toStringAsFixed(2)} €/${ad.product.unit.toDisplayString()}",
+                        "${widget.ad.product.price.toStringAsFixed(2)} €/${widget.ad.product.unit.toDisplayString()}",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -108,22 +118,22 @@ class ProductAdDetailScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 16),
-            if (ad.description.isNotEmpty)
+            if (widget.ad.description.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
-                  ad.description,
+                  widget.ad.description,
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
             const SizedBox(height: 16),
-            if (ad.keywords != null && ad.keywords!.isNotEmpty)
+            if (widget.ad.keywords != null && widget.ad.keywords!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Wrap(
                   spacing: 8.0,
                   children:
-                      ad.keywords!.map((k) {
+                      widget.ad.keywords!.map((k) {
                         return Chip(
                           avatar: Icon(
                             keywordMap[k],
@@ -155,7 +165,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                   Wrap(
                     spacing: 8.0,
                     children:
-                        ad
+                        widget.ad
                             .preferredDeliveryMethods(
                               authNotifier.producerUsers,
                             )
@@ -200,7 +210,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                     onTap:
                         () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (ctx) => ProfilePage(producer),
+                            builder: (ctx) => ProfilePage(widget.producer),
                           ),
                         ),
                     child: Row(
@@ -208,14 +218,14 @@ class ProductAdDetailScreen extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(50),
                           child: Image.network(
-                            producer.imageUrl,
+                            widget.producer.imageUrl,
                             width: 20,
                             height: 20,
                             fit: BoxFit.cover,
                           ),
                         ),
                         const SizedBox(width: 5),
-                        Text("${producer.firstName} ${producer.lastName}"),
+                        Text("${widget.producer.firstName} ${widget.producer.lastName}"),
                       ],
                     ),
                   ),
@@ -307,7 +317,7 @@ class ProductAdDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            if (ad.adReviews != null)
+            if (widget.ad.adReviews != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
@@ -328,7 +338,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                         ListView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
-                          itemCount: ad.adReviews!.length,
+                          itemCount: widget.ad.adReviews!.length,
                           itemBuilder:
                               (ctx, i) => Column(
                                 children: [
@@ -339,7 +349,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                                         subtitle: Column(
                                           children: [
                                             Text(
-                                              ad.adReviews![i].description!,
+                                              widget.ad.adReviews![i].description!,
                                               style: TextStyle(fontSize: 16),
                                             ),
                                           ],
@@ -354,7 +364,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                                                             .where(
                                                               (el) =>
                                                                   el.id ==
-                                                                  ad
+                                                                  widget.ad
                                                                       .adReviews![i]
                                                                       .reviewerId,
                                                             )
@@ -376,7 +386,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                                                         .where(
                                                           (el) =>
                                                               el.id ==
-                                                              ad
+                                                              widget.ad
                                                                   .adReviews![i]
                                                                   .reviewerId,
                                                         )
@@ -392,7 +402,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                                                             .where(
                                                               (el) =>
                                                                   el.id ==
-                                                                  ad
+                                                                  widget.ad
                                                                       .adReviews![i]
                                                                       .reviewerId,
                                                             )
@@ -403,7 +413,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                                                             .where(
                                                               (el) =>
                                                                   el.id ==
-                                                                  ad
+                                                                  widget.ad
                                                                       .adReviews![i]
                                                                       .reviewerId,
                                                             )
@@ -418,7 +428,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                                                 ),
                                                 RatingBarIndicator(
                                                   rating:
-                                                      ad.adReviews![i].rating!,
+                                                      widget.ad.adReviews![i].rating!,
                                                   itemBuilder:
                                                       (context, index) => Icon(
                                                         Icons.star,
@@ -441,7 +451,7 @@ class ProductAdDetailScreen extends StatelessWidget {
                                           children: [
                                             Text(
                                               getTimeReviewPosted(
-                                                ad.adReviews![i].dateTime!,
+                                                widget.ad.adReviews![i].dateTime!,
                                               ),
                                             ),
                                           ],

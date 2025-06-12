@@ -20,7 +20,7 @@ class NewChatPage extends StatefulWidget {
 
 class _NewChatPageState extends State<NewChatPage> {
   final _formKey = GlobalKey<FormState>();
-  final _chatData = Chat();
+  final _chatData = ChatData();
   bool _isLoading = false;
 
   void _handleImagePick(File image) {
@@ -35,8 +35,6 @@ class _NewChatPageState extends State<NewChatPage> {
       setState(() => _isLoading = false);
       return;
     }
-    final currentUserId = AuthService().currentUser!.id;
-    _chatData.addMember(currentUserId);
     File image;
     if (_chatData.imageUrl != null) {
       image = File(_chatData.imageUrl!);
@@ -54,9 +52,9 @@ class _NewChatPageState extends State<NewChatPage> {
         .createChat(
           _chatData.name!,
           _chatData.description!,
-          _chatData.membersIds,
           File(_chatData.imageUrl!),
-          [AuthService().currentUser!.id],
+          AuthService().currentUser!.id,
+          "POR DEFINIR"
         )
         .then((chat) {
           setState(() => _isLoading = false);

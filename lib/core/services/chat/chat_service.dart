@@ -39,7 +39,7 @@ class ChatService with ChangeNotifier {
     void Function(List<ChatMessage>) onNewMessages,
   ) {
     if (_currentChat == null) throw Exception('No current chat selected.');
-    listenToChatMessages(_currentChat!.id!, onNewMessages);
+    listenToChatMessages(_currentChat!.id, onNewMessages);
   }
 
   void stopListeningToCurrentChatMessages() {
@@ -102,15 +102,6 @@ class ChatService with ChangeNotifier {
         });
   }
 
-  Future<void> leaveChat(String userId, String chatId) async {
-    await removeMemberFromChat(userId, chatId);
-    if (_currentChat?.id == chatId) {
-      _currentChat = null;
-      _currentUsers = [];
-      notifyListeners();
-    }
-  }
-
   void updateCurrentChat(Chat newChat) {
     _currentChat = newChat;
     loadCurrentChatMembersAndAdmins();
@@ -131,19 +122,8 @@ class ChatService with ChangeNotifier {
     final data = chatDoc.data();
     if (data == null || !data.containsKey('members')) return;
 
-    Map<String, dynamic> membersMap = Map<String, dynamic>.from(
-      data['members'],
-    );
-
-    List<String> membersIds = membersMap.keys.toList();
-    List<String> adminIds =
-        membersMap.entries
-            .where((entry) => entry.value['isAdmin'] == true)
-            .map((entry) => entry.key)
-            .toList();
-
-    _currentChat!.membersIds = membersIds;
-    _currentChat!.adminIds = adminIds;
+    _currentChat!.consumerId = data['consumerId'];
+    _currentChat!.producerId = data['producerId'];
 
     notifyListeners();
   }
@@ -198,9 +178,9 @@ class ChatService with ChangeNotifier {
   Future<Chat> createChat(
     String name,
     String description,
-    List<String> members,
     File? image,
-    List<String> adminIds,
+    String consumerId,
+    String producerId
   ) async {
     final store = FirebaseFirestore.instance;
     final docRef = store.collection('chats').doc();
@@ -216,28 +196,21 @@ class ChatService with ChangeNotifier {
       imageUrl = await snapshot.ref.getDownloadURL();
     }
 
-    Map<String, dynamic> membersMap = {};
-    for (final memberId in members) {
-      membersMap[memberId] = {
-        'joinedIn': dateTime,
-        'isAdmin': adminIds.contains(memberId),
-      };
-    }
-
     await docRef.set({
       'name': name,
       'description': description,
       'imageUrl': imageUrl,
       'createdAt': dateTime,
-      'members': membersMap,
+      'consumerId': consumerId,
+      'producerId': producerId,
     });
 
     final chat = Chat(
       id: docRef.id,
       name: name,
       description: description,
-      adminIds: adminIds,
-      membersIds: members,
+      consumerId: consumerId,
+      producerId: producerId,
       imageUrl: imageUrl,
       createdAt: DateTime.now(),
     );
@@ -248,52 +221,7 @@ class ChatService with ChangeNotifier {
     return chat;
   }
 
-  Future<void> addMemberToChat(String userId) async {
-    if (_currentChat == null) throw Exception('No current chat selected.');
-
-    final chatRef = FirebaseFirestore.instance
-        .collection('chats')
-        .doc(_currentChat!.id);
-
-    await chatRef.update({
-      'members.$userId': {
-        'joinedIn': DateTime.now().toIso8601String(),
-        'isAdmin': false,
-      },
-    });
-
-    _currentChat!.membersIds.add(userId);
-    notifyListeners();
-  }
-
-  Future<void> removeMemberFromChat(String userId, String? chatId) async {
-    if (chatId == null) return;
-
-    final chatRef = FirebaseFirestore.instance.collection('chats').doc(chatId);
-    final chatDoc = await chatRef.get();
-
-    if (!chatDoc.exists) return;
-
-    final data = chatDoc.data();
-    if (data == null || !data.containsKey('members')) return;
-
-    Map<String, dynamic> membersMap = Map<String, dynamic>.from(
-      data['members'],
-    );
-    if (!membersMap.containsKey(userId)) return;
-
-    membersMap.remove(userId);
-
-    await chatRef.update({'members': membersMap});
-
-    _currentUsers.removeWhere((u) => u.id == userId);
-    if (_currentChat != null) {
-      _currentChat!.membersIds.remove(userId);
-      notifyListeners();
-    }
-  }
-
-  Future<void> updateChatInfo(Chat updatedChat) async {
+  Future<void> updateChatInfo(ChatData updatedChat) async {
     final store = FirebaseFirestore.instance;
 
     if (updatedChat.localImageFile != null) {
@@ -326,13 +254,13 @@ class ChatService with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeChat() async {
+  Future<void> removeChat([Chat? chat]) async {
     final store = FirebaseFirestore.instance;
     final storage = FirebaseStorage.instance;
 
     final messagesCollection = store
         .collection('chats')
-        .doc('${_currentChat!.id}')
+        .doc('${chat ?? _currentChat!.id}')
         .collection('messages');
     final messagesSnapshot = await messagesCollection.get();
     for (var doc in messagesSnapshot.docs) {
@@ -399,18 +327,10 @@ class ChatService with ChangeNotifier {
         .map((querySnapshot) {
           return querySnapshot.docs.map((doc) {
             final data = doc.data();
-            final Map<String, dynamic> membersMap = data['members'] ?? {};
-
-            List<String> membersIds = membersMap.keys.toList();
-            List<String> adminIds =
-                membersMap.entries
-                    .where((entry) => entry.value['isAdmin'] == true)
-                    .map((entry) => entry.key)
-                    .toList();
 
             final chat = Chat.fromDocument(doc);
-            chat.membersIds = membersIds;
-            chat.adminIds = adminIds;
+            chat.consumerId = data['consumerId'];
+            chat.producerId = data['producerId'];
 
             return chat;
           }).toList();
@@ -432,64 +352,6 @@ class ChatService with ChangeNotifier {
       }
     }
     return null;
-  }
-
-  Future<void> makeUserAdmin(String userId) async {
-    if (_currentChat == null) throw Exception("No current chat selected.");
-
-    final chatDoc =
-        await FirebaseFirestore.instance
-            .collection('chats')
-            .doc(_currentChat!.id)
-            .get();
-
-    if (!chatDoc.exists) throw Exception("Chat not found.");
-
-    final chatData = chatDoc.data();
-    if (chatData == null || !chatData.containsKey('members')) {
-      throw Exception("No members data found in chat.");
-    }
-
-    final members = chatData['members'] as Map<String, dynamic>;
-
-    if (!members.containsKey(userId)) {
-      throw Exception("User not found in the chat.");
-    }
-
-    members[userId]['isAdmin'] = true;
-
-    await FirebaseFirestore.instance
-        .collection('chats')
-        .doc(_currentChat!.id)
-        .update({'members': members});
-
-    if (!_currentChat!.adminIds!.contains(userId)) {
-      _currentChat!.adminIds!.add(userId);
-      notifyListeners();
-    }
-  }
-
-  Future<void> removeUserAdmin(String userId) async {
-    if (_currentChat == null) throw Exception("No current chat selected.");
-
-    final memberDoc =
-        await FirebaseFirestore.instance
-            .collection('chats')
-            .doc(_currentChat!.id)
-            .collection('members')
-            .doc(userId)
-            .get();
-
-    if (!memberDoc.exists) throw Exception("User not found in chat.");
-
-    if (memberDoc.data()?['isAdmin'] == true) {
-      await memberDoc.reference.update({'isAdmin': false});
-
-      if (_currentChat!.adminIds!.contains(userId)) {
-        _currentChat!.adminIds!.remove(userId);
-        notifyListeners();
-      }
-    }
   }
 
   Future<ChatMessage?> save(String text, AppUser user, String chatId) async {

@@ -121,10 +121,10 @@ class _ChatListPageState extends State<ChatListPage> {
               context,
               listen: false,
             ).updateCurrentChat(chat);
-            Provider.of<ChatService>(
-              context,
-              listen: false,
-            ).updateCurrentUsers(_getListAppUsers(chat));
+            // Provider.of<ChatService>(
+            //   context,
+            //   listen: false,
+            // ).updateCurrentUsers(_getListAppUsers(chat));
             await Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
           },
           leading: CircleAvatar(
@@ -182,11 +182,5 @@ class _ChatListPageState extends State<ChatListPage> {
       return 'Ontem';
     }
     return DateFormat("d MMM y", "pt_PT").format(time);
-  }
-
-  List<AppUser> _getListAppUsers(Chat chat) {
-    return AuthService().users
-        .where((u) => chat.membersIds.contains(u.id))
-        .toList();
   }
 }

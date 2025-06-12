@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../components/chat_settings_form.dart';
-import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_service.dart';
 import '../utils/app_routes.dart';
 
@@ -18,17 +17,6 @@ class _ChatSettingsPageState extends State<ChatSettingsPage> {
   @override
   void initState() {
     super.initState();
-    List<String>? adminIds = ChatService().currentChat!.adminIds;
-    final userId = AuthService().currentUser!.id;
-    if (adminIds == null || adminIds.isEmpty) {
-      ChatService().makeUserAdmin(userId);
-      adminIds = ChatService().currentChat!.adminIds;
-      _isAdmin = true;
-      _isModerator = true;
-    } else {
-      (adminIds.contains(userId)) ? _isAdmin = true : _isAdmin = false;
-      (adminIds.first == userId) ? _isModerator = true : _isModerator = false;
-    }
   }
 
   void _removeChat() {

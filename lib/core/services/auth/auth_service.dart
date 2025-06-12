@@ -11,6 +11,7 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../models/consumer_user.dart';
 import '../../models/offer.dart';
 import '../../models/producer_user.dart';
+import '../../models/product_ad.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
 
@@ -612,6 +613,10 @@ class AuthService {
       print("Erro ao publicar anúncio: $e");
       rethrow;
     }
+  }
+
+  Future<void> addToCart(ProductAd productAd) async{
+    
   }
 
 }

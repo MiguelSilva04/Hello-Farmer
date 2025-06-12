@@ -176,13 +176,14 @@ class _StorePageState extends State<StorePage> {
               ),
               child: Row(
                 children: [
-                  _buildTopButton("Banca", showBanca, () {
-                    setState(() => showBanca = true);
-                  }, isLeft: true),
-                  if (myStore.storeReviews == [])
+                  if (myStore.storeReviews == []) ...[
+                    _buildTopButton("Banca", showBanca, () {
+                      setState(() => showBanca = true);
+                    }, isLeft: true),
                     _buildTopButton("Avaliações", !showBanca, () {
                       setState(() => showBanca = false);
                     }, isLeft: false),
+                  ],
                 ],
               ),
             ),
@@ -243,6 +244,14 @@ class _StorePageState extends State<StorePage> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,
               borderRadius: BorderRadius.only(
+                topLeft:
+                    myStore.storeReviews == []
+                        ? Radius.circular(12)
+                        : Radius.zero,
+                topRight:
+                    myStore.storeReviews == []
+                        ? Radius.circular(12)
+                        : Radius.zero,
                 bottomLeft: Radius.circular(12),
                 bottomRight: Radius.circular(12),
               ),

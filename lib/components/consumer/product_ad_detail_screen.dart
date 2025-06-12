@@ -31,9 +31,12 @@ class ProductAdDetailScreen extends StatefulWidget {
 }
 
 class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
-
-  Future<void> addToCart() async {
-    
+  Future<void> addToCart(double quantity) async {
+    await Provider.of<AuthNotifier>(context,listen: false).addToCart(widget.ad, quantity).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Produto adicionado ao carrinho!')),
+      );
+    });
   }
 
   @override
@@ -225,7 +228,9 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                           ),
                         ),
                         const SizedBox(width: 5),
-                        Text("${widget.producer.firstName} ${widget.producer.lastName}"),
+                        Text(
+                          "${widget.producer.firstName} ${widget.producer.lastName}",
+                        ),
                       ],
                     ),
                   ),
@@ -349,7 +354,10 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                         subtitle: Column(
                                           children: [
                                             Text(
-                                              widget.ad.adReviews![i].description!,
+                                              widget
+                                                  .ad
+                                                  .adReviews![i]
+                                                  .description!,
                                               style: TextStyle(fontSize: 16),
                                             ),
                                           ],
@@ -364,7 +372,8 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                             .where(
                                                               (el) =>
                                                                   el.id ==
-                                                                  widget.ad
+                                                                  widget
+                                                                      .ad
                                                                       .adReviews![i]
                                                                       .reviewerId,
                                                             )
@@ -386,7 +395,8 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                         .where(
                                                           (el) =>
                                                               el.id ==
-                                                              widget.ad
+                                                              widget
+                                                                  .ad
                                                                   .adReviews![i]
                                                                   .reviewerId,
                                                         )
@@ -402,7 +412,8 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                             .where(
                                                               (el) =>
                                                                   el.id ==
-                                                                  widget.ad
+                                                                  widget
+                                                                      .ad
                                                                       .adReviews![i]
                                                                       .reviewerId,
                                                             )
@@ -413,7 +424,8 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                             .where(
                                                               (el) =>
                                                                   el.id ==
-                                                                  widget.ad
+                                                                  widget
+                                                                      .ad
                                                                       .adReviews![i]
                                                                       .reviewerId,
                                                             )
@@ -428,7 +440,10 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                 ),
                                                 RatingBarIndicator(
                                                   rating:
-                                                      widget.ad.adReviews![i].rating!,
+                                                      widget
+                                                          .ad
+                                                          .adReviews![i]
+                                                          .rating!,
                                                   itemBuilder:
                                                       (context, index) => Icon(
                                                         Icons.star,
@@ -451,7 +466,10 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                           children: [
                                             Text(
                                               getTimeReviewPosted(
-                                                widget.ad.adReviews![i].dateTime!,
+                                                widget
+                                                    .ad
+                                                    .adReviews![i]
+                                                    .dateTime!,
                                               ),
                                             ),
                                           ],
@@ -574,7 +592,19 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                         foregroundColor:
                             Theme.of(context).colorScheme.secondary,
                       ),
-                      onPressed: () {},
+                      onPressed:
+                          () => showDialog(
+                            context: context,
+                            builder:
+                                (_) => QuantityDialog(
+                                  onConfirm: (double quantity) {
+                                    addToCart(
+                                      quantity,
+                                    ); // envia quantidade como parâmetro
+                                  },
+                                ),
+                          ),
+
                       icon: Icon(
                         Icons.shopping_cart,
                         color: Theme.of(context).colorScheme.secondary,
@@ -660,6 +690,84 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
               ),
             );
           }),
+        ),
+      ],
+    );
+  }
+}
+
+class QuantityDialog extends StatefulWidget {
+  final void Function(double quantity) onConfirm;
+
+  const QuantityDialog({Key? key, required this.onConfirm}) : super(key: key);
+
+  @override
+  State<QuantityDialog> createState() => _QuantityDialogState();
+}
+
+class _QuantityDialogState extends State<QuantityDialog> {
+  double _quantity = 1.0;
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: '1');
+  }
+
+  void _updateQuantity(double newValue) {
+    setState(() {
+      _quantity = newValue.clamp(1, 999).toDouble(); // Limita entre 1 e 999
+      _controller.text = _quantity.toString();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Escolha a quantidade"),
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.remove),
+            onPressed: () {
+              if (_quantity > 1) _updateQuantity(_quantity - 1);
+            },
+          ),
+          SizedBox(
+            width: 60,
+            child: TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              onChanged: (value) {
+                final parsed = double.tryParse(value);
+                if (parsed != null && parsed > 0) {
+                  _updateQuantity(parsed);
+                }
+              },
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              _updateQuantity(_quantity + 1);
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: const Text("Cancelar"),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        ElevatedButton(
+          child: const Text("Confirmar"),
+          onPressed: () {
+            Navigator.of(context).pop();
+            widget.onConfirm(_quantity);
+          },
         ),
       ],
     );

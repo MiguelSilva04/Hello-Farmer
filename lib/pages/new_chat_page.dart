@@ -50,9 +50,6 @@ class _NewChatPageState extends State<NewChatPage> {
 
     await ChatService()
         .createChat(
-          _chatData.name!,
-          _chatData.description!,
-          File(_chatData.imageUrl!),
           AuthService().currentUser!.id,
           "POR DEFINIR"
         )

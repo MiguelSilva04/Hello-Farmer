@@ -13,7 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/models/app_user.dart';
 import '../core/models/product_ad.dart';
+import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/auth_service.dart';
+import '../core/services/chat/chat_service.dart';
 import '../utils/app_routes.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -309,7 +311,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           image:
-                              _backgroundImage != null
+                              _backgroundImage != null && user != null
                                   ? DecorationImage(
                                     image: FileImage(_backgroundImage!),
                                     fit: BoxFit.cover,
@@ -496,14 +498,16 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
 
           if (_dataChanged)
-            ElevatedButton.icon(
-              onPressed:
-                  () => ScaffoldMessenger(child: Text("Alterações Guardadas!")),
-              icon: Icon(
-                Icons.message,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              label: const Text('Guardar Alterações'),
+            ElevatedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Alterações guardadas com sucesso!')),
+                );
+                setState(() {
+                  _dataChanged = false;
+                });
+              },
+              child: const Text('Guardar Alterações'),
               style: ElevatedButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.secondary,
                 backgroundColor: Theme.of(context).colorScheme.surface,
@@ -629,13 +633,62 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (user!.id != AuthService().currentUser!.id)
           ElevatedButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Provider.of<BottomNavigationNotifier>(
-                context,
-                listen: false,
-              ).setIndex(3);
-            },
+            // onPressed: () => _showStartChatModal(context),
+            onPressed: () {},
+
+            //  async {
+            //   final TextEditingController _messageController =
+            //       TextEditingController();
+            //   final result = await showDialog<String>(
+            //     context: context,
+            //     builder:
+            //         (ctx) => AlertDialog(
+            //           title: Text("Enviar mensagem"),
+            //           content: TextField(
+            //             controller: _messageController,
+            //             decoration: const InputDecoration(
+            //               hintText: "Escreve a tua mensagem...",
+            //             ),
+            //             maxLines: null,
+            //             autofocus: true,
+            //           ),
+            //           actions: [
+            //             TextButton(
+            //               onPressed: () => Navigator.of(ctx).pop(),
+            //               child: const Text("Fechar"),
+            //             ),
+            //             TextButton(
+            //               onPressed: () {
+            //                 Navigator.of(
+            //                   ctx,
+            //                 ).pop(_messageController.text.trim());
+            //               },
+            //               child: const Text("Enviar"),
+            //             ),
+            //           ],
+            //         ),
+            //         if (result != null && result.isNotEmpty) {
+            //             final chatService = Provider.of<ChatService>(
+            //               context,
+            //               listen: false,
+            //             );
+
+            //             final newChat = await chatService.createChat(
+            //               isProducer ? user.id : currentUser!.id,
+            //               isProducer ? currentUser!.id : user.id,
+            //             );
+
+            //             await chatService.save(
+            //               result,
+            //               currentUser!,
+            //               newChat.id,
+            //             );
+
+            //             Navigator.of(context).pop();
+            //             Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+            //           }
+            //   );
+            // },
             icon: Icon(
               Icons.message,
               color: Theme.of(context).colorScheme.secondary,

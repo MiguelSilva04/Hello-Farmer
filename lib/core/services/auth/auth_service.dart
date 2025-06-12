@@ -182,7 +182,7 @@ class AuthService {
     String country,
     String city,
     String municipality,
-    List<Offer>? offers
+    List<Offer>? offers,
   ) async {
     final signup = await Firebase.initializeApp(
       name: 'userSignup',
@@ -218,7 +218,7 @@ class AuthService {
         country,
         city,
         municipality,
-        offers
+        offers,
       );
       await _saveAppUser(_currentUser!);
 
@@ -586,7 +586,9 @@ class AuthService {
       final List<String> imageUrls = [];
 
       for (int i = 0; i < images.length; i++) {
-        final imageRef = _storage.ref().child('stores/$storeId/ads/$adId/image_$i.jpg');
+        final imageRef = _storage.ref().child(
+          'stores/$storeId/ads/$adId/image_$i.jpg',
+        );
         final uploadTask = await imageRef.putFile(images[i]);
         final imageUrl = await uploadTask.ref.getDownloadURL();
         imageUrls.add(imageUrl);
@@ -605,7 +607,7 @@ class AuthService {
         'stock': stock,
         'storeId': storeId,
         'visibility': true,
-        'keywords': keywords
+        'keywords': keywords,
       });
 
       print("Anúncio publicado com sucesso!");
@@ -615,8 +617,45 @@ class AuthService {
     }
   }
 
-  Future<void> addToCart(ProductAd productAd) async{
-    
-  }
+  Future<void> addToCart(ProductAd productAd, double quantity) async {
+    final user = AuthService().currentUser;
+    if (user == null) return;
 
+    final cartsRef = FirebaseFirestore.instance.collection('shoppingCarts');
+
+    final query =
+        await cartsRef.where('ownerId', isEqualTo: user.id).limit(1).get();
+
+    DocumentReference? cartDocRef;
+    Map<String, dynamic> cartData;
+
+    if (query.docs.isEmpty) {
+      cartDocRef = await cartsRef.add({
+        'ownerId': user.id,
+        'createdAt': FieldValue.serverTimestamp(),
+        'productsQty': [
+          {'productAdId': productAd.id, 'quantity': quantity},
+        ],
+      });
+    } else {
+      final doc = query.docs.first;
+      cartDocRef = doc.reference;
+      cartData = doc.data();
+
+      final products = List<Map<String, dynamic>>.from(
+        cartData['productsQty'] ?? [],
+      );
+      final index = products.indexWhere(
+        (p) => p['productAdId'] == productAd.id,
+      );
+
+      if (index != -1) {
+        products[index]['quantity'] += quantity;
+      } else {
+        products.add({'productAdId': productAd.id, 'quantity': quantity});
+      }
+
+      await cartDocRef.update({'productsQty': products});
+    }
+  }
 }

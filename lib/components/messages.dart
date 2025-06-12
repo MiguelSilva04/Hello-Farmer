@@ -30,27 +30,27 @@ class _MessagesState extends State<Messages> {
   void initState() {
     super.initState();
     provider = Provider.of<ChatService>(context, listen: false);
-    _loadUserEntryDates();
+    // _loadUserEntryDates();
   }
 
-  Future<void> _loadUserEntryDates() async {
-    chat = provider!.currentChat;
-    if (chat != null) {
-      final joinedConsumerDate = await provider!.getUserJoinDate(
-        chat!.consumerId,
-        chat!.id,
-      );
-      final joinedProducerDate = await provider!.getUserJoinDate(
-        chat!.producerId,
-        chat!.id,
-      );
+  // Future<void> _loadUserEntryDates() async {
+  //   chat = provider!.currentChat;
+  //   if (chat != null) {
+  //     final joinedConsumerDate = await provider!.getUserJoinDate(
+  //       chat!.consumerId,
+  //       chat!.id,
+  //     );
+  //     final joinedProducerDate = await provider!.getUserJoinDate(
+  //       chat!.producerId,
+  //       chat!.id,
+  //     );
 
-      setState(() {
-        userEntryDates[chat!.consumerId] = joinedConsumerDate!;
-        userEntryDates[chat!.producerId] = joinedProducerDate!;
-      });
-    }
-  }
+  //     setState(() {
+  //       userEntryDates[chat!.consumerId] = joinedConsumerDate!;
+  //       userEntryDates[chat!.producerId] = joinedProducerDate!;
+  //     });
+  //   }
+  // }
 
   bool compareDatesDays(DateTime d1, DateTime d2) {
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
@@ -89,34 +89,13 @@ class _MessagesState extends State<Messages> {
     final chatService = Provider.of<ChatService>(context);
     final currentUser = AuthService().currentUser;
     final chatUsers = chatService.currentUsers ?? [];
-
     return StreamBuilder<List<ChatMessage>>(
       stream: chatService.messagesStream(widget.chatId),
       builder: (ctx, snapshot) {
         final messages = snapshot.data ?? [];
         final List<MapEntry<DateTime, Widget>> timelineEntries = [];
-        final isCurrentUserCreator =
-            chat?.createdAt == userEntryDates[currentUser?.id];
 
-        if (chat != null) {
-          timelineEntries.add(
-            MapEntry(chat!.createdAt!, _buildGroupInfoCard()),
-          );
-
-          final chipText =
-              isCurrentUserCreator ? 'Criaste este grupo' : 'Entraste no grupo';
-          timelineEntries.add(
-            MapEntry(
-              userEntryDates[currentUser?.id] ?? chat!.createdAt!,
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: CustomChip(text: chipText),
-              ),
-            ),
-          );
-        }
-
-        _loadUserEntryDates();
+        // _loadUserEntryDates();
 
         for (var entry in userEntryDates.entries) {
           final user = chatUsers.firstWhereOrNull((u) => u.id == entry.key);
@@ -199,40 +178,5 @@ class _MessagesState extends State<Messages> {
             ? NetworkImage(uri.toString())
             : FileImage(File(uri.toString())) as ImageProvider;
     return CircleAvatar(backgroundImage: imageProvider, radius: 150);
-  }
-
-  Widget _buildGroupInfoCard() {
-    if (chat == null) return SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          children: [
-            SizedBox(height: 10),
-            CircleAvatar(
-              radius: 40,
-              backgroundImage: NetworkImage(chat!.imageUrl!),
-            ),
-            SizedBox(height: 10),
-            Text(
-              chat!.name!,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                chat!.description ?? '',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[700]),
-              ),
-            ),
-            SizedBox(height: 10),
-          ],
-        ),
-      ),
-    );
   }
 }

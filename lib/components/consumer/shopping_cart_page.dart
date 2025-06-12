@@ -25,16 +25,18 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   late Map<ProductAd, int> productAdQuantities;
   Store? store;
   bool multipleStoresDetected = false;
-  late ShoppingCart cart;
+  late ShoppingCart? cart;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   List<MapEntry<ProductAd, int>> productAdEntries = [];
+  late AuthNotifier authNotifier;
 
   @override
   void initState() {
     super.initState();
-    cart = (AuthService().currentUser as ConsumerUser).shoppingCart ?? ShoppingCart();
+    authNotifier = Provider.of(context, listen: false);
+    cart = (authNotifier.currentUser as ConsumerUser).shoppingCart;
     users = AuthService().users;
     finder = ProductAdFinder(users);
     productAdQuantities = {};
@@ -48,26 +50,27 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
 
     Store? detectedStore;
 
-    for (var map in cart.productsQty ?? []) {
-      for (var entry in map.entries) {
-        final productId = entry.key;
-        final qty = entry.value;
-
-        final productAd = finder.findProductAdById(productId, context);
-        final productStore = finder.findStoreByAdId(productId, context);
+    if (cart != null && cart!.productsQty != null)
+      cart!.productsQty!.forEach((product) {
+        final productAd = finder.findProductAdById(
+          product.productAdId,
+          context,
+        );
+        final productStore = finder.findStoreByAdId(
+          product.productAdId,
+          context,
+        );
 
         if (detectedStore == null) {
           detectedStore = productStore;
-        } else if (detectedStore.name != productStore?.name) {
+        } else if (detectedStore!.name != productStore?.name) {
           multipleStoresDetected = true;
-          continue;
         }
 
         if (productAd != null) {
-          productAdQuantities[productAd] = qty;
+          productAdQuantities[productAd] = product.quantity;
         }
-      }
-    }
+      });
 
     store = detectedStore;
 
@@ -76,54 +79,64 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     setState(() {});
   }
 
-  void _removeProduct(ProductAd productAd) {
-    final index = productAdEntries.indexWhere(
-      (entry) => entry.key == productAd,
+  void _changeQuantity(ProductAd productAd, int delta) async {
+    final consumer = authNotifier.currentUser as ConsumerUser;
+
+    int currentIndex = productAdEntries.indexWhere(
+      (entry) => entry.key.id == productAd.id,
     );
-    if (index < 0) return;
+    if (currentIndex == -1) return;
 
-    final removedEntry = productAdEntries[index];
+    final currentQty = productAdQuantities[productAd]!;
+    final newQty = currentQty + delta;
 
-    productAdQuantities.remove(productAd);
-    productAdEntries.removeAt(index);
+    if (newQty <= 0) {
+      _removeProduct(productAd);
+      return;
+    }
 
-    _updateCartFromState();
+    // Atualiza no backend
+    if (delta > 0) {
+      await Provider.of<AuthNotifier>(
+        context,
+        listen: false,
+      ).increaseQuantity(consumer.id, productAd.id);
+    } else {
+      await Provider.of<AuthNotifier>(
+        context,
+        listen: false,
+      ).decreaseQuantity(consumer.id, productAd.id);
+    }
 
-    _listKey.currentState?.removeItem(
-      index,
-      (context, animation) => _buildItem(removedEntry, index, animation),
-      duration: Duration(milliseconds: 300),
-    );
-
-    setState(() {});
+    // Atualiza visualmente
+    setState(() {
+      productAdQuantities[productAd] = newQty;
+      productAdEntries[currentIndex] = MapEntry(productAd, newQty);
+    });
   }
 
-  void _changeQuantity(ProductAd productAd, int delta) {
+  void _removeProduct(ProductAd productAd) async {
+    final consumer = authNotifier.currentUser as ConsumerUser;
     final index = productAdEntries.indexWhere(
-      (entry) => entry.key == productAd,
+      (entry) => entry.key.id == productAd.id,
     );
-    if (index < 0) return;
+    if (index == -1) return;
+
+    await Provider.of<AuthNotifier>(
+      context,
+      listen: false,
+    ).removeProduct(consumer.id, productAd.id);
 
     setState(() {
-      final currentQty = productAdQuantities[productAd] ?? 0;
-      final newQty = currentQty + delta;
-      if (newQty <= 0) {
-        _removeProduct(productAd);
-      } else {
-        productAdQuantities[productAd] = newQty;
-        productAdEntries[index] = MapEntry(productAd, newQty);
-      }
-      _updateCartFromState();
+      productAdQuantities.remove(productAd);
+      productAdEntries.removeAt(index);
+      _listKey.currentState?.removeItem(
+        index,
+        (context, animation) =>
+            _buildItem(MapEntry(productAd, 0), index, animation),
+        duration: Duration(milliseconds: 300),
+      );
     });
-  }
-
-  void _updateCartFromState() {
-    final List<ProductRegist> updatedList = [];
-    productAdQuantities.forEach((ad, qty) {
-      updatedList.add(ProductRegist(productAdId: ad.id, quantity: qty));
-    });
-
-    cart.productsQty = updatedList;
   }
 
   double _calculateTotal() {
@@ -154,7 +167,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             product.imageUrl.isNotEmpty
-                ? Image.asset(
+                ? Image.network(
                   product.imageUrl.first,
                   width: 75,
                   height: 75,
@@ -178,29 +191,27 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                         onTap: () => _changeQuantity(productAd, -1),
                         child: Icon(Icons.remove_circle_outline),
                       ),
-                      const SizedBox(width: 5),
+                      SizedBox(width: 5),
                       Row(
                         children: [
-                          Text(
-                            qty.toString(),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                          AnimatedSwitcher(
+                            duration: Duration(milliseconds: 250),
+                            child: Text(
+                              qty.toString(),
+                              key: ValueKey<int>(qty),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                          Text(
-                            " ${product.unit.toDisplayString()}",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
+                          Text(" ${product.unit.toDisplayString()}"),
                         ],
                       ),
-                      const SizedBox(width: 5),
+                      SizedBox(width: 5),
                       InkWell(
-                        child: Icon(Icons.add_circle_outline),
                         onTap: () => _changeQuantity(productAd, 1),
+                        child: Icon(Icons.add_circle_outline),
                       ),
                     ],
                   ),

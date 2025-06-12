@@ -129,7 +129,6 @@ class _MainMenuState extends State<MainMenu>
         if (!snapshot.hasData) return LoadingPage();
 
         final user = snapshot.data!;
-        print(user.city);
         _profileImageUrl = user.imageUrl;
         return Scaffold(
           appBar: AppBar(

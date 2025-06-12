@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'package:rxdart/rxdart.dart';
 import 'package:harvestly/core/models/chat.dart';
 import 'package:harvestly/core/models/chat_message.dart';
 import 'package:harvestly/core/models/app_user.dart';
@@ -89,13 +89,12 @@ class ChatService with ChangeNotifier {
                     .doc(doc.id)
                     .get();
             if (userDoc.exists) {
-              
-                final userData = userDoc.data()!;
-                if (userData['isProducer'] == true) {
+              final userData = userDoc.data()!;
+              if (userData['isProducer'] == true) {
                 members.add(ProducerUser.fromMap(userData));
-                } else {
+              } else {
                 members.add(ConsumerUser.fromMap(userData));
-                }
+              }
             }
           }
           return members;
@@ -175,31 +174,12 @@ class ChatService with ChangeNotifier {
         });
   }
 
-  Future<Chat> createChat(
-    String name,
-    String description,
-    File? image,
-    String consumerId,
-    String producerId
-  ) async {
+  Future<Chat> createChat(String consumerId, String producerId) async {
     final store = FirebaseFirestore.instance;
     final docRef = store.collection('chats').doc();
     final dateTime = DateTime.now().toIso8601String();
-    String? imageUrl;
-    if (image != null) {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('chat_images')
-          .child('${docRef.id}.jpg');
-      final uploadTask = storageRef.putFile(image);
-      final snapshot = await uploadTask.whenComplete(() {});
-      imageUrl = await snapshot.ref.getDownloadURL();
-    }
 
     await docRef.set({
-      'name': name,
-      'description': description,
-      'imageUrl': imageUrl,
       'createdAt': dateTime,
       'consumerId': consumerId,
       'producerId': producerId,
@@ -207,11 +187,8 @@ class ChatService with ChangeNotifier {
 
     final chat = Chat(
       id: docRef.id,
-      name: name,
-      description: description,
       consumerId: consumerId,
       producerId: producerId,
-      imageUrl: imageUrl,
       createdAt: DateTime.now(),
     );
 
@@ -320,21 +297,37 @@ class ChatService with ChangeNotifier {
   }
 
   Stream<List<Chat>> getMembersChats(String userId) {
-    return FirebaseFirestore.instance
-        .collection('chats')
-        .where('membersIds', arrayContains: userId)
-        .snapshots()
-        .map((querySnapshot) {
-          return querySnapshot.docs.map((doc) {
-            final data = doc.data();
+    final consumerStream =
+        FirebaseFirestore.instance
+            .collection('chats')
+            .where('consumerId', isEqualTo: userId)
+            .snapshots();
 
-            final chat = Chat.fromDocument(doc);
-            chat.consumerId = data['consumerId'];
-            chat.producerId = data['producerId'];
+    final producerStream =
+        FirebaseFirestore.instance
+            .collection('chats')
+            .where('producerId', isEqualTo: userId)
+            .snapshots();
 
-            return chat;
-          }).toList();
-        });
+    return Rx.zip2(consumerStream, producerStream, (
+      QuerySnapshot consumerSnap,
+      QuerySnapshot producerSnap,
+    ) {
+      final allDocs = [...consumerSnap.docs, ...producerSnap.docs];
+
+      // Remover duplicados com base no ID do documento
+      final uniqueDocs = {for (var doc in allDocs) doc.id: doc}.values.toList();
+
+      return uniqueDocs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        final chat = Chat.fromDocument(doc);
+        chat.consumerId = data['consumerId'];
+        chat.producerId = data['producerId'];
+
+        return chat;
+      }).toList();
+    });
   }
 
   Future<DateTime?> getUserJoinDate(String userId, String chatId) async {

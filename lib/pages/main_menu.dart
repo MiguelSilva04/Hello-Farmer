@@ -6,6 +6,7 @@ import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/pages/loading_page.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
@@ -16,6 +17,7 @@ import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/store_service.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/manage_page.dart';
+import '../core/services/other/settings_notifier.dart';
 import '../utils/app_routes.dart';
 import '../components/producer/home_page.dart';
 import '../components/producer/sell_page.dart';
@@ -378,10 +380,30 @@ class _MainMenuState extends State<MainMenu>
                           context,
                         ).currentIndex,
                     onTap: (index) {
-                      Provider.of<BottomNavigationNotifier>(
-                        context,
-                        listen: false,
-                      ).setIndex(index);
+                      if (index == 4 &&
+                          Provider.of<BottomNavigationNotifier>(
+                                context,
+                                listen: false,
+                              ).currentIndex ==
+                              4) {
+                        final manageNotifier =
+                            Provider.of<ManageSectionNotifier>(
+                              context,
+                              listen: false,
+                            );
+
+                        manageNotifier.setIndex(0);
+
+                        Provider.of<BottomNavigationNotifier>(
+                          context,
+                          listen: false,
+                        ).setIndex(index);
+                      } else {
+                        Provider.of<BottomNavigationNotifier>(
+                          context,
+                          listen: false,
+                        ).setIndex(index);
+                      }
                     },
                     items:
                         user is ProducerUser && user.stores.isNotEmpty

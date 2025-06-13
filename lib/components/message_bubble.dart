@@ -4,6 +4,8 @@ import 'package:harvestly/components/bubble_message_special.dart';
 import 'package:harvestly/core/models/chat_message.dart';
 import 'package:flutter/material.dart';
 
+import '../core/services/auth/auth_service.dart';
+
 class MessageBubble extends StatelessWidget {
   static const _defaultImage = 'assets/images/avatar.png';
   final ChatMessage message;
@@ -36,7 +38,7 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final user = AuthService().users.where((u) => u.id == message.userId).first;
+    final user = AuthService().users.where((u) => u.id == message.userId).first;
     String hourSent = message.createdAt.toIso8601String().split('T')[1];
     hourSent = hourSent.split('.').first;
     hourSent = "${hourSent.split(":")[0]}:${hourSent.split(":")[1]}";
@@ -46,11 +48,7 @@ class MessageBubble extends StatelessWidget {
         children: [
           BubbleSpecialThree(
             senderName:
-                // user.nickname!.isEmpty
-                //     ? message.userName
-                //     : "~${user.nickname!}",
-                "Sem nick, codigo",
-            // isNickname: !user.nickname!.isEmpty,
+                user.firstName + " " + user.lastName,
             avatarImage: _getImageProvider(message.userImageUrl),
             hourSent: hourSent,
             text: "${message.text}",

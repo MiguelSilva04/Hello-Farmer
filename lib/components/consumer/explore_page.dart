@@ -110,7 +110,7 @@ class _ExplorePageState extends State<ExplorePage> {
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final selectedIndex = authNotifier.selectedStoreIndex;
 
-    final filtered =
+    final allAds =
         authNotifier.allUsers
             .whereType<ProducerUser>()
             .where(
@@ -121,62 +121,65 @@ class _ExplorePageState extends State<ExplorePage> {
                       false),
             )
             .expand((producer) => producer.stores[selectedIndex].productsAds!)
-            .where((ad) {
-              final product = ad.product;
+            .toList();
 
-              if (_searchText == "Season") {
-                final isCurrentSeason =
-                    product.season == currentSeason ||
-                    product.season == Season.ALL;
-                return isCurrentSeason;
-              }
+    final List<ProductAd> matching = [];
+    final List<ProductAd> others = [];
 
-              final nameMatch = product.name.toLowerCase().contains(
-                _searchText.toLowerCase(),
-              );
-              final categoryMatch = product.category.toLowerCase().contains(
-                _categoryText.toLowerCase(),
-              );
+    for (final ad in allAds) {
+      final product = ad.product;
 
-              final keywordMatch =
-                  _selectedKeyword == null
-                      ? true
-                      : (ad.keywords
-                              ?.map((k) => k.toLowerCase())
-                              .contains(_selectedKeyword!.toLowerCase()) ??
-                          false);
+      final isCurrentSeason =
+          (_searchText == "Season") &&
+          (product.season == currentSeason || product.season == Season.ALL);
 
-              ProducerUser? producer;
-              try {
-                producer = authNotifier.allUsers
-                    .whereType<ProducerUser>()
-                    .firstWhere(
-                      (p) =>
-                          p.stores.length > selectedIndex &&
-                          (p.stores[selectedIndex].productsAds?.any(
-                                (a) => a.id == ad.id,
-                              ) ??
-                              false),
-                    );
-              } catch (_) {
-                producer = null;
-              }
+      final nameMatch = product.name.toLowerCase().contains(
+        _searchText.toLowerCase(),
+      );
+      final categoryMatch = product.category.toLowerCase().contains(
+        _searchText.toLowerCase(),
+      );
 
-              final cityMatch =
-                  _selectedCity.trim().isEmpty ||
-                  (producer?.stores[selectedIndex].city?.trim().toLowerCase() ==
-                      _selectedCity.trim().toLowerCase());
+      final keywordMatch =
+          _selectedKeyword == null
+              ? true
+              : (ad.keywords
+                      ?.map((k) => k.toLowerCase())
+                      .contains(_selectedKeyword!.toLowerCase()) ??
+                  false);
 
-              final priceMatch =
-                  product.price >= _minPrice && product.price <= _maxPrice;
+      ProducerUser? producer;
+      try {
+        producer = authNotifier.allUsers.whereType<ProducerUser>().firstWhere(
+          (p) =>
+              p.stores.length > selectedIndex &&
+              (p.stores[selectedIndex].productsAds?.any((a) => a.id == ad.id) ??
+                  false),
+        );
+      } catch (_) {
+        producer = null;
+      }
 
-              return (nameMatch || categoryMatch) &&
-                  keywordMatch &&
-                  cityMatch &&
-                  priceMatch;
-            })
-            .toList()
-            .cast<ProductAd>();
+      final cityMatch =
+          _selectedCity.trim().isEmpty ||
+          (producer?.stores[selectedIndex].city?.trim().toLowerCase() ==
+              _selectedCity.trim().toLowerCase());
+
+      final priceMatch =
+          product.price >= _minPrice && product.price <= _maxPrice;
+
+      final matchesAllFilters = keywordMatch && cityMatch && priceMatch;
+
+      if ((nameMatch || categoryMatch || isCurrentSeason) &&
+          matchesAllFilters) {
+        matching.add(ad);
+      } else if (matchesAllFilters) {
+        others.add(ad);
+      }
+    }
+
+    // Junta os resultados → os matching primeiro
+    final filtered = [...matching, ...others];
 
     sortProducts(filtered);
 

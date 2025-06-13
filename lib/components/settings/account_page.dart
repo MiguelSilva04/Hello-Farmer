@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/services/chat/chat_list_notifier.dart';
+import '../../core/services/other/manage_section_notifier.dart';
 import '../../utils/app_routes.dart';
 
 class AccountPage extends StatelessWidget {
@@ -31,7 +33,7 @@ class AccountPage extends StatelessWidget {
     );
 
     if (shouldLogout == true) {
-      // Provider.of<ManageSectionNotifier>(context, listen: false).setIndex(0);
+      Provider.of<BottomNavigationNotifier>(context, listen: false).setIndex(0);
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         context.read<ChatListNotifier>().clearChats();
         await AuthService().logout();

@@ -209,7 +209,7 @@ class _ChatListPageState extends State<ChatListPage> {
             ? 'Nenhuma mensagem'
             : (lastMessage.userId == currentUser?.id
                 ? 'Eu: ${lastMessage.text}'
-                : '${lastMessage.userName}: ${lastMessage.text}');
+                : '${lastMessage.text}');
 
     final trailingWidget =
         lastMessage == null

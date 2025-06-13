@@ -931,6 +931,7 @@ class SellPageState extends State<SellPage> {
                   value: _highlighted ?? false,
                   onChanged: (val) {
                     setState(() {
+                      if (_highlighted == true) _selectedKeywords = {};
                       _highlighted = val ?? false;
                       if (!_highlighted!) _highlightOption = null;
                     });
@@ -1128,6 +1129,7 @@ class SellPageState extends State<SellPage> {
                       price = null;
                       _selectedKeywords = {};
                       _highlighted = false;
+                      category = null;
                     }),
                 child: Container(
                   padding: EdgeInsets.all(10),

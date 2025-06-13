@@ -65,8 +65,8 @@ class _ChatPageState extends State<ChatPage> {
             child: FutureBuilder(
               future: Future.value(
                 (authNotifier.currentUser == currentChat.consumerId)
-                    ? consumer.imageUrl
-                    : producer.imageUrl,
+                    ? producer.imageUrl
+                    : consumer.imageUrl,
               ),
               builder: (ctx, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {

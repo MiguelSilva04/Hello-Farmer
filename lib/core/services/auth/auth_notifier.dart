@@ -321,6 +321,29 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> createOrder({
+    required String userId,
+    required String address,
+    required List<Map<String, dynamic>> cartItems,
+  }) async {
+    final orderData = {
+      'userId': userId,
+      'address': address,
+      'status': 'Pendente',
+      'createdAt': Timestamp.now(),
+      'items': cartItems,
+    };
+
+    await FirebaseFirestore.instance.collection('orders').add(orderData);
+
+    final cartList = (_currentUser as ConsumerUser).shoppingCart?.productsQty;
+    if (cartList != null) {
+      cartList.clear();
+    }
+
+    notifyListeners();
+  }
+
   void changeStoreIndex(int index) async {
     if (index >= 0 && index < stores.length) {
       _selectedStoreIndex = index;

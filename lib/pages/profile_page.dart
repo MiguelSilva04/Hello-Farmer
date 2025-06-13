@@ -3,6 +3,7 @@ import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:provider/provider.dart';
@@ -551,7 +552,29 @@ class _ProfilePageState extends State<ProfilePage> {
     Provider.of<SettingsNotifier>(context, listen: false).setIndex(index);
   }
 
+  bool verifyIfAlreadyExistsConversation(
+    String currentUserId,
+    String otherUserId,
+  ) {
+    final chatList =
+        Provider.of<ChatListNotifier>(context, listen: false).chats;
+
+    return chatList.any(
+      (chat) =>
+          (chat.consumerId == currentUserId &&
+              chat.producerId == otherUserId) ||
+          (chat.producerId == currentUserId && chat.consumerId == otherUserId),
+    );
+  }
+
   Column getOnlyViewingProfile(BuildContext context) {
+    final currentUser = AuthService().currentUser!;
+    final otherUser = user!;
+    final alreadyExists = verifyIfAlreadyExistsConversation(
+      currentUser.id,
+      otherUser.id,
+    );
+    final chatService = Provider.of<ChatService>(context, listen: false);
     return Column(
       children: [
         Row(
@@ -631,69 +654,78 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
         const SizedBox(height: 10),
 
-        if (user!.id != AuthService().currentUser!.id)
+        if (otherUser.id != currentUser.id)
           ElevatedButton.icon(
-            // onPressed: () => _showStartChatModal(context),
-            onPressed: () {},
+            onPressed: () async {
+              if (alreadyExists) {
+                final chatList =
+                    Provider.of<ChatListNotifier>(context, listen: false).chats;
+                final existingChat = chatList.firstWhere(
+                  (chat) =>
+                      (chat.consumerId == currentUser.id &&
+                          chat.producerId == otherUser.id) ||
+                      (chat.producerId == currentUser.id &&
+                          chat.consumerId == otherUser.id),
+                );
+                chatService.updateCurrentChat(existingChat);
+                Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+                return;
+              }
 
-            //  async {
-            //   final TextEditingController _messageController =
-            //       TextEditingController();
-            //   final result = await showDialog<String>(
-            //     context: context,
-            //     builder:
-            //         (ctx) => AlertDialog(
-            //           title: Text("Enviar mensagem"),
-            //           content: TextField(
-            //             controller: _messageController,
-            //             decoration: const InputDecoration(
-            //               hintText: "Escreve a tua mensagem...",
-            //             ),
-            //             maxLines: null,
-            //             autofocus: true,
-            //           ),
-            //           actions: [
-            //             TextButton(
-            //               onPressed: () => Navigator.of(ctx).pop(),
-            //               child: const Text("Fechar"),
-            //             ),
-            //             TextButton(
-            //               onPressed: () {
-            //                 Navigator.of(
-            //                   ctx,
-            //                 ).pop(_messageController.text.trim());
-            //               },
-            //               child: const Text("Enviar"),
-            //             ),
-            //           ],
-            //         ),
-            //         if (result != null && result.isNotEmpty) {
-            //             final chatService = Provider.of<ChatService>(
-            //               context,
-            //               listen: false,
-            //             );
+              // Criar nova conversa
+              final _messageController = TextEditingController();
+              final result = await showDialog<String>(
+                context: context,
+                builder:
+                    (ctx) => AlertDialog(
+                      title: Text("Enviar mensagem"),
+                      content: TextField(
+                        controller: _messageController,
+                        decoration: const InputDecoration(
+                          hintText: "Escreve a tua mensagem...",
+                        ),
+                        maxLines: null,
+                        autofocus: true,
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Text("Fechar"),
+                        ),
+                        TextButton(
+                          onPressed:
+                              () => Navigator.of(
+                                ctx,
+                              ).pop(_messageController.text.trim()),
+                          child: const Text("Enviar"),
+                        ),
+                      ],
+                    ),
+              );
 
-            //             final newChat = await chatService.createChat(
-            //               isProducer ? user.id : currentUser!.id,
-            //               isProducer ? currentUser!.id : user.id,
-            //             );
+              if (result != null && result.isNotEmpty) {
+                final newChat = await chatService.createChat(
+                  currentUser.isProducer ? otherUser.id : currentUser.id,
+                  currentUser.isProducer ? currentUser.id : otherUser.id,
+                );
 
-            //             await chatService.save(
-            //               result,
-            //               currentUser!,
-            //               newChat.id,
-            //             );
+                await chatService.save(result, currentUser, newChat.id);
 
-            //             Navigator.of(context).pop();
-            //             Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-            //           }
-            //   );
-            // },
+                Provider.of<ChatListNotifier>(
+                  context,
+                  listen: false,
+                ).addChat(newChat);
+
+                chatService.updateCurrentChat(newChat);
+
+                Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+              }
+            },
             icon: Icon(
               Icons.message,
               color: Theme.of(context).colorScheme.secondary,
             ),
-            label: const Text('Enviar mensagem'),
+            label: Text(alreadyExists ? "Ver Conversa" : 'Enviar mensagem'),
             style: ElevatedButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.secondary,
               backgroundColor: Theme.of(context).colorScheme.surface,

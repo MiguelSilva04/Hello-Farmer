@@ -22,14 +22,14 @@ class ShoppingCartPage extends StatefulWidget {
 class _ShoppingCartPageState extends State<ShoppingCartPage> {
   late List<AppUser> users;
   late ProductAdFinder finder;
-  late Map<ProductAd, int> productAdQuantities;
+  late Map<ProductAd, double> productAdQuantities;
   Store? store;
   bool multipleStoresDetected = false;
   late ShoppingCart? cart;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
-  List<MapEntry<ProductAd, int>> productAdEntries = [];
+  List<MapEntry<ProductAd, double>> productAdEntries = [];
   late AuthNotifier authNotifier;
 
   @override
@@ -148,7 +148,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   }
 
   Widget _buildItem(
-    MapEntry<ProductAd, int> entry,
+    MapEntry<ProductAd, double> entry,
     int index,
     Animation<double> animation,
   ) {
@@ -197,15 +197,23 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                           AnimatedSwitcher(
                             duration: Duration(milliseconds: 250),
                             child: Text(
-                              qty.toString(),
-                              key: ValueKey<int>(qty),
+                              product.unit == Unit.KG
+                                  ? qty.toStringAsFixed(2)
+                                  : qty.toStringAsFixed(0),
+                              key: ValueKey<double>(qty),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                          Text(" ${product.unit.toDisplayString()}"),
+                          Text(
+                            " ${product.unit == Unit.KG
+                                ? product.unit.toDisplayString()
+                                : (product.unit == Unit.UNIT && qty > 1)
+                                ? product.unit.toDisplayString() + "s"
+                                : product.unit.toDisplayString()}",
+                          ),
                         ],
                       ),
                       SizedBox(width: 5),
@@ -331,9 +339,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                     text: '${_calculateTotal().toStringAsFixed(2)} €',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 26,
-                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 30,
                     ),
                   ),
                 ],

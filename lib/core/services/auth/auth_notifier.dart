@@ -149,25 +149,20 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   Future<AppUser> loadUser() async {
-    print("Obtendo utilizador...");
     _currentUser = await AuthService().getCurrentUser();
-    print("Utilizador carregado: $_currentUser");
 
     loadAllUsers();
     StoreService.instance.loadStores();
 
     if (_currentUser is ProducerUser) {
-      print("É produtor");
       await _loadProducerStoresAndAds();
     }
 
     if (_currentUser is ConsumerUser) {
-      print("É consumidor");
       await _loadShoppingCart();
     }
 
     notifyListeners();
-    print("Notificações enviadas");
 
     return _currentUser!;
   }
@@ -179,16 +174,12 @@ class AuthNotifier extends ChangeNotifier {
     }
     final consumer = _currentUser as ConsumerUser;
 
-    print("Carregando carrinho para: ${consumer.id}");
-
     final cartQuery =
         await FirebaseFirestore.instance
             .collection('shoppingCarts')
             .where('ownerId', isEqualTo: consumer.id)
             .limit(1)
             .get();
-
-    print("Consulta ao carrinho concluída");
 
     if (cartQuery.docs.isEmpty) {
       print("Carrinho não encontrado");
@@ -202,13 +193,15 @@ class AuthNotifier extends ChangeNotifier {
     final List<ProductRegist> productsQty = [];
 
     if (data['productsQty'] != null) {
-      for (final item in List.from(data['productsQty'])) {
-        final productAdId = item['productAdId'];
-        final quantity = item['quantity'];
+      final List<dynamic> rawList = data['productsQty'];
+
+      for (final dynamic rawItem in rawList) {
+        final productAdId = rawItem['productAdId'];
+        final quantity = rawItem['quantity'];
 
         if (productAdId == null || quantity == null) {
-          print("Item inválido no carrinho: $item");
-          continue; // Ignora este item
+          print("Item inválido no carrinho: $rawItem");
+          continue;
         }
 
         productsQty.add(
@@ -217,8 +210,9 @@ class AuthNotifier extends ChangeNotifier {
       }
     }
 
-    consumer.shoppingCart = ShoppingCart(productsQty: productsQty);
-    print("Carrinho carregado com ${productsQty.length} produtos");
+    (_currentUser as ConsumerUser).shoppingCart = ShoppingCart(
+      productsQty: productsQty,
+    );
 
     notifyListeners();
   }
@@ -253,6 +247,20 @@ class AuthNotifier extends ChangeNotifier {
     }
 
     await docRef.update({'productsQty': products});
+
+    final cartList = (_currentUser as ConsumerUser).shoppingCart?.productsQty;
+    if (cartList != null) {
+      final localIndex = cartList.indexWhere(
+        (p) => p.productAdId == productAdId,
+      );
+      if (localIndex >= 0) {
+        cartList[localIndex].quantity += 1;
+      } else {
+        cartList.add(ProductRegist(productAdId: productAdId, quantity: 1));
+      }
+    }
+
+    notifyListeners();
   }
 
   Future<void> decreaseQuantity(String ownerId, String productAdId) async {
@@ -275,6 +283,23 @@ class AuthNotifier extends ChangeNotifier {
       }
       await docRef.update({'productsQty': products});
     }
+
+    final cartList = (_currentUser as ConsumerUser).shoppingCart?.productsQty;
+    if (cartList != null) {
+      final localIndex = cartList.indexWhere(
+        (p) => p.productAdId == productAdId,
+      );
+      if (localIndex >= 0) {
+        final currentQty = cartList[localIndex].quantity;
+        if (currentQty <= 1) {
+          cartList.removeAt(localIndex);
+        } else {
+          cartList[localIndex].quantity -= 1;
+        }
+      }
+    }
+
+    notifyListeners();
   }
 
   Future<void> removeProduct(String ownerId, String productAdId) async {
@@ -287,6 +312,13 @@ class AuthNotifier extends ChangeNotifier {
 
     products.removeWhere((item) => item['productAdId'] == productAdId);
     await docRef.update({'productsQty': products});
+
+    final cartList = (_currentUser as ConsumerUser).shoppingCart?.productsQty;
+    if (cartList != null) {
+      cartList.removeWhere((p) => p.productAdId == productAdId);
+    }
+
+    notifyListeners();
   }
 
   void changeStoreIndex(int index) async {

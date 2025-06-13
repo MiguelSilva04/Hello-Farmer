@@ -21,6 +21,7 @@ class _ChatListPageState extends State<ChatListPage> {
     return Consumer<ChatListNotifier>(
       builder: (ctx, notifier, _) {
         return RefreshIndicator(
+          color: Theme.of(context).colorScheme.secondary,
           onRefresh: () async {
             notifier.listenToChats();
           },

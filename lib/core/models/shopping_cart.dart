@@ -1,6 +1,6 @@
 class ProductRegist {
   String productAdId;
-  int quantity;
+  double quantity;
   ProductRegist({required this.productAdId, required this.quantity});
 }
 

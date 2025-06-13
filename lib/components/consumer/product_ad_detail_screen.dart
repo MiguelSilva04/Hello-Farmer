@@ -12,6 +12,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/services/auth/auth_notifier.dart';
+import '../../core/services/chat/chat_list_notifier.dart';
+import '../../core/services/chat/chat_service.dart';
+import '../../utils/app_routes.dart';
 
 // ignore: must_be_immutable
 class ProductAdDetailScreen extends StatefulWidget {
@@ -32,15 +35,40 @@ class ProductAdDetailScreen extends StatefulWidget {
 
 class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   Future<void> addToCart(double quantity) async {
-    await Provider.of<AuthNotifier>(context,listen: false).addToCart(widget.ad, quantity).then((_) {
+    await Provider.of<AuthNotifier>(
+      context,
+      listen: false,
+    ).addToCart(widget.ad, quantity).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Produto adicionado ao carrinho!')),
       );
     });
   }
 
+  bool verifyIfAlreadyExistsConversation(
+    String currentUserId,
+    String otherUserId,
+  ) {
+    final chatList =
+        Provider.of<ChatListNotifier>(context, listen: false).chats;
+
+    return chatList.any(
+      (chat) =>
+          (chat.consumerId == currentUserId &&
+              chat.producerId == otherUserId) ||
+          (chat.producerId == currentUserId && chat.consumerId == otherUserId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentUser = AuthService().currentUser!;
+    final otherUser = widget.producer;
+    final alreadyExists = verifyIfAlreadyExistsConversation(
+      currentUser.id,
+      otherUser.id,
+    );
+    final chatService = Provider.of<ChatService>(context, listen: false);
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final store =
         widget.producer.stores[Provider.of<AuthNotifier>(
@@ -312,7 +340,87 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                           ],
                         ),
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            if (alreadyExists) {
+                              final chatList =
+                                  Provider.of<ChatListNotifier>(
+                                    context,
+                                    listen: false,
+                                  ).chats;
+                              final existingChat = chatList.firstWhere(
+                                (chat) =>
+                                    (chat.consumerId == currentUser.id &&
+                                        chat.producerId == otherUser.id) ||
+                                    (chat.producerId == currentUser.id &&
+                                        chat.consumerId == otherUser.id),
+                              );
+                              chatService.updateCurrentChat(existingChat);
+                              Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.CHAT_PAGE);
+                              return;
+                            }
+
+                            // Criar nova conversa
+                            final _messageController = TextEditingController();
+                            final result = await showDialog<String>(
+                              context: context,
+                              builder:
+                                  (ctx) => AlertDialog(
+                                    title: Text("Enviar mensagem"),
+                                    content: TextField(
+                                      controller: _messageController,
+                                      decoration: const InputDecoration(
+                                        hintText: "Escreve a tua mensagem...",
+                                      ),
+                                      maxLines: null,
+                                      autofocus: true,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.of(ctx).pop(),
+                                        child: const Text("Fechar"),
+                                      ),
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.of(ctx).pop(
+                                              _messageController.text.trim(),
+                                            ),
+                                        child: const Text("Enviar"),
+                                      ),
+                                    ],
+                                  ),
+                            );
+
+                            if (result != null && result.isNotEmpty) {
+                              final newChat = await chatService.createChat(
+                                currentUser.isProducer
+                                    ? otherUser.id
+                                    : currentUser.id,
+                                currentUser.isProducer
+                                    ? currentUser.id
+                                    : otherUser.id,
+                              );
+
+                              await chatService.save(
+                                result,
+                                currentUser,
+                                newChat.id,
+                              );
+
+                              Provider.of<ChatListNotifier>(
+                                context,
+                                listen: false,
+                              ).addChat(newChat);
+
+                              chatService.updateCurrentChat(newChat);
+
+                              Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.CHAT_PAGE);
+                            }
+                          },
                           icon: Icon(Icons.message_rounded),
                         ),
                       ],
@@ -602,6 +710,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                       quantity,
                                     ); // envia quantidade como parâmetro
                                   },
+                                  unit: widget.ad.product.unit,
                                 ),
                           ),
 
@@ -698,8 +807,10 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
 
 class QuantityDialog extends StatefulWidget {
   final void Function(double quantity) onConfirm;
+  final Unit unit;
 
-  const QuantityDialog({Key? key, required this.onConfirm}) : super(key: key);
+  const QuantityDialog({Key? key, required this.onConfirm, required this.unit})
+    : super(key: key);
 
   @override
   State<QuantityDialog> createState() => _QuantityDialogState();
@@ -717,8 +828,11 @@ class _QuantityDialogState extends State<QuantityDialog> {
 
   void _updateQuantity(double newValue) {
     setState(() {
-      _quantity = newValue.clamp(1, 999).toDouble(); // Limita entre 1 e 999
-      _controller.text = _quantity.toString();
+      _quantity = newValue.clamp(1, 999).toDouble();
+      _controller.text =
+          widget.unit == Unit.KG
+              ? _quantity.toStringAsFixed(2)
+              : _quantity.toStringAsFixed(0);
     });
   }
 
@@ -763,6 +877,10 @@ class _QuantityDialogState extends State<QuantityDialog> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            foregroundColor: Theme.of(context).colorScheme.secondary,
+          ),
           child: const Text("Confirmar"),
           onPressed: () {
             Navigator.of(context).pop();

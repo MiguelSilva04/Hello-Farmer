@@ -123,31 +123,72 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ],
                     ),
-                    AnimatedToggleSwitch<ThemeMode>.rolling(
-                      current: notifier.themeMode,
-                      values: const [ThemeMode.light, ThemeMode.dark],
-                      iconBuilder: (mode, isSelected) {
-                        return Icon(
-                          mode == ThemeMode.dark
-                              ? Icons.nights_stay
-                              : Icons.wb_sunny,
-                          color: isSelected ? Colors.white : Colors.grey[500],
-                        );
-                      },
-                      height: 40,
-                      spacing: 2.0,
-                      style: ToggleStyle(
-                        borderColor: Colors.transparent,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.secondary.withAlpha(80),
-                        indicatorColor: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20),
+                    Opacity(
+                      opacity: notifier.isAutoTheme ? 0.5 : 1.0,
+                      child: IgnorePointer(
+                        ignoring: notifier.isAutoTheme,
+                        child: AnimatedToggleSwitch<ThemeMode>.rolling(
+                          current: notifier.themeMode,
+                          values: const [ThemeMode.light, ThemeMode.dark],
+                          iconBuilder: (mode, isSelected) {
+                            return Icon(
+                              mode == ThemeMode.dark
+                                  ? Icons.nights_stay
+                                  : Icons.wb_sunny,
+                              color:
+                                  isSelected ? Colors.white : Colors.grey[500],
+                            );
+                          },
+                          height: 40,
+                          spacing: 2.0,
+                          style: ToggleStyle(
+                            borderColor: Colors.transparent,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.secondary.withAlpha(80),
+                            indicatorColor:
+                                Theme.of(context).colorScheme.primary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          onChanged: (mode) {
+                            final isDark = mode == ThemeMode.dark;
+                            notifier.toggleTheme(isDark);
+                          },
+                        ),
                       ),
-                      onChanged: (mode) {
-                        final isDark = mode == ThemeMode.dark;
-                        notifier.toggleTheme(isDark);
-                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.brightness_6,
+                          color: Theme.of(context).colorScheme.tertiaryFixed,
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.5,
+                          child: Text(
+                            "Tema Automático",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Switch(
+                      value: notifier.isAutoTheme,
+                      onChanged: (val) => notifier.setAutoTheme(val),
+                      inactiveThumbColor:
+                          Theme.of(context).colorScheme.secondary,
+                      inactiveTrackColor: Theme.of(
+                        context,
+                      ).colorScheme.secondary.withAlpha(3),
+                      activeColor: Theme.of(context).colorScheme.secondary,
+                      activeTrackColor: Theme.of(context).colorScheme.surface,
                     ),
                   ],
                 ),
@@ -188,18 +229,23 @@ class _MainPageState extends State<MainPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.security,
-                          color: Theme.of(context).colorScheme.tertiaryFixed,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "Permissões da aplicação",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ],
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.security,
+                            color: Theme.of(context).colorScheme.tertiaryFixed,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              "Permissões da aplicação",
+                              style: TextStyle(fontSize: 18),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Switch(
                       value: notifier.permissions,

@@ -32,9 +32,6 @@ void main() async {
   await initializeDateFormatting('pt_PT', null);
   await Firebase.initializeApp();
 
-  final preferencesNotifier = PreferencesNotifier();
-  await preferencesNotifier.loadPreferences();
-
   runApp(
     MultiProvider(
       providers: [

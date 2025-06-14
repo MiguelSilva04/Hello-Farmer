@@ -76,6 +76,7 @@ dependencies:
   lucide_icons: ^0.257.0
   geocoding: ^4.0.0
   rxdart: ^0.28.0
+  light_sensor: ^3.0.1
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:

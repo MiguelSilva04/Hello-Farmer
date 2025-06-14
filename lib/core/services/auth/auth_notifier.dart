@@ -387,6 +387,9 @@ class AuthNotifier extends ChangeNotifier {
     required String consumerId,
     required String storeId,
     required String address,
+    required String postalCode,
+    required String phone,
+    required String discountCode,
     required List<Map<String, dynamic>> cartItems,
     required double totalPrice,
   }) async {
@@ -397,6 +400,9 @@ class AuthNotifier extends ChangeNotifier {
       'consumerId': consumerId,
       'storeId': storeId,
       'address': address,
+      "postalCode" : postalCode,
+      "phone" : phone,
+      "discountCode" : discountCode,
       'status': 'Pendente',
       'createdAt': cf.Timestamp.now(),
       'deliveryDate': cf.Timestamp.fromDate(

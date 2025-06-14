@@ -42,6 +42,7 @@ class Offer {
   String productAdId;
   DateTime startDate;
   DateTime endDate;
+  String discountCode;
 
   Offer({
     required this.id,
@@ -49,6 +50,7 @@ class Offer {
     required this.productAdId,
     required this.startDate,
     required this.endDate,
+    required this.discountCode,
   });
 
   int get value {
@@ -65,7 +67,6 @@ class Offer {
         return 75;
       case DiscountValue.NINETY:
         return 90;
-      
     }
   }
 }

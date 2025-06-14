@@ -39,7 +39,10 @@ class Order {
   final String id;
   final DateTime createdAt;
   DateTime deliveryDate;
-  final String address;
+  String address;
+  final String postalCode;
+  final String phone;
+  String? discountCode;
   final OrderState state;
   final List<OrderItem> ordersItems;
   final double totalPrice;
@@ -56,6 +59,9 @@ class Order {
     required this.totalPrice,
     required this.consumerId,
     required this.storeId,
+    required this.postalCode,
+    required this.phone,
+    this.discountCode,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -80,6 +86,9 @@ class Order {
       totalPrice: (json['totalPrice'] as num).toDouble(),
       consumerId: json['consumerId'],
       storeId: json['storeId'],
+      discountCode: json['discountCode'] ?? '',
+      phone: json['phone'] ?? '',
+      postalCode: json['postalCode'] ?? '',
     );
   }
 

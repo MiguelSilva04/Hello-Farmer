@@ -43,7 +43,7 @@ class Store {
   String? backgroundImageUrl;
   String? imageUrl;
   String? name;
-  String? subName;
+  String? slogan;
   String? description;
   String? city;
   String? address;
@@ -62,7 +62,7 @@ class Store {
     this.backgroundImageUrl,
     this.imageUrl,
     this.name,
-    this.subName,
+    this.slogan,
     this.description,
     this.city,
     this.municipality,
@@ -116,7 +116,7 @@ class Store {
               ? (json['createdAt'] as cf.Timestamp).toDate()
               : json['createdAt'],
       name: json['name'] ?? '',
-      subName: json['subName'] ?? '',
+      slogan: json['slogan'] ?? '',
       description: json['description'] ?? '',
       city: json['city'] ?? '',
       address: json['address'] ?? '',

@@ -290,8 +290,13 @@ class _CreateStoreState extends State<CreateStore> {
 
 class MapPageProducer extends StatefulWidget {
   final Function(LatLng position, Placemark placemark) onLocationSelected;
+  final LatLng? initialPosition; // coordenadas iniciais opcionais
 
-  const MapPageProducer({super.key, required this.onLocationSelected});
+  const MapPageProducer({
+    super.key,
+    required this.onLocationSelected,
+    this.initialPosition,
+  });
 
   @override
   State<MapPageProducer> createState() => _MapPageProducerState();
@@ -304,7 +309,18 @@ class _MapPageProducerState extends State<MapPageProducer> {
   @override
   void initState() {
     super.initState();
-    _determinePosition();
+
+    // Se tiver posição inicial da loja, usa logo
+    if (widget.initialPosition != null) {
+      _currentPosition = widget.initialPosition;
+      _selectedMarker = Marker(
+        markerId: const MarkerId('selected'),
+        position: widget.initialPosition!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      );
+    } else {
+      _determinePosition();
+    }
   }
 
   Future<void> _determinePosition() async {

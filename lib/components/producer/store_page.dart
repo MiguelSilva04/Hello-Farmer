@@ -290,7 +290,7 @@ class _StorePageState extends State<StorePage> {
                           ),
                           if (widget.store != null) const SizedBox(height: 8),
                           Text(
-                            myStore.subName ?? "",
+                            myStore.slogan ?? "",
                             style: const TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 16,
@@ -354,7 +354,7 @@ class _StorePageState extends State<StorePage> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Cidade: ${myStore.city ?? "Sem Cidade"}",
+                          "Municipio: ${myStore.municipality ?? "Sem Municipio"}",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -370,7 +370,7 @@ class _StorePageState extends State<StorePage> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Municipio: ${myStore.municipality ?? "Sem Municipio"}",
+                          "Cidade: ${myStore.city ?? "Sem Cidade"}",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),

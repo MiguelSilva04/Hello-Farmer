@@ -857,19 +857,32 @@ class _QuantityDialogState extends State<QuantityDialog> {
               if (_quantity > 1) _updateQuantity(_quantity - 1);
             },
           ),
-          SizedBox(
-            width: 60,
-            child: TextField(
-              controller: _controller,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              onChanged: (value) {
-                final parsed = double.tryParse(value);
-                if (parsed != null && parsed > 0) {
-                  _updateQuantity(parsed);
-                }
-              },
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 60,
+                child: TextField(
+                  controller: _controller,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  onChanged: (value) {
+                    final parsed = double.tryParse(value);
+                    if (parsed != null && parsed > 0) {
+                      _updateQuantity(parsed);
+                    }
+                  },
+                ),
+              ),
+              SizedBox(width: 4),
+              Text(
+                " ${widget.product.unit == Unit.KG
+                    ? widget.product.unit.toDisplayString()
+                    : (widget.product.unit == Unit.UNIT && _quantity > 1)
+                    ? widget.product.unit.toDisplayString() + "s"
+                    : widget.product.unit.toDisplayString()}",
+              ),
+            ],
           ),
           IconButton(
             icon: const Icon(Icons.add),

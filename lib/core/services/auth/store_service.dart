@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:harvestly/core/models/store.dart';
 
 import '../../models/order.dart';
@@ -72,5 +76,57 @@ class StoreService with ChangeNotifier {
         }).toList();
 
     notifyListeners();
+  }
+
+  Future<void> updateStoreData({
+    required String name,
+    required String slogan,
+    required String description,
+    required String address,
+    required String city,
+    required String municipality,
+    required LatLng? coordinates,
+    String? profileImageUrl,
+    String? backgroundImageUrl,
+    required String storeId,
+  }) async {
+    final storeRef = cf.FirebaseFirestore.instance
+        .collection('stores')
+        .doc(storeId);
+
+    await storeRef.update({
+      'name': name,
+      'slogan': slogan,
+      'description': description,
+      'address': address,
+      'city': city,
+      'municipality': municipality,
+      'coordinates': {
+        'latitude': coordinates!.latitude,
+        'longitude': coordinates.longitude,
+      },
+      if (profileImageUrl != null) 'imageUrl': profileImageUrl,
+      if (backgroundImageUrl != null) 'backgroundImageUrl': backgroundImageUrl,
+    });
+  }
+
+  Future<String> updateProfileImage(File file, String storeId) async {
+    final ref = FirebaseStorage.instance.ref().child(
+      'stores/$storeId/profile.jpg',
+    );
+
+    await ref.putFile(file);
+    final downloadUrl = await ref.getDownloadURL();
+    return downloadUrl;
+  }
+
+  Future<String> updateBackgroundImage(File file, String storeId) async {
+    final ref = FirebaseStorage.instance.ref().child(
+      'stores/$storeId/background.jpg',
+    );
+
+    await ref.putFile(file);
+    final downloadUrl = await ref.getDownloadURL();
+    return downloadUrl;
   }
 }

@@ -4,6 +4,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
+import 'package:provider/provider.dart';
 
 import '../core/services/auth/auth_service.dart';
 import 'select_status_model.dart' as StatusModel;
@@ -34,20 +36,29 @@ class SelectState extends StatefulWidget {
 }
 
 class _SelectStateState extends State<SelectState> {
-  List<String> _cities = ["Escolha um Munícipio"];
-  List<String> _country = ["Escolha um País"];
-  String _selectedCity = "Escolha um Munícipio";
-  String _selectedCountry = "Escolha um País";
-  String _selectedState = "Escolha uma Cidade";
-  List<String> _states = ["Escolha uma Cidade"];
+  late List<String> _cities;
+  late List<String> _country;
+  late String _selectedCity;
+  late String _selectedCountry;
+  late String _selectedState;
+  late List<String> _states;
   var responses;
 
   @override
   void initState() {
     getCounty();
     super.initState();
-    if (AuthService().currentUser != null)
-      getCountryFromPhone(AuthService().currentUser!.phone);
+    final currentUser =
+        Provider.of<AuthNotifier>(context, listen: false).currentUser;
+    if (currentUser != null) getCountryFromPhone(currentUser.phone);
+    setState(() {
+      _cities = [currentUser!.city!];
+      _country = [currentUser.country!];
+      _selectedCity = currentUser.city!;
+      _selectedCountry = currentUser.country!;
+      _selectedState = currentUser.municipality!;
+      _states = [currentUser.municipality!];
+    });
   }
 
   Future<void> getCountryFromPhone(String phone) async {
@@ -151,8 +162,8 @@ class _SelectStateState extends State<SelectState> {
   void _onSelectedCountry(String value) {
     if (!mounted) return;
     setState(() {
-      _selectedState = "Escolha uma Cidade";
-      _states = ["Escolha uma Cidade"];
+      _selectedState = "Escolha um Munícipio";
+      _states = ["Escolha um Munícipio"];
       _selectedCountry = value;
       widget.onCountryChanged(value);
       getState();
@@ -162,8 +173,8 @@ class _SelectStateState extends State<SelectState> {
   void _onSelectedState(String value) {
     if (!mounted) return;
     setState(() {
-      _selectedCity = "Escolha um Munícipio";
-      _cities = ["Escolha um Munícipio"];
+      _selectedCity = "Escolha uma Cidade";
+      _cities = ["Escolha uma Cidade"];
       _selectedState = value;
       widget.onStateChanged(value);
       getCity();
@@ -181,9 +192,7 @@ class _SelectStateState extends State<SelectState> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(50)
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

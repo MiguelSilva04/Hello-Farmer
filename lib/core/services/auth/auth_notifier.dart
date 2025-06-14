@@ -279,6 +279,28 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> changePersonalDetailsCurrentUser({
+    String? firstName,
+    String? lastName,
+    String? country,
+    String? city,
+    String? municipality,
+    String? phone,
+    String? imageUrl,
+    String? backgroundImageUrl,
+  }) async {
+    _currentUser!.firstName = firstName!;
+    _currentUser!.lastName = lastName!;
+    _currentUser!.country = country!;
+    _currentUser!.city = city!;
+    _currentUser!.municipality = municipality!;
+    _currentUser!.phone = phone!;
+    if (imageUrl != null) _currentUser!.imageUrl = imageUrl;
+    if (backgroundImageUrl != null) _currentUser!.backgroundUrl = backgroundImageUrl;
+
+    notifyListeners();
+  }
+
   Future<cf.DocumentReference?> _getCartDocRef(String ownerId) async {
     final cartQuery =
         await fireStore
@@ -400,9 +422,9 @@ class AuthNotifier extends ChangeNotifier {
       'consumerId': consumerId,
       'storeId': storeId,
       'address': address,
-      "postalCode" : postalCode,
-      "phone" : phone,
-      "discountCode" : discountCode,
+      "postalCode": postalCode,
+      "phone": phone,
+      "discountCode": discountCode,
       'status': 'Pendente',
       'createdAt': cf.Timestamp.now(),
       'deliveryDate': cf.Timestamp.fromDate(

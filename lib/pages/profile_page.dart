@@ -31,10 +31,16 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isEditing = false;
   String? userName;
 
+  String? firstName;
+  String? lastName;
+  String? countryValue;
+  String? cityValue;
+  String? municipalityValue;
+  String? _phone;
+
   bool _isEditingName = false;
   bool _isEditingPassword = false;
   bool _isLoading = false;
-  bool _isButtonVisible = false;
   bool _isEditingBackgroundImage = false;
   // bool _isEditingNickname = false;
   // bool _isEditingAboutMe = false;
@@ -42,10 +48,6 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _dataChanged = false;
 
   String _countryCode = 'PT';
-  // String? _phone;
-  String? countryValue;
-  String? stateValue;
-  String? cityValue;
 
   File? _backgroundImage;
   File? _profileImage;
@@ -60,12 +62,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late List<Order>? orders;
 
   void _initStatus() async {
-    final loadedUser = widget.user ?? await AuthService().getCurrentUser();
-    if (loadedUser == null) return;
-
     setState(() {
-      user = loadedUser;
-
       if (user!.isProducer) {
         final producer = user as ProducerUser;
         orders =
@@ -81,7 +78,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 .where((o) => o.state == OrderState.Delivered)
                 .toList();
       }
-      userName = "${user?.firstName} ${user?.lastName}";
+      firstName = user!.firstName;
+      lastName = user!.lastName;
+      userName = "${firstName} ${lastName}";
+      countryValue = user!.country;
+      cityValue = user!.city;
+      municipalityValue = user!.municipality;
+      _phone = user!.phone;
       final phoneParts = user?.phone.trim().split(" ");
       user?.phone = phoneParts!.isNotEmpty ? phoneParts.last : "";
     });
@@ -90,6 +93,13 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    setState(() {
+      final loadedUser =
+          widget.user ??
+          Provider.of<AuthNotifier>(context, listen: false).currentUser;
+      if (loadedUser == null) return;
+      user = loadedUser;
+    });
     _initStatus();
   }
 
@@ -103,13 +113,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (pickedImage != null) {
       setState(() {
+        _dataChanged = true;
         _isEditingBackgroundImage
             ? _backgroundImage = File(pickedImage.path)
             : _profileImage = File(pickedImage.path);
       });
     }
     _isEditingBackgroundImage = false;
-    _isButtonVisible = true;
   }
 
   void _showAlert(String title, String message) {
@@ -141,7 +151,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildTextField(String label, String value) {
+  Widget _buildTextField(
+    String label,
+    String value,
+    void Function(String)? onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -154,7 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
             fillColor: Theme.of(context).colorScheme.secondary,
             border: OutlineInputBorder(borderSide: BorderSide.none),
           ),
-          onChanged: (val) => setState(() => _dataChanged = true),
+          onChanged: onChanged,
         ),
         SizedBox(height: 16),
       ],
@@ -206,15 +220,16 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
     setState(() => _isLoading = true);
-    if (_isButtonVisible &&
-        !_isEditingPassword &&
-        !_isEditingName &&
-        !_isEditingEmail) {
+    String? imageUrl;
+    String? backgrounUrl;
+    if (!_isEditingPassword && !_isEditingName && !_isEditingEmail) {
       try {
         if (_profileImage != null)
-          await AuthService().updateProfileImage(_profileImage);
+          imageUrl = await AuthService().updateProfileImage(_profileImage);
         if (_backgroundImage != null)
-          await AuthService().updateBackgroundImage(_backgroundImage);
+          backgrounUrl = await AuthService().updateBackgroundImage(
+            _backgroundImage,
+          );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Imagem atualizado com sucesso!')),
@@ -225,12 +240,36 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }
     }
-
-    // if (_isEditingEmail)
-    //   await AuthService().updateSingleUserField(
-    //     firstName: _textController.text,
-    //     lastName: _lastNameTextController.text,
-    //   );
+    try {
+      await AuthService().updateSingleUserField(
+        firstName: firstName,
+        lastName: lastName,
+        country: countryValue,
+        city: cityValue,
+        municipality: municipalityValue,
+        phone: _phone,
+      );
+      Provider.of<AuthNotifier>(
+        context,
+        listen: false,
+      ).changePersonalDetailsCurrentUser(
+        firstName: firstName,
+        lastName: lastName,
+        country: countryValue,
+        city: cityValue,
+        municipality: municipalityValue,
+        phone: _phone,
+        imageUrl: imageUrl,
+        backgroundImageUrl: backgrounUrl,
+      );
+      setState(() {
+        userName = "${firstName} ${lastName}";
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao atualizar informações pessoais: $e')),
+      );
+    }
 
     if (_isEditingEmail) {
       _showAlert(
@@ -248,16 +287,9 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     }
 
-    // if (_isEditingNickname)
-    //   await AuthService().updateSingleUserField(nickname: _textController.text);
-    // if (_isEditingAboutMe)
-    //   await AuthService().updateSingleUserField(aboutMe: _textController.text);
-
     setState(() {
       _isLoading = false;
       _isEditingName = false;
-      // _isEditingNickname = false;
-      // _isEditingAboutMe = false;
     });
   }
 
@@ -269,10 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
           widget.user == null
               ? AppBar(
                 centerTitle: false,
-                title: Text(
-                  userName ?? "Nome de perfil",
-                  style: TextStyle(fontSize: 25),
-                ),
+                title: Text(userName!, style: TextStyle(fontSize: 20)),
                 actions: [
                   Stack(
                     children: [
@@ -359,27 +388,6 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         ),
-                      if (_isButtonVisible)
-                        Positioned(
-                          bottom: 0,
-                          right: 10,
-                          child:
-                              (_isLoading && _isEditing)
-                                  ? const CircularProgressIndicator()
-                                  : TextButton(
-                                    onPressed: _submit,
-                                    style: TextButton.styleFrom(
-                                      foregroundColor:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.secondary,
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.surface,
-                                      textStyle: const TextStyle(fontSize: 12),
-                                    ),
-                                    child: const Text("Guardar alterações"),
-                                  ),
-                        ),
                       Stack(
                         children: [
                           Padding(
@@ -437,7 +445,22 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 25),
       child: Column(
         children: [
-          _buildTextField("Nome", user!.firstName + " " + user!.lastName),
+          _buildTextField(
+            "Primeiro Nome",
+            user!.firstName,
+            (val) => setState(() {
+              firstName = val;
+              _dataChanged = true;
+            }),
+          ),
+          _buildTextField(
+            "Último Nome",
+            user!.lastName,
+            (val) => setState(() {
+              lastName = val;
+              _dataChanged = true;
+            }),
+          ),
 
           Align(
             alignment: Alignment.centerLeft,
@@ -458,24 +481,26 @@ class _ProfilePageState extends State<ProfilePage> {
 
               onCountryChanged: (value) {
                 setState(() {
-                  countryValue = value;
+                  _dataChanged = true;
+                  countryValue = value.split(" ").last;
                 });
               },
               onStateChanged: (value) {
                 setState(() {
-                  stateValue = value;
+                  _dataChanged = true;
+                  municipalityValue = value;
                 });
               },
               onCityChanged: (value) {
                 setState(() {
+                  _dataChanged = true;
                   cityValue = value;
                 });
               },
             ),
           ),
 
-          _buildTextField("Cidade", user!.city ?? ""),
-
+          // _buildTextField("Cidade", user!.city ?? ""),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -492,31 +517,37 @@ class _ProfilePageState extends State<ProfilePage> {
               fillColor: Theme.of(context).colorScheme.secondary,
             ),
             onChanged: (phone) {
+              _dataChanged = true;
               _countryCode = phone.countryCode;
-              // _phone = phone.completeNumber;
+              _phone = _countryCode + " " + phone.number;
             },
           ),
 
           if (_dataChanged)
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Alterações guardadas com sucesso!')),
-                );
-                setState(() {
-                  _dataChanged = false;
-                });
-              },
-              child: const Text('Guardar Alterações'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.secondary,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+            (_isLoading)
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                  onPressed: () async {
+                    await _submit();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Alterações guardadas com sucesso!'),
+                      ),
+                    );
+                    setState(() {
+                      _dataChanged = false;
+                    });
+                  },
+                  child: const Text('Guardar Alterações'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.secondary,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
           SizedBox(height: 24),
 

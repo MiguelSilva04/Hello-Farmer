@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +11,9 @@ import '../../../core/models/product.dart';
 import '../../../core/models/product_ad.dart';
 import '../../../core/models/store.dart';
 import '../../../core/services/auth/auth_notifier.dart';
+import '../../../core/services/auth/store_service.dart';
 import '../../../core/services/other/bottom_navigation_notifier.dart';
+import '../../create_store.dart';
 
 class MainPageSection extends StatefulWidget {
   MainPageSection({super.key});
@@ -26,13 +29,108 @@ class _MainPageSectionState extends State<MainPageSection> {
   bool _isEditingAd = false;
   ProductAd? _currentAd;
 
+  late TextEditingController nameController;
+  late TextEditingController sloganController;
+  late TextEditingController descriptionController;
+  late TextEditingController addressController;
+  late TextEditingController cityController;
+  late TextEditingController municipalityController;
+  LatLng? coordinates;
+
+  File? profileImageFile;
+  File? backgroundImageFile;
+
+  bool _isLoading = false;
+  bool _dataChanged = false;
+
   @override
   void initState() {
     super.initState();
     authProvider = Provider.of<AuthNotifier>(context, listen: false);
-    store =
-        (authProvider.currentUser as ProducerUser).stores[authProvider
-            .selectedStoreIndex];
+    if ((authProvider.currentUser as ProducerUser).stores.isNotEmpty) {
+      store =
+          (authProvider.currentUser as ProducerUser).stores[authProvider
+              .selectedStoreIndex];
+    }
+
+    nameController = TextEditingController(text: store.name ?? '');
+    sloganController = TextEditingController(text: store.slogan ?? '');
+    descriptionController = TextEditingController(
+      text: store.description ?? '',
+    );
+    addressController = TextEditingController(text: store.address ?? '');
+    cityController = TextEditingController(text: store.city ?? '');
+    municipalityController = TextEditingController(
+      text: store.municipality ?? '',
+    );
+    coordinates = store.coordinates;
+
+    profileImageFile = null;
+    backgroundImageFile = null;
+  }
+
+  Future<void> _pickImage(bool isProfile) async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        if (isProfile) {
+          profileImageFile = File(picked.path);
+        } else {
+          backgroundImageFile = File(picked.path);
+        }
+        setState(() => _dataChanged = true);
+        ;
+      });
+    }
+  }
+
+  Future<void> _submitChanges() async {
+    setState(() => _isLoading = true);
+
+    try {
+      String? profileUrl;
+      String? backgroundUrl;
+
+      if (profileImageFile != null) {
+        profileUrl = await Provider.of<StoreService>(
+          context,
+          listen: false,
+        ).updateProfileImage(profileImageFile!, store.id);
+      }
+
+      if (backgroundImageFile != null) {
+        backgroundUrl = await Provider.of<StoreService>(
+          context,
+          listen: false,
+        ).updateBackgroundImage(backgroundImageFile!, store.id);
+      }
+
+      await Provider.of<StoreService>(context, listen: false).updateStoreData(
+        name: nameController.text.trim(),
+        slogan: sloganController.text.trim(),
+        description: descriptionController.text.trim(),
+        address: addressController.text.trim(),
+        city: cityController.text.trim(),
+        municipality: municipalityController.text.trim(),
+        coordinates: coordinates,
+        profileImageUrl: profileUrl,
+        backgroundImageUrl: backgroundUrl,
+        storeId: store.id,
+      );
+
+      await Provider.of<StoreService>(context, listen: false).loadStores();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Alterações guardadas com sucesso')),
+      );
+      setState(() => _dataChanged = false);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao guardar alterações: $e')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -47,59 +145,177 @@ class _MainPageSectionState extends State<MainPageSection> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Image.network(
-                    store.backgroundImageUrl ??
-                        "assets/images/background_logo.png",
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 180,
-                  ),
-                  Positioned(
-                    bottom: -50,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.secondaryFixed,
-                            width: 1,
+              SizedBox(
+                height: 250,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    backgroundImageFile != null
+                        ? Image.file(
+                          backgroundImageFile!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 180,
+                        )
+                        : (store.backgroundImageUrl != null
+                            ? Image.network(
+                              store.backgroundImageUrl!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: 180,
+                            )
+                            : Image.asset(
+                              "assets/images/background_logo.png",
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: 180,
+                            )),
+
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: IconButton(
+                        icon: Container(
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 4,
+                                offset: Offset(2, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.photo,
+                            size: 25,
+                            color: Colors.black87,
                           ),
                         ),
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundImage: NetworkImage(
-                            store.imageUrl ?? "assets/images/default_store.jpg",
-                          ),
+                        onPressed: () => _pickImage(false),
+                      ),
+                    ),
+
+                    Positioned(
+                      top: 100,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryFixed,
+                                  width: 1,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 60,
+                                backgroundImage:
+                                    profileImageFile != null
+                                        ? FileImage(profileImageFile!)
+                                        : (store.imageUrl != null
+                                            ? NetworkImage(store.imageUrl!)
+                                            : AssetImage(
+                                                  "assets/images/default_store.jpg",
+                                                )
+                                                as ImageProvider),
+                              ),
+                            ),
+
+                            Positioned(
+                              bottom: -20,
+                              right: 0,
+                              child: IconButton(
+                                icon: Container(
+                                  padding: EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 4,
+                                        offset: Offset(2, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: 25,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                onPressed: () => _pickImage(true),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
-              const SizedBox(height: 60),
-
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        store.name ?? "Sem Nome",
-                        style: const TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: TextFormField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                            labelText: 'Nome',
+                            labelStyle: TextStyle(fontSize: 16),
+                          ),
+                          onChanged: (val) {
+                            setState(() => setState(() => _dataChanged = true));
+                          },
                         ),
                       ),
-                      const Icon(Icons.edit, size: 20),
                     ],
                   ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: sloganController,
+                        decoration: InputDecoration(labelText: 'Slogan'),
+                        maxLength: 40,
+                        onChanged: (val) {
+                          setState(() => _dataChanged = true);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -116,13 +332,83 @@ class _MainPageSectionState extends State<MainPageSection> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      store.description ?? "Sem descrição disponível.",
-                      style: const TextStyle(fontSize: 14),
+                    TextFormField(
+                      controller: descriptionController,
+                      decoration: InputDecoration(labelText: 'Descrição'),
+                      maxLines: 3,
+                      onChanged: (val) {
+                        setState(() => _dataChanged = true);
+                        ;
+                      },
                     ),
                   ],
                 ),
               ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Localização",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Text(
+                      "${municipalityController.text}, ${cityController.text}, ${addressController.text}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextButton.icon(
+                  icon: const Icon(Icons.map),
+                  label: const Text("Selecionar Localização no Mapa"),
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => MapPageProducer(
+                              initialPosition: coordinates,
+                              onLocationSelected: (position, placemark) {
+                                setState(() {
+                                  coordinates = position;
+                                  addressController.text =
+                                      placemark.street ?? '';
+                                  cityController.text =
+                                      placemark.locality ?? '';
+                                  municipalityController.text =
+                                      placemark.subAdministrativeArea ?? '';
+                                  setState(() => _dataChanged = true);
+                                  ;
+                                });
+                              },
+                            ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              if (_dataChanged)
+                (_isLoading)
+                    ? Center(child: CircularProgressIndicator())
+                    : Center(
+                      child: ElevatedButton(
+                        onPressed: _submitChanges,
+                        child: Text("Guardar alterações"),
+                      ),
+                    ),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

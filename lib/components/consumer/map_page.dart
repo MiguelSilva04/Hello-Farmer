@@ -59,7 +59,6 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _determinePosition();
-    Provider.of<AuthNotifier>(context, listen: false).loadAllUsers();
   }
 
   Future<void> _determinePosition() async {

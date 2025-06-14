@@ -282,9 +282,9 @@ class AuthService {
     await auth.sendPasswordResetEmail(email: email);
   }
 
-  Future<void> updateProfileImage(File? profileImage) async {
+  Future<String> updateProfileImage(File? profileImage) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) return "";
 
     if (profileImage != null) {
       final profileImageName = '${user.uid}_profile.jpg';
@@ -298,15 +298,17 @@ class AuthService {
       final store = FirebaseFirestore.instance;
       final docRef = store.collection('users').doc(user.uid);
       await docRef.update({'imageUrl': profileImageUrl});
+      return profileImageUrl;
     }
+    return "";
   }
 
-  Future<void> updateBackgroundImage(File? backgroundImage) async {
+  Future<String> updateBackgroundImage(File? backgroundImage) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) "";
 
     if (backgroundImage != null) {
-      final backgroundImageName = '${user.uid}_background.jpg';
+      final backgroundImageName = '${user!.uid}_background.jpg';
       final backgroundImageUrl = await _uploadUserImage(
         backgroundImage,
         backgroundImageName,
@@ -316,7 +318,9 @@ class AuthService {
       final store = FirebaseFirestore.instance;
       final docRef = store.collection('users').doc(user.uid);
       await docRef.update({'backgroundImageUrl': backgroundImageUrl});
+      return backgroundImageUrl!;
     }
+    return "";
   }
 
   Future<String?> _uploadUserImage(File? image, String imageName) async {
@@ -336,11 +340,9 @@ class AuthService {
     String? aboutMe,
     String? dateOfBirth,
     String? recoveryEmail,
-    String? customIconStatus,
-    String? customStatus,
-    String? iconStatus,
-    String? nickname,
-    String? status,
+    String? country,
+    String? city,
+    String? municipality,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -385,20 +387,17 @@ class AuthService {
       await docRef.update({'recoveryEmail': recoveryEmail});
       _currentUser!.recoveryEmail = recoveryEmail;
     }
-    if (customIconStatus != null) {
-      await docRef.update({'customIconStatus': customIconStatus});
+    if (country != null) {
+      await docRef.update({'country': country});
+      _currentUser!.country = country;
     }
-    if (customStatus != null) {
-      await docRef.update({'customStatus': customStatus});
+    if (city != null) {
+      await docRef.update({'city': city});
+      _currentUser!.city = city;
     }
-    if (iconStatus != null) {
-      await docRef.update({'iconStatus': iconStatus});
-    }
-    if (nickname != null) {
-      await docRef.update({'nickname': nickname});
-    }
-    if (status != null) {
-      await docRef.update({'status': status});
+    if (municipality != null) {
+      await docRef.update({'municipality': municipality});
+      _currentUser!.municipality = municipality;
     }
   }
 

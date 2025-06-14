@@ -68,7 +68,6 @@ class StoreService with ChangeNotifier {
     store.orders =
         orderSnapshot.docs.map((doc) {
           final data = doc.data();
-          print(data);
           return Order.fromJson({...data, 'id': doc.id});
         }).toList();
 

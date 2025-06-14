@@ -25,9 +25,13 @@ class AbandonedOrdersPage extends StatelessWidget {
             .where(
               (o) =>
                   o.state == OrderState.Abandonned &&
-                  o.producerId == AuthService().currentUser!.id,
+                  (Provider.of<AuthNotifier>(context, listen: false).currentUser
+                          as ProducerUser)
+                      .stores
+                      .any((store) => store.id == o.storeId),
             )
             .toList();
+
     final users = AuthService().users;
 
     String getUserName(String id) {

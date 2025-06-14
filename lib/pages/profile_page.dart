@@ -3,6 +3,7 @@ import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:provider/provider.dart';
@@ -800,10 +801,14 @@ class _ProfilePageState extends State<ProfilePage> {
                           }
                         }
 
-                        final AppUser? producerUser =
-                            AuthService().users
-                                .where((u) => u.id == order.producerId)
-                                .first;
+                        final AppUser? producerUser = Provider.of<AuthNotifier>(
+                          context,
+                          listen: false,
+                        ).producerUsers.firstWhere(
+                          (u) => u.stores.any(
+                            (store) => store.id == order.storeId,
+                          ),
+                        );
 
                         final producerName =
                             '${producerUser!.firstName} ${producerUser.lastName}';

@@ -1,5 +1,6 @@
 // order_detail_page.dart
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/invoice_page.dart';
 import 'package:harvestly/core/models/order.dart';
@@ -31,16 +32,19 @@ class OrderDetailsPage extends StatelessWidget {
     final deliveryMethod =
         (AuthService().users
                     .whereType<ProducerUser>()
-                    .expand(
-                      (p) =>
-                          p
-                              .stores[Provider.of<AuthNotifier>(
-                                context,
-                                listen: false,
-                              ).selectedStoreIndex]
-                              .productsAds ??
-                          [],
-                    )
+                    .expand((p) {
+                      if (p.stores.isNotEmpty) {
+                        return p
+                                .stores[Provider.of<AuthNotifier>(
+                                  context,
+                                  listen: false,
+                                ).selectedStoreIndex]
+                                .productsAds ??
+                            [];
+                      } else {
+                        return [];
+                      }
+                    })
                     .firstWhere(
                       (ad) => ad.id == products.first.productAdId,
                       orElse:
@@ -58,83 +62,112 @@ class OrderDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 25),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (order.state == OrderState.Delivered) ...[
-                          Text(
-                            "Data da entrega: ",
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          Text(
-                            date,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                        if ((order.state == OrderState.Pendent ||
-                            order.state == OrderState.Sent)) ...[
-                          Text(
-                            "Entrega prevista para: ",
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          Text(
-                            date,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                        if (order.deliveryDate.isAfter(DateTime.now()) &&
-                            order.state == OrderState.Sent) ...[
-                          Text(
-                            "Abandonada desde: ",
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                          Text(
-                            DateFormat.yMMMd(
-                              'pt_PT',
-                            ).format(order.deliveryDate),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.calendar_today, size: 25),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (order.state == OrderState.Delivered) ...[
+                              AutoSizeText(
+                                "Data da entrega: ",
+                                style: const TextStyle(fontSize: 15),
+                                maxLines: 1,
+                                minFontSize: 10,
+                              ),
+                              AutoSizeText(
+                                date,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                minFontSize: 10,
+                              ),
+                            ],
+                            if ((order.state == OrderState.Pendent ||
+                                order.state == OrderState.Sent)) ...[
+                              AutoSizeText(
+                                "Entrega prevista para: ",
+                                style: const TextStyle(fontSize: 15),
+                                maxLines: 1,
+                                minFontSize: 10,
+                              ),
+                              AutoSizeText(
+                                date,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                minFontSize: 10,
+                              ),
+                            ],
+                            if (order.deliveryDate.isAfter(DateTime.now()) &&
+                                order.state == OrderState.Sent) ...[
+                              AutoSizeText(
+                                "Abandonada desde: ",
+                                style: const TextStyle(fontSize: 15),
+                                maxLines: 1,
+                                minFontSize: 10,
+                              ),
+                              AutoSizeText(
+                                DateFormat.yMMMd(
+                                  'pt_PT',
+                                ).format(order.deliveryDate),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                                maxLines: 1,
+                                minFontSize: 10,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 5),
-                Row(
-                  children: [
-                    const Icon(Icons.inventory, size: 25),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Encomenda Nº ",
-                          style: const TextStyle(fontSize: 15),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.inventory, size: 25),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AutoSizeText(
+                              "Encomenda Nº ",
+                              style: const TextStyle(fontSize: 15),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            AutoSizeText(
+                              "${order.id}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                        Text(
-                          "${order.id}",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -179,7 +212,7 @@ class OrderDetailsPage extends StatelessWidget {
                                     ).selectedStoreIndex]
                                     .imageUrl !=
                                 null
-                            ? AssetImage(
+                            ? NetworkImage(
                               producer
                                   .stores[Provider.of<AuthNotifier>(
                                     context,
@@ -314,16 +347,19 @@ class OrderDetailsPage extends StatelessWidget {
                   final ad =
                       AuthService().users
                               .whereType<ProducerUser>()
-                              .expand(
-                                (p) =>
-                                    p
-                                        .stores[Provider.of<AuthNotifier>(
-                                          context,
-                                          listen: false,
-                                        ).selectedStoreIndex]
-                                        .productsAds ??
-                                    [],
-                              )
+                              .expand((p) {
+                                if (p.stores.isNotEmpty) {
+                                  return p
+                                          .stores[Provider.of<AuthNotifier>(
+                                            context,
+                                            listen: false,
+                                          ).selectedStoreIndex]
+                                          .productsAds ??
+                                      [];
+                                } else {
+                                  return [];
+                                }
+                              })
                               .firstWhere(
                                 (ad) => ad.id == item.productAdId,
                                 orElse:
@@ -347,7 +383,7 @@ class OrderDetailsPage extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
+                          child: Image.network(
                             product.imageUrl.first,
                             height: 80,
                             width: 80,

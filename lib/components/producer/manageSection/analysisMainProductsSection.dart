@@ -8,6 +8,7 @@ import '../../../core/models/product.dart';
 import '../../../core/services/auth/auth_notifier.dart';
 
 class ProductStats {
+  final Unit unit;
   final String name;
   final String image;
   int totalSales;
@@ -16,6 +17,7 @@ class ProductStats {
   double totalAmountInSales;
 
   ProductStats({
+    required this.unit,
     required this.name,
     required this.image,
     this.totalSales = 0,
@@ -51,7 +53,7 @@ class _PodiumProduct extends StatelessWidget {
           lineWidth: 8,
           percent: percent.clamp(0.0, 1.0),
           center: CircleAvatar(
-            backgroundImage: AssetImage(product.image),
+            backgroundImage: NetworkImage(product.image),
             radius: place == 1 ? 32 : 26,
           ),
           progressColor:
@@ -76,7 +78,9 @@ class _PodiumProduct extends StatelessWidget {
           style: TextStyle(color: Colors.grey[700], fontSize: 12),
         ),
         Text(
-          '${product.totalKg.toStringAsFixed(2)} kg',
+          product.unit == Unit.KG
+              ? '${product.totalKg.toStringAsFixed(2)} ${product.unit.toDisplayString()}'
+              : '${product.totalUnits.toStringAsFixed(0)} ${product.unit.toDisplayString()}s',
           style: TextStyle(color: Colors.grey[600], fontSize: 12),
         ),
         SizedBox(height: (place == 1) ? 14 : 4),
@@ -128,7 +132,7 @@ class _ProductCard extends StatelessWidget {
             lineWidth: 6,
             percent: percent.clamp(0.0, 1.0),
             center: CircleAvatar(
-              backgroundImage: AssetImage(product.image),
+              backgroundImage: NetworkImage(product.image),
               radius: 100,
             ),
             progressColor: Colors.green,
@@ -185,7 +189,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
 
           statsMap.putIfAbsent(
             name,
-            () => ProductStats(name: name, image: image),
+            () => ProductStats(name: name, image: image, unit: product.unit),
           );
           final stats = statsMap[name]!;
 

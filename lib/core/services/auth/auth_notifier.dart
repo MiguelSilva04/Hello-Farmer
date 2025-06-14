@@ -390,7 +390,10 @@ class AuthNotifier extends ChangeNotifier {
     required List<Map<String, dynamic>> cartItems,
     required double totalPrice,
   }) async {
+    final docRef = fireStore.collection('orders').doc();
+
     final orderData = {
+      'id': docRef.id,
       'consumerId': consumerId,
       'storeId': storeId,
       'address': address,
@@ -403,7 +406,7 @@ class AuthNotifier extends ChangeNotifier {
       'totalPrice': totalPrice,
     };
 
-    await fireStore.collection('orders').add(orderData);
+    await docRef.set(orderData);
 
     final shoppingCartQuery =
         await fireStore

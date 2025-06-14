@@ -35,7 +35,6 @@ class OrderItem {
   }
 }
 
-
 class Order {
   final String id;
   final DateTime createdAt;
@@ -45,7 +44,7 @@ class Order {
   final List<OrderItem> ordersItems;
   final double totalPrice;
   final String consumerId;
-  final String producerId;
+  final String storeId;
 
   Order({
     required this.id,
@@ -56,12 +55,12 @@ class Order {
     required this.ordersItems,
     required this.totalPrice,
     required this.consumerId,
-    required this.producerId,
+    required this.storeId,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
-      id: json['id'],
+      id: json['id'] ?? "",
       createdAt:
           (json['createdAt'] is cf.Timestamp)
               ? (json['createdAt'] as cf.Timestamp).toDate()
@@ -72,7 +71,7 @@ class Order {
               : json['deliveryDate'],
       address: json['address'],
       state: OrderState.values.firstWhere(
-        (e) => e.toString().split('.').last == json['state'],
+        (e) => e.toDisplayString() == json['status'],
       ),
       ordersItems:
           (json['items'] as List)
@@ -80,7 +79,7 @@ class Order {
               .toList(),
       totalPrice: (json['totalPrice'] as num).toDouble(),
       consumerId: json['consumerId'],
-      producerId: json['producerId'],
+      storeId: json['storeId'],
     );
   }
 
@@ -93,7 +92,7 @@ class Order {
       'ordersItems': ordersItems.map((e) => e.toJson()).toList(),
       'totalPrice': totalPrice,
       'consumerId': consumerId,
-      'producerId': producerId,
+      'storeId': storeId,
     };
   }
 }

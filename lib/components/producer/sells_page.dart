@@ -1,6 +1,6 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/producer_user.dart';
-import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -28,12 +28,10 @@ class _SellsPageState extends State<SellsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     orders =
-        (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<AuthNotifier>(
-              context,
-              listen: false,
-            ).selectedStoreIndex]
+        (authNotifier.currentUser as ProducerUser)
+            .stores[authNotifier.selectedStoreIndex]
             .orders ??
         [];
   }
@@ -59,10 +57,16 @@ class _SellsPageState extends State<SellsPage>
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Pedido #${ordersFiltered[index].id}",
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          "Pedido #${ordersFiltered[index].id}",
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 10),
                     Container(
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.tertiary,
@@ -73,7 +77,7 @@ class _SellsPageState extends State<SellsPage>
                           horizontal: 8,
                           vertical: 4,
                         ),
-                        child: Text(
+                        child: AutoSizeText(
                           ordersFiltered[index].state.toDisplayString(),
                           style: TextStyle(
                             fontSize: 12,
@@ -86,47 +90,13 @@ class _SellsPageState extends State<SellsPage>
                   ],
                 ),
                 subtitle: Text(
-                  "Data da Recolha: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate)}\n${(ordersFiltered[index].deliveryDate.isAfter(DateTime.now()) && ordersFiltered[index].state == OrderState.Sent) ? "Data de Entrega: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate)}" : "Sem Recolha"}\nMorada: ${ordersFiltered[index].address}",
+                  "Data da Encomenda: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].createdAt)}\n${"Data de Entrega Prevista: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate)}"}\nMorada: ${ordersFiltered[index].address}",
                   style: TextStyle(fontSize: 16),
                 ),
                 isThreeLine: true,
               ),
             ),
       ),
-      // child: Column(
-      //   children: [
-      //     Card(
-      //       child: ListTile(
-      //         title: Text("Pedido #1001"),
-      //         subtitle: Text(
-      //           "Data da Recolha: 5 de abril de 2025\nData de Entrega: 6 de abril de 2025\nMorada: Rua do Pedido #1001",
-      //           style: TextStyle(fontSize: 13),
-      //         ),
-      //         isThreeLine: true,
-      //         trailing: Container(
-      //           decoration: BoxDecoration(
-      //             color: Theme.of(context).colorScheme.tertiary,
-      //             borderRadius: BorderRadius.circular(5),
-      //           ),
-      //           child: Padding(
-      //             padding: const EdgeInsets.symmetric(
-      //               horizontal: 8,
-      //               vertical: 4,
-      //             ),
-      //             child: Text(
-      //               "Entregue",
-      //               style: TextStyle(
-      //                 fontSize: 12,
-      //                 color: Theme.of(context).colorScheme.primary,
-      //                 fontWeight: FontWeight.w700,
-      //               ),
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
     );
   }
 

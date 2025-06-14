@@ -23,10 +23,7 @@ class InvoicePageConsumer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedStoreIndex =
-        Provider.of<AuthNotifier>(
-          context,
-          listen: false,
-        ).selectedStoreIndex;
+        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
       final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(
         (ad) => ad.id == item.productAdId,
@@ -131,8 +128,8 @@ class InvoicePageConsumer extends StatelessWidget {
               Table(
                 border: TableBorder.all(color: Colors.grey),
                 columnWidths: const {
-                  0: FlexColumnWidth(3),
-                  1: FlexColumnWidth(1.5),
+                  0: FlexColumnWidth(2.5),
+                  1: FlexColumnWidth(2),
                   2: FlexColumnWidth(2),
                 },
                 defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -177,7 +174,12 @@ class InvoicePageConsumer extends StatelessWidget {
                         .firstWhere((ad) => ad.id == item.productAdId);
                     final product = ad.product;
 
-                    final unitLabel = product.unit.toDisplayString();
+                    final unitLabel =
+                        " ${product.unit == Unit.KG
+                            ? product.unit.toDisplayString()
+                            : (product.unit == Unit.UNIT && item.qty > 1)
+                            ? product.unit.toDisplayString() + "s"
+                            : product.unit.toDisplayString()}";
                     final isKg = product.unit == Unit.KG;
                     final qtyDisplay =
                         isKg
@@ -362,10 +364,7 @@ class InvoicePageConsumer extends StatelessWidget {
     );
 
     final selectedStoreIndex =
-        Provider.of<AuthNotifier>(
-          context,
-          listen: false,
-        ).selectedStoreIndex;
+        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
 
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
       final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(

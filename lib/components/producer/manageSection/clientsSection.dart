@@ -25,16 +25,13 @@ class _ClientsSectionState extends State<ClientsSection> {
     super.initState();
     final currentUser = (AuthService().currentUser! as ProducerUser);
     final users = AuthService().users;
-    _orders =
-        currentUser
-            .stores[Provider.of<AuthNotifier>(
-              context,
-              listen: false,
-            ).selectedStoreIndex]
-            .orders
-            ?.where((o) => o.producerId == currentUser.id)
-            .toList() ??
-        [];
+    final selectedStore =
+        currentUser.stores[Provider.of<AuthNotifier>(
+          context,
+          listen: false,
+        ).selectedStoreIndex];
+
+    _orders = selectedStore.orders ?? [];
 
     _ordersByConsumer = {};
     for (final order in _orders) {
@@ -150,10 +147,7 @@ class _ClientsSectionState extends State<ClientsSection> {
               final client = _consumers[index];
               final orders = _ordersByConsumer[client.id]!;
               final nonNullDates =
-                  orders
-                      .map((o) => o.deliveryDate)
-                      .cast<DateTime>()
-                      .toList();
+                  orders.map((o) => o.deliveryDate).cast<DateTime>().toList();
               final lastOrderDate =
                   nonNullDates.isNotEmpty
                       ? nonNullDates.reduce((a, b) => a.isAfter(b) ? a : b)

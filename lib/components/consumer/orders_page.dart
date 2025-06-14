@@ -6,7 +6,6 @@ import '../../core/models/order.dart';
 import '../../core/models/producer_user.dart';
 import '../../core/models/product_ad.dart';
 import '../../core/services/auth/auth_notifier.dart';
-import '../../core/services/auth/auth_service.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -277,9 +276,9 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final producer = AuthService().users.firstWhere(
-      (u) => u.id == order.producerId,
-    );
+    final producer = Provider.of<AuthNotifier>(context, listen: false)
+        .producerUsers
+        .firstWhere((u) => u.stores.any((store) => store.id == order.storeId));
 
     final visibleAds = ads.take(3).toList();
     final extraCount = ads.length - visibleAds.length;
@@ -290,10 +289,7 @@ class OrderCard extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder:
-                  (_) => OrderDetailsPage(
-                    order: order,
-                    producer: (producer as ProducerUser),
-                  ),
+                  (_) => OrderDetailsPage(order: order, producer: producer),
             ),
           ),
       child: Padding(
@@ -319,7 +315,7 @@ class OrderCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(4),
                               child:
                                   image != null
-                                      ? Image.asset(
+                                      ? Image.network(
                                         image,
                                         width: 30,
                                         height: 30,
@@ -408,9 +404,7 @@ class OrderCard extends StatelessWidget {
                         ),
                       if (order.state != OrderState.Abandonned)
                         Text(
-                          DateFormat.yMMMEd(
-                            'pt_PT',
-                          ).format(order.deliveryDate),
+                          DateFormat.yMMMEd('pt_PT').format(order.deliveryDate),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

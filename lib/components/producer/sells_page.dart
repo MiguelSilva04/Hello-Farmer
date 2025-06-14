@@ -86,7 +86,7 @@ class _SellsPageState extends State<SellsPage>
                   ],
                 ),
                 subtitle: Text(
-                  "Data da Recolha: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].pickupDate)}\n${ordersFiltered[index].deliveryDate != null ? "Data de Entrega: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate!)}" : "Sem Recolha"}\nMorada: ${ordersFiltered[index].address}",
+                  "Data da Recolha: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate)}\n${(ordersFiltered[index].deliveryDate.isAfter(DateTime.now()) && ordersFiltered[index].state == OrderState.Sent) ? "Data de Entrega: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate)}" : "Sem Recolha"}\nMorada: ${ordersFiltered[index].address}",
                   style: TextStyle(fontSize: 16),
                 ),
                 isThreeLine: true,

@@ -54,9 +54,9 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
     final ordersFiltrados =
         orders != null
             ? orders.where((order) {
-              return order.deliveryDate != null &&
-                  !order.deliveryDate!.isBefore(startDate) &&
-                  !order.deliveryDate!.isAfter(endDate);
+              return 
+                  !order.deliveryDate.isBefore(startDate) &&
+                  !order.deliveryDate.isAfter(endDate);
             }).toList()
             : [];
 

@@ -64,7 +64,7 @@ class _ChatPageState extends State<ChatPage> {
             backgroundColor: Colors.grey[300],
             child: FutureBuilder(
               future: Future.value(
-                (authNotifier.currentUser == currentChat.consumerId)
+                (authNotifier.currentUser!.id == currentChat.consumerId)
                     ? producer.imageUrl
                     : consumer.imageUrl,
               ),

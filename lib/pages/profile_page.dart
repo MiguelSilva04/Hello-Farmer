@@ -4,7 +4,6 @@ import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
-import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:provider/provider.dart';
 
@@ -14,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/models/app_user.dart';
 import '../core/models/product_ad.dart';
-import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_service.dart';
 import '../utils/app_routes.dart';
@@ -778,7 +776,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       orders!.map((order) {
                         final String? firstProductAdId =
                             order.ordersItems.isNotEmpty
-                                ? order.ordersItems.first.produtctAdId
+                                ? order.ordersItems.first.productAdId
                                 : null;
 
                         ProductAd? matchedProductAd;
@@ -794,9 +792,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       );
                                   matchedProductAd = productAd;
                                   break;
-                                } catch (e) {
-                                  // Não encontrado nesta loja, continua
-                                }
+                                } catch (e) {}
                               }
                             }
 

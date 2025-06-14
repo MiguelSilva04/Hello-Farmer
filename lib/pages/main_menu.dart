@@ -17,7 +17,6 @@ import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/store_service.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/manage_page.dart';
-import '../core/services/other/settings_notifier.dart';
 import '../utils/app_routes.dart';
 import '../components/producer/home_page.dart';
 import '../components/producer/sell_page.dart';
@@ -332,26 +331,36 @@ class _MainMenuState extends State<MainMenu>
                       ),
                     ],
               ),
-              if (!user.isProducer)
-                InkWell(
-                  onTap:
-                      () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (ctx) => ShoppingCartPage()),
-                      ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Badge.count(
-                      count:
-                          ((user as ConsumerUser).shoppingCart != null)
-                              ? user.shoppingCart!.productsQty!.length
-                              : 0,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Icon(Icons.shopping_cart_rounded),
+              Consumer<AuthNotifier>(
+                builder: (context, userProvider, _) {
+                  final user = userProvider.currentUser;
+                  if (user == null || user.isProducer) return SizedBox.shrink();
+
+                  return InkWell(
+                    onTap:
+                        () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => ShoppingCartPage(),
+                          ),
+                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Badge.count(
+                        count:
+                            (user as ConsumerUser)
+                                .shoppingCart
+                                ?.productsQty
+                                ?.length ??
+                            0,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Icon(Icons.shopping_cart_rounded),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
+              ),
             ],
           ),
           body: FadeTransition(

@@ -174,7 +174,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
         for (final ad in order.ordersItems) {
           final productAd =
               currentStore.productsAds!
-                  .where((p) => p.id == ad.produtctAdId)
+                  .where((p) => p.id == ad.productAdId)
                   .first;
           final product = productAd.product;
           final name = product.name;

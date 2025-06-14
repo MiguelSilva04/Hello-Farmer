@@ -67,7 +67,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Última tentativa:\n${DateFormat.yMMMd().format(order.pickupDate)}',
+                          'Última tentativa:\n${DateFormat.yMMMd().format(order.deliveryDate)}',
                           style: const TextStyle(
                             fontSize: 18,
                             color: Colors.black54,
@@ -153,7 +153,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                     final productAd =
                                         currentStore.productsAds!
                                             .where(
-                                              (pr) => pr.id == p.produtctAdId,
+                                              (pr) => pr.id == p.productAdId,
                                             )
                                             .first;
                                     return Padding(
@@ -198,7 +198,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                       final productAd =
                                           currentStore.productsAds!
                                               .where(
-                                                (pr) => pr.id == p.produtctAdId,
+                                                (pr) => pr.id == p.productAdId,
                                               )
                                               .first;
                                       return Padding(

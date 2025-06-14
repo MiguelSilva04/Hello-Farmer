@@ -119,7 +119,7 @@ class _BillingSectionState extends State<BillingSection> {
     return _orders
         .where(
           (order) =>
-              order.pickupDate.isAfter(provider.billingFromDate) &&
+              order.deliveryDate.isAfter(provider.billingFromDate) &&
               order.state == OrderState.Delivered,
         )
         .toList();
@@ -313,7 +313,7 @@ class _BillingSectionState extends State<BillingSection> {
                         child: ListTile(
                           title: Text('Encomenda ${order.id}'),
                           subtitle: Text(
-                            'Data: ${DateFormat.yMMMd().format(order.pickupDate)}\nEstado: ${order.state.name}',
+                            'Data: ${DateFormat.yMMMd().format(order.deliveryDate)}\nEstado: ${order.state.name}',
                             style: TextStyle(
                               color:
                                   Theme.of(context).colorScheme.inversePrimary,

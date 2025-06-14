@@ -254,7 +254,7 @@ class _OrdersPageState extends State<OrdersPage> {
                       order.ordersItems
                           .map(
                             (ad) => allAds.firstWhere(
-                              (a) => a.id == ad.produtctAdId,
+                              (a) => a.id == ad.productAdId,
                             ),
                           )
                           .toList()
@@ -408,11 +408,9 @@ class OrderCard extends StatelessWidget {
                         ),
                       if (order.state != OrderState.Abandonned)
                         Text(
-                          order.deliveryDate != null
-                              ? DateFormat.yMMMEd(
-                                'pt_PT',
-                              ).format(order.deliveryDate!)
-                              : "quinta, 7/06/2025",
+                          DateFormat.yMMMEd(
+                            'pt_PT',
+                          ).format(order.deliveryDate),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
@@ -32,6 +34,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   List<MapEntry<ProductAd, double>> productAdEntries = [];
   late AuthNotifier authNotifier;
 
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,16 +48,28 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     _loadCartProducts();
   }
 
+  double roundDouble(double value, int places) {
+    num mod = pow(10.0, places);
+    return ((value * mod).round().toDouble() / mod);
+  }
+
   Future<void> sendOrderToFirestore({
-    required String userId,
+    required String consumerId,
+    required String storeId,
     required String address,
     required List<Map<String, dynamic>> cartItems,
+    required double totalPrice,
   }) async {
+    setState(() => _isLoading = true);
     await authNotifier.createOrder(
-      userId: userId,
+      consumerId: consumerId,
+      storeId: storeId,
       address: address,
       cartItems: cartItems,
+      totalPrice: roundDouble(totalPrice, 2),
     );
+    setState(() => _isLoading = false);
+    _loadCartProducts();
   }
 
   void _loadCartProducts() {
@@ -107,7 +123,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       return;
     }
 
-    // Atualiza no backend
     if (delta > 0) {
       await Provider.of<AuthNotifier>(
         context,
@@ -120,7 +135,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       ).decreaseQuantity(consumer.id, productAd.id);
     }
 
-    // Atualiza visualmente
     setState(() {
       productAdQuantities[productAd] = newQty;
       productAdEntries[currentIndex] = MapEntry(productAd, newQty);
@@ -263,13 +277,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (productAdQuantities.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text("Carrinho")),
-        body: Center(child: Text("Carrinho vazio.")),
-      );
-    }
-
     if (multipleStoresDetected) {
       return Scaffold(
         appBar: AppBar(title: Text("Carrinho")),
@@ -284,13 +291,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
             ),
           ),
         ),
-      );
-    }
-
-    if (store == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text("Carrinho")),
-        body: Center(child: Text("Carrinho vazio ou dados inconsistentes.")),
       );
     }
 
@@ -310,12 +310,15 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context), // cancela
+                onPressed: () => Navigator.pop(context),
                 child: Text('Cancelar'),
               ),
               ElevatedButton(
-                onPressed:
-                    () => Navigator.pop(context, controller.text), // envia
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  foregroundColor: Theme.of(context).colorScheme.secondary,
+                ),
+                onPressed: () => Navigator.pop(context, controller.text),
                 child: Text('Confirmar'),
               ),
             ],
@@ -326,28 +329,41 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text("Carrinho")),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              "Banca: ${store!.name}",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ),
-          Expanded(
-            child: AnimatedList(
-              key: _listKey,
-              padding: EdgeInsets.all(16),
-              initialItemCount: productAdEntries.length,
-              itemBuilder: (context, index, animation) {
-                return _buildItem(productAdEntries[index], index, animation);
-              },
-            ),
-          ),
-        ],
-      ),
+      body:
+          productAdQuantities.isEmpty
+              ? Center(child: Text("Carrinho Vazio"))
+              : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      "Banca: ${store!.name}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: AnimatedList(
+                      key: _listKey,
+                      padding: EdgeInsets.all(16),
+                      initialItemCount: productAdEntries.length,
+                      itemBuilder: (context, index, animation) {
+                        return _buildItem(
+                          productAdEntries[index],
+                          index,
+                          animation,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.secondary,
@@ -389,55 +405,64 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
               ),
             ),
             SizedBox(height: 12),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            (_isLoading)
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 8,
+                    shadowColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.5),
+                  ),
+                  onPressed:
+                      productAdQuantities.isEmpty
+                          ? () {}
+                          : () async {
+                            final address = await showAddressDialog(context);
+
+                            if (address != null && address.trim().isNotEmpty) {
+                              final userId = AuthService().currentUser!.id;
+
+                              final cartItems =
+                                  cart!.productsQty!
+                                      .map(
+                                        (item) => {
+                                          'productId': item.productAdId,
+                                          'quantity': item.quantity,
+                                        },
+                                      )
+                                      .toList();
+
+                              await sendOrderToFirestore(
+                                consumerId: userId,
+                                storeId: store!.id,
+                                address: address,
+                                cartItems: cartItems,
+                                totalPrice: _calculateTotal(),
+                              );
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Pedido efetuado com sucesso!'),
+                                ),
+                              );
+                            }
+                          },
+                  child: Text(
+                    "Finalizar compra",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ),
-                elevation: 8,
-                shadowColor: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.5),
-              ),
-              onPressed: () async {
-                final address = await showAddressDialog(context);
-
-                if (address != null && address.trim().isNotEmpty) {
-                  final userId = AuthService().currentUser!.id;
-
-                  final cartItems =
-                      cart!.productsQty!
-                          .map(
-                            (item) => {
-                              'productId': item.productAdId,
-                              'quantity': item.quantity,
-                            },
-                          )
-                          .toList();
-
-                  await sendOrderToFirestore(
-                    userId: userId,
-                    address: address,
-                    cartItems: cartItems,
-                  );
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Pedido efetuado com sucesso!')),
-                  );
-                }
-              },
-              child: Text(
-                "Finalizar compra",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ),
           ],
         ),
       ),

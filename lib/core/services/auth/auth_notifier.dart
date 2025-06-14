@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/shopping_cart.dart';
@@ -7,8 +7,10 @@ import 'package:harvestly/core/models/shopping_cart.dart';
 import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
+import '../../models/order.dart';
 import 'auth_service.dart';
 import 'store_service.dart';
+import 'package:collection/collection.dart';
 
 class AuthNotifier extends ChangeNotifier {
   AppUser? _currentUser;
@@ -27,9 +29,10 @@ class AuthNotifier extends ChangeNotifier {
   List<ProducerUser> get producerUsers =>
       _allUsers.whereType<ProducerUser>().toList();
 
+  final fireStore = cf.FirebaseFirestore.instance;
+
   Future<void> loadAllUsers() async {
-    final userSnapshot =
-        await FirebaseFirestore.instance.collection('users').get();
+    final userSnapshot = await fireStore.collection('users').get();
 
     _allUsers =
         userSnapshot.docs.map((doc) {
@@ -51,13 +54,46 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  ProductRegist? getExistingProduct(ShoppingCart? cart, String productId) {
+    return cart?.productsQty?.firstWhereOrNull(
+      (item) => item.productAdId == productId,
+    );
+  }
+
   Future<void> addToCart(ProductAd productAd, double quantity) async {
     await AuthService().addToCart(productAd, quantity);
+    final consumer = _currentUser as ConsumerUser;
+    final cart = consumer.shoppingCart;
+    final productId = productAd.id;
+
+    if (cart == null || cart.productsQty == null) {
+      consumer.shoppingCart = ShoppingCart(
+        productsQty: [
+          ProductRegist(productAdId: productId, quantity: quantity),
+        ],
+        totalPrice: productAd.product.price * quantity,
+      );
+    } else {
+      final existingProduct = getExistingProduct(cart, productId);
+
+      if (existingProduct != null) {
+        existingProduct.quantity += quantity;
+      } else {
+        cart.productsQty!.add(
+          ProductRegist(productAdId: productId, quantity: quantity),
+        );
+      }
+
+      cart.totalPrice =
+          (cart.totalPrice ?? 0.0) + (productAd.product.price * quantity);
+    }
+
+    notifyListeners();
   }
 
   Future<void> _loadStoresAndAdsForProducer(ProducerUser producer) async {
     final storeSnapshot =
-        await FirebaseFirestore.instance
+        await fireStore
             .collection('stores')
             .where('ownerId', isEqualTo: producer.id)
             .get();
@@ -70,14 +106,14 @@ class AuthNotifier extends ChangeNotifier {
       final store = Store.fromJson({
         ...data,
         'id': doc.id,
-        if (data['createdAt'] is Timestamp)
-          'createdAt': (data['createdAt'] as Timestamp).toDate(),
-        if (data['updatedAt'] is Timestamp)
-          'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+        if (data['createdAt'] is cf.Timestamp)
+          'createdAt': (data['createdAt'] as cf.Timestamp).toDate(),
+        if (data['updatedAt'] is cf.Timestamp)
+          'updatedAt': (data['updatedAt'] as cf.Timestamp).toDate(),
       });
 
       final adSnapshot =
-          await FirebaseFirestore.instance
+          await fireStore
               .collection('stores')
               .doc(store.id)
               .collection('ads')
@@ -89,10 +125,10 @@ class AuthNotifier extends ChangeNotifier {
             return ProductAd.fromJson({
               ...adData,
               'id': adDoc.id,
-              if (adData['createdAt'] is Timestamp)
-                'createdAt': (adData['createdAt'] as Timestamp).toDate(),
-              if (adData['updatedAt'] is Timestamp)
-                'updatedAt': (adData['updatedAt'] as Timestamp).toDate(),
+              if (adData['createdAt'] is cf.Timestamp)
+                'createdAt': (adData['createdAt'] as cf.Timestamp).toDate(),
+              if (adData['updatedAt'] is cf.Timestamp)
+                'updatedAt': (adData['updatedAt'] as cf.Timestamp).toDate(),
             });
           }).toList();
 
@@ -103,7 +139,7 @@ class AuthNotifier extends ChangeNotifier {
 
   Future<void> _loadProducerStoresAndAds() async {
     final storeSnapshot =
-        await FirebaseFirestore.instance
+        await fireStore
             .collection('stores')
             .where('ownerId', isEqualTo: currentUser!.id)
             .get();
@@ -116,14 +152,14 @@ class AuthNotifier extends ChangeNotifier {
       final store = Store.fromJson({
         ...data,
         'id': doc.id,
-        if (data['createdAt'] is Timestamp)
-          'createdAt': (data['createdAt'] as Timestamp).toDate(),
-        if (data['updatedAt'] is Timestamp)
-          'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+        if (data['createdAt'] is cf.Timestamp)
+          'createdAt': (data['createdAt'] as cf.Timestamp).toDate(),
+        if (data['updatedAt'] is cf.Timestamp)
+          'updatedAt': (data['updatedAt'] as cf.Timestamp).toDate(),
       });
 
       final adSnapshot =
-          await FirebaseFirestore.instance
+          await fireStore
               .collection('stores')
               .doc(store.id)
               .collection('ads')
@@ -135,10 +171,10 @@ class AuthNotifier extends ChangeNotifier {
             return ProductAd.fromJson({
               ...adData,
               'id': adDoc.id,
-              if (adData['createdAt'] is Timestamp)
-                'createdAt': (adData['createdAt'] as Timestamp).toDate(),
-              if (adData['updatedAt'] is Timestamp)
-                'updatedAt': (adData['updatedAt'] as Timestamp).toDate(),
+              if (adData['createdAt'] is cf.Timestamp)
+                'createdAt': (adData['createdAt'] as cf.Timestamp).toDate(),
+              if (adData['updatedAt'] is cf.Timestamp)
+                'updatedAt': (adData['updatedAt'] as cf.Timestamp).toDate(),
             });
           }).toList();
 
@@ -175,14 +211,13 @@ class AuthNotifier extends ChangeNotifier {
     final consumer = _currentUser as ConsumerUser;
 
     final cartQuery =
-        await FirebaseFirestore.instance
+        await fireStore
             .collection('shoppingCarts')
             .where('ownerId', isEqualTo: consumer.id)
             .limit(1)
             .get();
 
     if (cartQuery.docs.isEmpty) {
-      print("Carrinho não encontrado");
       consumer.shoppingCart = ShoppingCart(productsQty: [], totalPrice: 0);
       return;
     }
@@ -217,9 +252,36 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<DocumentReference?> _getCartDocRef(String ownerId) async {
+  ConsumerUser? getConsumerUserById(String id) {
+    final user = allUsers.whereType<ConsumerUser>().firstWhere(
+      (u) => u.id == id,
+      orElse: () => throw Exception("Usuário não encontrado"),
+    );
+    return user;
+  }
+
+  Future<void> loadOrders() async {
+    final orderSnapshot = await fireStore.collection('orders').get();
+
+    for (final doc in orderSnapshot.docs) {
+      final data = doc.data();
+      final consumerId = data['consumerId'];
+      final order = Order.fromJson({...data, 'id': doc.id});
+
+      final consumer = getConsumerUserById(consumerId);
+
+      if (consumer != null) {
+        consumer.orders = [];
+        consumer.orders!.add(order);
+      }
+    }
+
+    notifyListeners();
+  }
+
+  Future<cf.DocumentReference?> _getCartDocRef(String ownerId) async {
     final cartQuery =
-        await FirebaseFirestore.instance
+        await fireStore
             .collection('shoppingCarts')
             .where('ownerId', isEqualTo: ownerId)
             .limit(1)
@@ -322,24 +384,39 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   Future<void> createOrder({
-    required String userId,
+    required String consumerId,
+    required String storeId,
     required String address,
     required List<Map<String, dynamic>> cartItems,
+    required double totalPrice,
   }) async {
     final orderData = {
-      'userId': userId,
+      'consumerId': consumerId,
+      'storeId': storeId,
       'address': address,
       'status': 'Pendente',
-      'createdAt': Timestamp.now(),
+      'createdAt': cf.Timestamp.now(),
+      'deliveryDate': cf.Timestamp.fromDate(
+        DateTime.now().add(Duration(days: 2)),
+      ),
       'items': cartItems,
+      'totalPrice': totalPrice,
     };
 
-    await FirebaseFirestore.instance.collection('orders').add(orderData);
+    await fireStore.collection('orders').add(orderData);
 
-    final cartList = (_currentUser as ConsumerUser).shoppingCart?.productsQty;
-    if (cartList != null) {
-      cartList.clear();
+    final shoppingCartQuery =
+        await fireStore
+            .collection('shoppingCarts')
+            .where('ownerId', isEqualTo: consumerId)
+            .get();
+
+    for (final doc in shoppingCartQuery.docs) {
+      await doc.reference.delete();
     }
+
+    (_currentUser as ConsumerUser).shoppingCart?.productsQty?.clear();
+    (_currentUser as ConsumerUser).shoppingCart?.totalPrice = 0;
 
     notifyListeners();
   }

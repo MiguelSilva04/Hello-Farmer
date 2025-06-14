@@ -26,10 +26,7 @@ class OrderDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final date =
-        order.deliveryDate != null
-            ? DateFormat.yMMMEd('pt_PT').format(order.deliveryDate!)
-            : null;
+    final date = DateFormat.yMMMEd('pt_PT').format(order.deliveryDate);
     final products = order.ordersItems;
     final deliveryMethod =
         (AuthService().users
@@ -45,7 +42,7 @@ class OrderDetailsPage extends StatelessWidget {
                           [],
                     )
                     .firstWhere(
-                      (ad) => ad.id == products.first.produtctAdId,
+                      (ad) => ad.id == products.first.productAdId,
                       orElse:
                           () => throw Exception("ProductAd não encontrado."),
                     )
@@ -69,8 +66,7 @@ class OrderDetailsPage extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (date != null &&
-                            order.state == OrderState.Delivered) ...[
+                        if (order.state == OrderState.Delivered) ...[
                           Text(
                             "Data da entrega: ",
                             style: const TextStyle(fontSize: 15),
@@ -83,9 +79,8 @@ class OrderDetailsPage extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (date != null &&
-                            (order.state == OrderState.Pendent ||
-                                order.state == OrderState.Sent)) ...[
+                        if ((order.state == OrderState.Pendent ||
+                            order.state == OrderState.Sent)) ...[
                           Text(
                             "Entrega prevista para: ",
                             style: const TextStyle(fontSize: 15),
@@ -98,13 +93,16 @@ class OrderDetailsPage extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (date == null) ...[
+                        if (order.deliveryDate.isAfter(DateTime.now()) &&
+                            order.state == OrderState.Sent) ...[
                           Text(
                             "Abandonada desde: ",
                             style: const TextStyle(fontSize: 15),
                           ),
                           Text(
-                            DateFormat.yMMMd('pt_PT').format(order.pickupDate),
+                            DateFormat.yMMMd(
+                              'pt_PT',
+                            ).format(order.deliveryDate),
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
@@ -327,7 +325,7 @@ class OrderDetailsPage extends StatelessWidget {
                                     [],
                               )
                               .firstWhere(
-                                (ad) => ad.id == item.produtctAdId,
+                                (ad) => ad.id == item.productAdId,
                                 orElse:
                                     () =>
                                         throw Exception(

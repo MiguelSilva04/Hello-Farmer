@@ -70,7 +70,7 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
         for (var ad in order.ordersItems) {
           final productAd =
               currentStore.productsAds!
-                  .where((p) => p.id == ad.produtctAdId)
+                  .where((p) => p.id == ad.productAdId)
                   .first;
           for (var method in productAd.preferredDeliveryMethods(
             authNotifier.producerUsers,

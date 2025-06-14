@@ -64,7 +64,7 @@ class AnalysisReportsSection extends StatelessWidget {
     final buyersToday =
         orders
             .where((order) {
-              final date = order.deliveryDate ?? order.pickupDate;
+              final date = order.deliveryDate;
               return date.year == today.year &&
                   date.month == today.month &&
                   date.day == today.day;
@@ -97,7 +97,7 @@ class AnalysisReportsSection extends StatelessWidget {
       int vendasTotal = 0;
 
       for (var order in orders) {
-        final date = order.deliveryDate ?? order.pickupDate;
+        final date = order.deliveryDate;
         vendasTotal++;
         if (date.year == currentYear && getWeekNumber(date) == currentWeek) {
           vendasSemana++;
@@ -342,7 +342,7 @@ class AnalysisReportsSection extends StatelessWidget {
                     listen: false,
                   ).selectedStoreIndex]
                   .productsAds!
-                  .where((pr) => pr.id == p.produtctAdId)
+                  .where((pr) => pr.id == p.productAdId)
                   .first;
           return finalProductAd.product.name == productName;
         });
@@ -351,7 +351,7 @@ class AnalysisReportsSection extends StatelessWidget {
           if (order.state == OrderState.Delivered) {
             deliveredOrders++;
           }
-          final orderDate = order.deliveryDate ?? order.pickupDate;
+          final orderDate = order.deliveryDate;
           if (lastOrderDate == null || orderDate.isAfter(lastOrderDate)) {
             lastOrderDate = orderDate;
           }

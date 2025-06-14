@@ -163,7 +163,7 @@ class InvoicePage extends StatelessWidget {
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       Text(
-                                        "Data: ${DateFormat.yMMMd('pt_PT').format(order.pickupDate)}",
+                                        "Data: ${DateFormat.yMMMd('pt_PT').format(order.deliveryDate)}",
                                         style: TextStyle(fontSize: 16),
                                       ),
                                     ],

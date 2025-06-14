@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/store.dart';
 
+import '../../models/order.dart';
 import '../../models/product_ad.dart';
 
 class StoreService with ChangeNotifier {
@@ -13,9 +14,10 @@ class StoreService with ChangeNotifier {
 
   List<Store> get allStores => List.unmodifiable(_allStores);
 
+  final firestore = cf.FirebaseFirestore.instance;
+
   Future<void> loadStores() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('stores').get();
+    final snapshot = await firestore.collection('stores').get();
 
     _allStores.clear();
 
@@ -26,7 +28,7 @@ class StoreService with ChangeNotifier {
       final store = Store.fromJson({...storeData, 'id': storeId});
 
       final adsSnapshot =
-          await FirebaseFirestore.instance
+          await firestore
               .collection('stores')
               .doc(storeId)
               .collection('ads')
@@ -46,6 +48,30 @@ class StoreService with ChangeNotifier {
   }
 
   List<Store> getStoresByOwner(String ownerId) {
-    return _allStores.where((store) => store.ownerId == ownerId).toList();
+    final stores =
+        _allStores.where((store) => store.ownerId == ownerId).toList();
+
+    for (final store in stores) {
+      _loadOrdersForStore(store);
+    }
+
+    return stores;
+  }
+
+  Future<void> _loadOrdersForStore(Store store) async {
+    final orderSnapshot =
+        await firestore
+            .collection('orders')
+            .where('storeId', isEqualTo: store.id)
+            .get();
+
+    store.orders =
+        orderSnapshot.docs.map((doc) {
+          final data = doc.data();
+          print(data);
+          return Order.fromJson({...data, 'id': doc.id});
+        }).toList();
+
+    notifyListeners();
   }
 }

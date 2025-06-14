@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart' as cf;
+
 enum OrderState { Delivered, Pendent, Sent, Abandonned }
 
 extension OrderStateExtension on OrderState {
@@ -16,16 +18,28 @@ extension OrderStateExtension on OrderState {
 }
 
 class OrderItem {
-  final String produtctAdId;
+  final String productAdId;
   final double qty;
 
-  OrderItem({required this.produtctAdId, required this.qty});
+  OrderItem({required this.productAdId, required this.qty});
+
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    return OrderItem(
+      productAdId: json['productId'],
+      qty: (json['quantity'] as num).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'productId': productAdId, 'quantity': qty};
+  }
 }
+
 
 class Order {
   final String id;
-  final DateTime pickupDate;
-  DateTime? deliveryDate;
+  final DateTime createdAt;
+  DateTime deliveryDate;
   final String address;
   final OrderState state;
   final List<OrderItem> ordersItems;
@@ -35,7 +49,7 @@ class Order {
 
   Order({
     required this.id,
-    required this.pickupDate,
+    required this.createdAt,
     required this.deliveryDate,
     required this.address,
     required this.state,
@@ -44,4 +58,42 @@ class Order {
     required this.consumerId,
     required this.producerId,
   });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    return Order(
+      id: json['id'],
+      createdAt:
+          (json['createdAt'] is cf.Timestamp)
+              ? (json['createdAt'] as cf.Timestamp).toDate()
+              : json['createdAt'],
+      deliveryDate:
+          (json['deliveryDate'] is cf.Timestamp)
+              ? (json['deliveryDate'] as cf.Timestamp).toDate()
+              : json['deliveryDate'],
+      address: json['address'],
+      state: OrderState.values.firstWhere(
+        (e) => e.toString().split('.').last == json['state'],
+      ),
+      ordersItems:
+          (json['items'] as List)
+              .map((item) => OrderItem.fromJson(item))
+              .toList(),
+      totalPrice: (json['totalPrice'] as num).toDouble(),
+      consumerId: json['consumerId'],
+      producerId: json['producerId'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'deliveryDate': deliveryDate.toIso8601String(),
+      'address': address,
+      'state': state.toString().split('.').last,
+      'ordersItems': ordersItems.map((e) => e.toJson()).toList(),
+      'totalPrice': totalPrice,
+      'consumerId': consumerId,
+      'producerId': producerId,
+    };
+  }
 }

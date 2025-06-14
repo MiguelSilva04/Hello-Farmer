@@ -706,11 +706,9 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                             builder:
                                 (_) => QuantityDialog(
                                   onConfirm: (double quantity) {
-                                    addToCart(
-                                      quantity,
-                                    ); // envia quantidade como parâmetro
+                                    addToCart(quantity);
                                   },
-                                  unit: widget.ad.product.unit,
+                                  product: widget.ad.product,
                                 ),
                           ),
 
@@ -807,30 +805,40 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
 
 class QuantityDialog extends StatefulWidget {
   final void Function(double quantity) onConfirm;
-  final Unit unit;
+  final Product product;
 
-  const QuantityDialog({Key? key, required this.onConfirm, required this.unit})
-    : super(key: key);
+  const QuantityDialog({
+    Key? key,
+    required this.onConfirm,
+    required this.product,
+  }) : super(key: key);
 
   @override
   State<QuantityDialog> createState() => _QuantityDialogState();
 }
 
 class _QuantityDialogState extends State<QuantityDialog> {
-  double _quantity = 1.0;
+  late double _quantity;
   late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: '1');
+    _quantity = 1;
+    _controller = TextEditingController(
+      text:
+          widget.product.unit == Unit.KG
+              ? widget.product.minAmount!.toStringAsFixed(2)
+              : widget.product.minAmount!.toStringAsFixed(0),
+    );
   }
 
   void _updateQuantity(double newValue) {
     setState(() {
-      _quantity = newValue.clamp(1, 999).toDouble();
+      _quantity =
+          newValue.clamp(widget.product.minAmount!.toDouble(), 999).toDouble();
       _controller.text =
-          widget.unit == Unit.KG
+          widget.product.unit == Unit.KG
               ? _quantity.toStringAsFixed(2)
               : _quantity.toStringAsFixed(0);
     });

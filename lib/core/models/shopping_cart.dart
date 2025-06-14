@@ -6,7 +6,7 @@ class ProductRegist {
 
 class ShoppingCart {
   List<ProductRegist>? productsQty;
-  int? totalPrice;
+  double? totalPrice;
 
   ShoppingCart({this.productsQty, this.totalPrice});
 }

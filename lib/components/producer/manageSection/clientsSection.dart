@@ -80,7 +80,6 @@ class _ClientsSectionState extends State<ClientsSection> {
                       final nonNullDates =
                           orders
                               .map((o) => o.deliveryDate)
-                              .where((date) => date != null)
                               .cast<DateTime>()
                               .toList();
                       if (nonNullDates.isEmpty) return false;
@@ -153,7 +152,6 @@ class _ClientsSectionState extends State<ClientsSection> {
               final nonNullDates =
                   orders
                       .map((o) => o.deliveryDate)
-                      .where((date) => date != null)
                       .cast<DateTime>()
                       .toList();
               final lastOrderDate =

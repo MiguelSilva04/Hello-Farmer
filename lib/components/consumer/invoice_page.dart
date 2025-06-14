@@ -29,7 +29,7 @@ class InvoicePageConsumer extends StatelessWidget {
         ).selectedStoreIndex;
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
       final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(
-        (ad) => ad.id == item.produtctAdId,
+        (ad) => ad.id == item.productAdId,
       );
       final product = ad.product;
       return sum + (product.price * item.qty);
@@ -118,7 +118,7 @@ class InvoicePageConsumer extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        order.pickupDate.toLocal().toString().split(' ')[0],
+                        order.deliveryDate.toLocal().toString().split(' ')[0],
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
@@ -174,7 +174,7 @@ class InvoicePageConsumer extends StatelessWidget {
                   ),
                   ...order.ordersItems.map((item) {
                     final ad = producer.stores[selectedStoreIndex].productsAds!
-                        .firstWhere((ad) => ad.id == item.produtctAdId);
+                        .firstWhere((ad) => ad.id == item.productAdId);
                     final product = ad.product;
 
                     final unitLabel = product.unit.toDisplayString();
@@ -369,7 +369,7 @@ class InvoicePageConsumer extends StatelessWidget {
 
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
       final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(
-        (ad) => ad.id == item.produtctAdId,
+        (ad) => ad.id == item.productAdId,
       );
       final product = ad.product;
       return sum + (product.price * item.qty);
@@ -404,7 +404,7 @@ class InvoicePageConsumer extends StatelessWidget {
                   pw.SizedBox(height: 16),
                   pw.Text("Cliente: $consumerName"),
                   pw.Text(
-                    "Data: ${order.pickupDate.toLocal().toString().split(' ')[0]}",
+                    "Data: ${order.deliveryDate.toLocal().toString().split(' ')[0]}",
                   ),
                   pw.SizedBox(height: 24),
                   pw.TableHelper.fromTextArray(
@@ -414,7 +414,7 @@ class InvoicePageConsumer extends StatelessWidget {
                           final ad = producer
                               .stores[selectedStoreIndex]
                               .productsAds!
-                              .firstWhere((ad) => ad.id == item.produtctAdId);
+                              .firstWhere((ad) => ad.id == item.productAdId);
                           final product = ad.product;
                           final unitLabel = product.unit.toDisplayString();
                           final isKg = product.unit == Unit.KG;

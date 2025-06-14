@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:light_sensor/light_sensor.dart';
 
 enum Language { PORTUGUESE, ENGLISH }
 
@@ -22,6 +23,7 @@ extension ReturnPolicyExtension on ReturnPolicy {
 
 class PreferencesNotifier with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
+  bool _autoTheme = false;
   Language language = Language.PORTUGUESE;
   bool _isActivePin = false;
   bool _biometricsAuthentication = false;
@@ -118,6 +120,44 @@ class PreferencesNotifier with ChangeNotifier {
     }
   }
 
+  Future<void> _updateThemeBasedOnLightSensor() async {
+    final hasSensor = await LightSensor.hasSensor();
+    if (!hasSensor) {
+      _themeMode = ThemeMode.light;
+      notifyListeners();
+      return;
+    }
+
+    try {
+      final lux = await LightSensor.luxStream().first;
+      print('Current lux: $lux');
+
+      if (lux < 50) {
+        _themeMode = ThemeMode.dark;
+      } else {
+        _themeMode = ThemeMode.light;
+      }
+
+      notifyListeners();
+    } catch (e) {
+      _themeMode = ThemeMode.light;
+      notifyListeners();
+    }
+  }
+
+  bool get isAutoTheme => _autoTheme;
+  Future<void> setAutoTheme(bool value) async {
+    _autoTheme = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('autoTheme', value);
+
+    if (_autoTheme) {
+      await _updateThemeBasedOnLightSensor();
+    }
+
+    notifyListeners();
+  }
+
   bool get biometricsAuthentication => _biometricsAuthentication;
   void setBiometricsAuthentication(bool value) {
     if (_biometricsAuthentication != value) {
@@ -162,6 +202,14 @@ class PreferencesNotifier with ChangeNotifier {
 
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
+    // Carregar tema
+    _autoTheme = prefs.getBool('autoTheme') ?? false;
+    if (_autoTheme) {
+      await _updateThemeBasedOnLightSensor();
+    } else {
+      final isDark = prefs.getBool('isDark') ?? false;
+      _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
+    }
 
     // Carregar linguagem
     final langString = prefs.getString('language');
@@ -260,10 +308,15 @@ O utilizador pode, a qualquer momento, eliminar a sua conta atrav√©s das defini√
     _loadTheme();
   }
 
-  void toggleTheme(bool isDark) async {
+  Future<void> toggleTheme(bool isDark) async {
+    if (_autoTheme) return;
+
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDark', isDark);
+    await prefs.setBool('autoTheme', false);
+    _autoTheme = false;
+
     notifyListeners();
   }
 
@@ -272,5 +325,9 @@ O utilizador pode, a qualquer momento, eliminar a sua conta atrav√©s das defini√
     final isDark = prefs.getBool('isDark') ?? false;
     _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
+  }
+
+  PreferencesNotifier() {
+    loadPreferences();
   }
 }

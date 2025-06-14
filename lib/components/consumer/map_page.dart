@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
-class ProducerLocation {
+class StoreLocation {
   final LatLng position;
   final String description;
+  late AuthNotifier authProvider;
 
-  ProducerLocation({required this.position, required this.description});
+  StoreLocation({required this.position, required this.description});
 }
 
 class MapPage extends StatefulWidget {
@@ -20,36 +23,35 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   LatLng? _currentPosition;
 
-  final List<ProducerLocation> _producerLocations = [
-    ProducerLocation(
-      position: const LatLng(37.4225, -122.0855),
-      description: 'Produtor de frutas orgânicas',
-    ),
-    ProducerLocation(
-      position: const LatLng(37.4215, -122.0815),
-      description: 'Produtor de vegetais frescos',
-    ),
-  ];
-
   Set<Marker> get _markers {
-    final markers = <Marker>{};
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final producers = authNotifier.producerUsers;
 
-    for (var i = 0; i < _producerLocations.length; i++) {
-      final prod = _producerLocations[i];
-      markers.add(
-        Marker(
-          markerId: MarkerId('producer_$i'),
-          position: prod.position,
-          infoWindow: InfoWindow(
-            title: 'Produtor $i',
-            snippet: prod.description,
-          ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueGreen,
-          ),
-        ),
-      );
+    final markers = <Marker>{};
+    int markerId = 0;
+
+    for (final producer in producers) {
+      for (final store in producer.stores) {
+        final coords = store.coordinates;
+        if (coords != null) {
+          markers.add(
+            Marker(
+              markerId: MarkerId('producer_store_$markerId'),
+              position: coords,
+              infoWindow: InfoWindow(
+                title: store.name,
+                snippet: store.description ?? 'Loja do produtor',
+              ),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueGreen,
+              ),
+            ),
+          );
+          markerId++;
+        }
+      }
     }
+
     return markers;
   }
 
@@ -57,6 +59,7 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _determinePosition();
+    Provider.of<AuthNotifier>(context, listen: false).loadAllUsers();
   }
 
   Future<void> _determinePosition() async {
@@ -104,41 +107,4 @@ class _MapPageState extends State<MapPage> {
           markers: _markers,
         );
   }
-  /* 
-  Future<void> _determinePosition() async {
-    // Pede permissão
-    var status = await Permission.location.request();
-
-    if (status.isGranted) {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      setState(() {
-        _currentPosition = LatLng(position.latitude, position.longitude);
-      });
-    } else {
-      // Permissão negada
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Permissão de localização negada.')),
-      );
-    }
-  } */
-
-  /*  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mapa')),
-      body: _currentPosition == null
-          ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              onMapCreated: (controller) => _mapController = controller,
-              initialCameraPosition: CameraPosition(
-                target: _currentPosition!,
-                zoom: 15,
-              ),
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-            ),
-    );
-  } */
 }

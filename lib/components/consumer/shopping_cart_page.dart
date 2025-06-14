@@ -215,6 +215,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         _isCheckout = false;
       });
 
+      _loadCartProducts();
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Pedido efetuado com sucesso!")));
@@ -273,6 +275,11 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                 (_isLoading)
                     ? Center(child: CircularProgressIndicator())
                     : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                      ),
                       onPressed: _submitCheckoutForm,
                       child: Text("Comprar"),
                     ),
@@ -432,39 +439,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       );
     }
 
-    Future<String?> showAddressDialog(BuildContext context) async {
-      final controller = TextEditingController();
-
-      return showDialog<String>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Endereço de Entrega'),
-            content: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: 'Insira o endereço completo',
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancelar'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  foregroundColor: Theme.of(context).colorScheme.secondary,
-                ),
-                onPressed: () => Navigator.pop(context, controller.text),
-                child: Text('Confirmar'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(title: Text("Carrinho")),
       body: _isCheckout ? _buildCheckoutForm() : _buildCartView(),
@@ -535,37 +509,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                           productAdQuantities.isEmpty
                               ? () {}
                               : () => setState(() => _isCheckout = true),
-                      // : () async {
-                      //   final address = await showAddressDialog(context);
-
-                      //   if (address != null && address.trim().isNotEmpty) {
-                      //     final userId = AuthService().currentUser!.id;
-
-                      //     final cartItems =
-                      //         cart!.productsQty!
-                      //             .map(
-                      //               (item) => {
-                      //                 'productId': item.productAdId,
-                      //                 'quantity': item.quantity,
-                      //               },
-                      //             )
-                      //             .toList();
-
-                      //     await sendOrderToFirestore(
-                      //       consumerId: userId,
-                      //       storeId: store!.id,
-                      //       address: address,
-                      //       cartItems: cartItems,
-                      //       totalPrice: _calculateTotal(),
-                      //     );
-
-                      //     ScaffoldMessenger.of(context).showSnackBar(
-                      //       SnackBar(
-                      //         content: Text('Pedido efetuado com sucesso!'),
-                      //       ),
-                      //     );
-                      //   }
-                      // },
                       child: Text(
                         "Finalizar Compra",
                         style: TextStyle(

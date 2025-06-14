@@ -337,9 +337,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            product.imageUrl.isNotEmpty
+            product.imageUrls.isNotEmpty
                 ? Image.network(
-                  product.imageUrl.first,
+                  product.imageUrls.first,
                   width: 75,
                   height: 75,
                   fit: BoxFit.cover,

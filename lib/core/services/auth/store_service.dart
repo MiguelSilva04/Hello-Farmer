@@ -129,4 +129,11 @@ class StoreService with ChangeNotifier {
     final downloadUrl = await ref.getDownloadURL();
     return downloadUrl;
   }
+
+  Future<void> saveProductAd(ProductAd productAd, String storeId) async {
+    final docRef = cf.FirebaseFirestore.instance
+        .collection('stores').doc(storeId).collection('productAds')
+        .doc(productAd.id);
+    await docRef.set(productAd.toJson(), cf.SetOptions(merge: true));
+  }
 }

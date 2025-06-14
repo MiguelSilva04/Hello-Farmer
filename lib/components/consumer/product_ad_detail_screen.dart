@@ -99,7 +99,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ProductImageCarousel(imageUrls: widget.ad.product.imageUrl),
+            ProductImageCarousel(imageUrls: widget.ad.product.imageUrls),
             const SizedBox(height: 5),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),

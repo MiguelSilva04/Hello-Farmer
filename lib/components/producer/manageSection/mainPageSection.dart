@@ -13,6 +13,7 @@ import '../../../core/models/store.dart';
 import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/store_service.dart';
 import '../../../core/services/other/bottom_navigation_notifier.dart';
+import '../../../utils/categories.dart';
 import '../../create_store.dart';
 
 class MainPageSection extends StatefulWidget {
@@ -137,6 +138,7 @@ class _MainPageSectionState extends State<MainPageSection> {
   Widget build(BuildContext context) {
     return _isEditingAd
         ? EditAdSection(
+          storeId: store.id,
           ad: _currentAd!,
           onCancel: () => setState(() => _isEditingAd = false),
           onSave: (val) {},
@@ -535,7 +537,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(8),
                                         child: Image.network(
-                                          ad.product.imageUrl.first,
+                                          ad.product.imageUrls.first,
                                           width: 75,
                                           height: 75,
                                           fit: BoxFit.cover,
@@ -668,12 +670,14 @@ class _MainPageSectionState extends State<MainPageSection> {
 }
 
 class EditAdSection extends StatefulWidget {
+  final String storeId;
   final ProductAd ad;
   final Function(ProductAd) onSave;
   final VoidCallback onCancel;
 
   const EditAdSection({
     super.key,
+    required this.storeId,
     required this.ad,
     required this.onSave,
     required this.onCancel,
@@ -694,10 +698,13 @@ class _EditAdSectionState extends State<EditAdSection> {
   late String unit;
   late bool isSearch;
   late bool isVisible;
+  HighlightType? highlightType;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    highlightType = widget.ad.highlightType;
     nameController = TextEditingController(text: widget.ad.product.name);
     descController = TextEditingController(text: widget.ad.description);
     priceController = TextEditingController(
@@ -707,8 +714,8 @@ class _EditAdSectionState extends State<EditAdSection> {
     unit = widget.ad.product.unit.toDisplayString();
 
     images = List.generate(6, (i) {
-      if (i < widget.ad.product.imageUrl.length) {
-        return imageProviderFromPath(widget.ad.product.imageUrl[i]);
+      if (i < widget.ad.product.imageUrls.length) {
+        return imageProviderFromPath(widget.ad.product.imageUrls[i]);
       }
       return null;
     });
@@ -722,6 +729,7 @@ class _EditAdSectionState extends State<EditAdSection> {
     unit = widget.ad.product.unit.toDisplayString();
 
     isSearch = widget.ad.highlightType == HighlightType.SEARCH;
+    if (widget.ad.highlightType == null) isSearch = false;
     isVisible = widget.ad.visibility == true;
   }
 
@@ -777,7 +785,8 @@ class _EditAdSectionState extends State<EditAdSection> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
+    setState(() => _isLoading = true);
     double? newPrice = double.tryParse(priceController.text);
     if (newPrice == null || newPrice <= 0) {
       ScaffoldMessenger.of(
@@ -801,33 +810,47 @@ class _EditAdSectionState extends State<EditAdSection> {
       );
       return;
     }
-
     widget.ad.description = descController.text;
     widget.ad.product.price = newPrice;
+    widget.ad.product.name = nameController.text;
     widget.ad.product.category = category;
+    widget.ad.visibility = isVisible;
 
     widget.ad.product.stock = newStock;
     widget.ad.product.minAmount = newMinQty;
     widget.ad.product.unit = unit == "Kg" ? Unit.KG : Unit.UNIT;
 
-    widget.ad.product.imageUrl.clear();
+    widget.ad.product.imageUrls.clear();
     for (var image in images) {
       if (image != null) {
         if (image is FileImage) {
-          widget.ad.product.imageUrl.add(image.file.path);
+          widget.ad.product.imageUrls.add(image.file.path);
         } else if (image is NetworkImage) {
-          widget.ad.product.imageUrl.add(image.url);
+          widget.ad.product.imageUrls.add(image.url);
         } else if (image is AssetImage) {
-          widget.ad.product.imageUrl.add(image.assetName);
+          widget.ad.product.imageUrls.add(image.assetName);
         }
       }
     }
 
-    // Atualiza o tipo de destaque conforme o valor de isSearch
     widget.ad.highlightType =
         isSearch ? HighlightType.SEARCH : HighlightType.HOME;
 
     widget.onSave(widget.ad);
+    print(widget.ad.product.name);
+    print(widget.ad.description);
+    print(widget.ad.product.price);
+    print(widget.ad.product.stock);
+    print(widget.ad.product.unit);
+    print(widget.ad.product.minAmount);
+    print(widget.ad.product.imageUrls.length);
+    print(widget.ad.highlightType!.toDisplayString());
+    print(widget.ad.visibility);
+    await Provider.of<StoreService>(
+      context,
+      listen: false,
+    ).saveProductAd(widget.ad, widget.storeId);
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -856,7 +879,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          widget.ad.product.imageUrl.first,
+                          widget.ad.product.imageUrls.first,
                           width: 75,
                           height: 75,
                           fit: BoxFit.cover,
@@ -1012,6 +1035,25 @@ class _EditAdSectionState extends State<EditAdSection> {
             TextField(
               controller: descController,
               decoration: const InputDecoration(labelText: 'Descrição'),
+              maxLines: null,
+            ),
+            DropdownButtonFormField<String>(
+              value: category,
+              items:
+                  Categories.categories
+                      .map(
+                        (m) => DropdownMenuItem(
+                          child: Text(m.name),
+                          value: m.name,
+                        ),
+                      )
+                      .toList(),
+              onChanged: (val) => setState(() => category = val!),
+              decoration: InputDecoration(labelText: "Categoria"),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.tertiaryFixed,
+              ),
+              dropdownColor: Theme.of(context).colorScheme.secondary,
             ),
             TextField(
               controller: priceController,
@@ -1116,10 +1158,16 @@ class _EditAdSectionState extends State<EditAdSection> {
                                   ),
                                   Checkbox(
                                     shape: const CircleBorder(),
-                                    value: isSearch,
+                                    value:
+                                        highlightType == HighlightType.SEARCH,
                                     onChanged: (val) {
                                       setState(() {
-                                        isSearch = !isSearch;
+                                        if (highlightType ==
+                                            HighlightType.SEARCH) {
+                                          highlightType = null;
+                                        } else {
+                                          highlightType = HighlightType.SEARCH;
+                                        }
                                       });
                                     },
                                   ),
@@ -1166,10 +1214,16 @@ class _EditAdSectionState extends State<EditAdSection> {
                                   ),
                                   Checkbox(
                                     shape: const CircleBorder(),
-                                    value: !isSearch,
+                                    value: highlightType == HighlightType.HOME,
                                     onChanged: (val) {
                                       setState(() {
-                                        isSearch = !isSearch;
+                                        if (highlightType ==
+                                            HighlightType.HOME) {
+                                          highlightType = null; // desativa
+                                        } else {
+                                          highlightType =
+                                              HighlightType.HOME; // ativa esse
+                                        }
                                       });
                                     },
                                   ),
@@ -1177,7 +1231,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                "Com este destaque, o anúncio vai ser apresentado rotativamente na página inicial de consumidores, antes mesmo de iniciarem a sua pesquisa, colocando também o embelema de 'TOP' na foto do anúncio de forma a apelar mais à atenção dos consumidores.",
+                                "Com este destaque, o anúncio vai ser apresentado rotativamente na página inicial de consumidores...",
                               ),
                             ],
                           ),
@@ -1198,14 +1252,17 @@ class _EditAdSectionState extends State<EditAdSection> {
                   child: const Text("Cancelar"),
                 ),
                 const SizedBox(width: 10),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.surface,
-                    foregroundColor: Theme.of(context).colorScheme.secondary,
-                  ),
-                  onPressed: _save,
-                  child: const Text("Guardar"),
-                ),
+                (_isLoading)
+                    ? Center(child: CircularProgressIndicator())
+                    : ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                      ),
+                      onPressed: _save,
+                      child: const Text("Guardar"),
+                    ),
               ],
             ),
           ],

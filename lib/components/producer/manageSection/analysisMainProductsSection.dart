@@ -182,7 +182,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
                   .first;
           final product = productAd.product;
           final name = product.name;
-          final image = product.imageUrl.first;
+          final image = product.imageUrls.first;
           final unit = productAd.product.unit;
           final amount = ad.qty;
           final price = productAd.product.price;

@@ -33,8 +33,8 @@ extension SeasonExtension on Season {
 class Product {
   static int _idCounter = 0;
   final String id;
-  final String name;
-  final List<String> imageUrl;
+  String name;
+  List<String> imageUrls;
   String category;
   double price;
   int? stock = 0;
@@ -44,7 +44,7 @@ class Product {
 
   Product({
     required this.name,
-    required this.imageUrl,
+    required this.imageUrls,
     required this.category,
     this.stock,
     required this.price,
@@ -71,8 +71,8 @@ class Product {
   static Product fromJson(Map<String, dynamic> json) {
     return Product(
       name: json['name'] ?? '',
-      imageUrl:
-          json['imageUrl'] != null ? List<String>.from(json['imageUrl']) : [],
+      imageUrls:
+          json['imageUrls'] != null ? List<String>.from(json['imageUrls']) : [],
       category: json['category'] ?? '',
       minAmount: (json['minAmount'] ?? 0).toDouble(),
       unit:
@@ -90,8 +90,8 @@ class Product {
   static Product fromMap(Map<String, dynamic> map) {
     return Product(
       name: map['name'] ?? '',
-      imageUrl:
-          map['imageUrl'] != null ? List<String>.from(map['imageUrl']) : [],
+      imageUrls:
+          map['imageUrls'] != null ? List<String>.from(map['imageUrls']) : [],
       category: map['category'] ?? '',
       minAmount:
           map['minAmount'] is int

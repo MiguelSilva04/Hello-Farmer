@@ -20,7 +20,7 @@ extension HighlightTypeExtension on HighlightType {
 
 class ProductAd {
   final String id;
-  final Product product;
+  Product product;
   final DateTime createdAt;
   String description = "";
   String price;
@@ -81,6 +81,35 @@ class ProductAd {
     return store.preferredDeliveryMethod;
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'createdAt': cf.Timestamp.fromDate(createdAt),
+      'product': {
+        'id': product.id,
+        'name': product.name,
+        'price': product.price,
+        'unit': product.unit.toDisplayString(),
+        'stock': product.stock,
+        'minAmount': product.minAmount,
+        'category': product.category,
+        'season': product.season.toDisplayString(),
+        'imageUrls': product.imageUrls,
+      },
+      'description': description,
+      'price': price,
+      'highlight': highlight,
+      'highlightDate':
+          highlightDate != null ? cf.Timestamp.fromDate(highlightDate!) : null,
+      'highlightType': highlightType?.toString(),
+      'visibility': visibility,
+      'keywords': keywords,
+      'viewsByUserDateTime':
+          viewsByUserDateTime?.map((v) => v.toJson()).toList(),
+      'adReviews': adReviews ?? [],
+    };
+  }
+
   static ProductAd fromJson(Map<String, dynamic> json) {
     final now = DateTime.now();
 
@@ -92,7 +121,7 @@ class ProductAd {
               : json['createdAt'],
       product: Product(
         name: json['title'] ?? '',
-        imageUrl:
+        imageUrls:
             json['imageUrls'] != null
                 ? List<String>.from(json['imageUrls'])
                 : [],
@@ -130,6 +159,7 @@ class ProductAd {
               : null,
       keywords:
           json['keywords'] != null ? List<String>.from(json['keywords']) : null,
+      adReviews: json['adReviews'] ?? [],
     );
   }
 
@@ -156,7 +186,7 @@ class ProductAd {
         minAmount: ${product.minAmount},
         category: ${product.category},
         season: ${product.season.toDisplayString()},
-        imageUrl: ${product.imageUrl.join(', ')}
+        imageUrls: ${product.imageUrls.join(', ')}
       },
       description: $description,
       price: $price,

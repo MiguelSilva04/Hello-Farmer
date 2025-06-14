@@ -284,7 +284,7 @@ class _ExplorePageState extends State<ExplorePage> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Image.network(
-                                    product.imageUrl.first,
+                                    product.imageUrls.first,
                                     width: 80,
                                     height: 80,
                                     fit: BoxFit.cover,

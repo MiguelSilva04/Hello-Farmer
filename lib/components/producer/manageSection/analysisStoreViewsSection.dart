@@ -136,7 +136,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
 
     final products =
         currentStore.productsAds
-            ?.where((p) => p.product.imageUrl.isNotEmpty)
+            ?.where((p) => p.product.imageUrls.isNotEmpty)
             .toList();
     products?.sort(
       (a, b) => (b.viewsByUserDateTime?.length ?? 0).compareTo(
@@ -269,7 +269,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                             ListTile(
                               leading: CircleAvatar(
                                 backgroundImage: AssetImage(
-                                  product.product.imageUrl.first,
+                                  product.product.imageUrls.first,
                                 ),
                               ),
                               title: Text(

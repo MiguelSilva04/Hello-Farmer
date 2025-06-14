@@ -113,7 +113,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
-                            productAd.product.imageUrl.first,
+                            productAd.product.imageUrls.first,
                             width: 70,
                             height: 70,
                             fit: BoxFit.cover,

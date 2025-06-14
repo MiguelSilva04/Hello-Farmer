@@ -718,7 +718,7 @@ class _StorePageState extends State<StorePage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              productAd.product.imageUrl.first,
+              productAd.product.imageUrls.first,
               width: 100,
               height: 100,
               fit: BoxFit.cover,

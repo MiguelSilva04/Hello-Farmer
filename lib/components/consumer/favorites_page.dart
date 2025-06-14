@@ -203,7 +203,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: Image.asset(
-                                      ad.product.imageUrl.first,
+                                      ad.product.imageUrls.first,
                                       width: 70,
                                       height: 70,
                                       fit: BoxFit.cover,

@@ -865,7 +865,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           child: Image.asset(
                                             matchedProductAd!
                                                 .product
-                                                .imageUrl
+                                                .imageUrls
                                                 .first,
                                             width: 70,
                                             height: 70,

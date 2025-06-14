@@ -289,7 +289,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           children: [
             CircleAvatar(
               radius: 35,
-              backgroundImage: NetworkImage(product.imageUrl.first),
+              backgroundImage: NetworkImage(product.imageUrls.first),
             ),
             const SizedBox(height: 6),
             SizedBox(

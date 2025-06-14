@@ -424,7 +424,7 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
                     Product(
                       name: nameCtrl.text,
                       season: Season.ALL,
-                      imageUrl: [],
+                      imageUrls: [],
                       category: '',
                       price: double.tryParse(priceCtrl.text) ?? 0,
                       unit: selectedUnit,

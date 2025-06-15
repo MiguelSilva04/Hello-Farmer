@@ -1079,11 +1079,19 @@ class _EditAdSectionState extends State<EditAdSection> {
                     const SizedBox(width: 15),
                     (isVisible)
                         ? IconButton(
-                          onPressed: () => setState(() => isVisible = false),
+                          onPressed:
+                              () => setState(() {
+                                _dataChanged = true;
+                                isVisible = false;
+                              }),
                           icon: Icon(Icons.visibility, color: Colors.blue),
                         )
                         : IconButton(
-                          onPressed: () => setState(() => isVisible = true),
+                          onPressed:
+                              () => setState(() {
+                                _dataChanged = true;
+                                isVisible = true;
+                              }),
                           icon: Icon(Icons.visibility_off, color: Colors.blue),
                         ),
                   ],

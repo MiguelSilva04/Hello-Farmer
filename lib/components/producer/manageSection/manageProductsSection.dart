@@ -20,37 +20,59 @@ class ManageProductsSection extends StatefulWidget {
 class _ManageProductsSectionState extends State<ManageProductsSection> {
   late ManageViewMode _mode;
   late List<ProductAd> _products;
+  final Map<String, TextEditingController> _controllers = {};
 
   @override
   void initState() {
     super.initState();
     final provider = Provider.of<ManageSectionNotifier>(context, listen: false);
     final currentIndex = provider.currentIndex;
-    _products =
-        (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<AuthNotifier>(
-              context,
-              listen: false,
-            ).selectedStoreIndex]
-            .productsAds!;
-    if (currentIndex == 4) {
-      _mode = ManageViewMode.stock;
-    } else if (currentIndex == 5) {
-      _mode = ManageViewMode.prices;
-    } else {
-      _mode = ManageViewMode.stock;
+    final producer = AuthService().currentUser! as ProducerUser;
+    final storeIndex =
+        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
+    _products = producer.stores[storeIndex].productsAds ?? [];
+
+    _mode =
+        (currentIndex == 4)
+            ? ManageViewMode.stock
+            : (currentIndex == 5)
+            ? ManageViewMode.prices
+            : ManageViewMode.stock;
+
+    for (var productAd in _products) {
+      final product = productAd.product;
+      final controller = TextEditingController();
+      controller.text =
+          _mode == ManageViewMode.stock
+              ? (product.stock ?? 0).toString()
+              : product.price.toStringAsFixed(1);
+      _controllers[product.id] = controller;
     }
   }
 
   void _onModeChanged(ManageViewMode? value) {
     if (value == null) return;
-    setState(() => _mode = value);
+
+    setState(() {
+      _mode = value;
+
+      for (var productAd in _products) {
+        final product = productAd.product;
+        _controllers[product.id]?.text =
+            _mode == ManageViewMode.stock
+                ? (product.stock ?? 0).toString()
+                : product.price.toStringAsFixed(1);
+      }
+    });
+
     final notifier = Provider.of<ManageSectionNotifier>(context, listen: false);
-    if (value == ManageViewMode.stock) {
-      notifier.setIndex(4);
-    } else if (value == ManageViewMode.prices) {
-      notifier.setIndex(5);
-    }
+    notifier.setIndex(value == ManageViewMode.stock ? 4 : 5);
+  }
+
+  @override
+  void dispose() {
+    _controllers.values.forEach((controller) => controller.dispose());
+    super.dispose();
   }
 
   @override
@@ -97,210 +119,185 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
               ),
             ),
           ),
-          SizedBox(
-            height: _products.length * MediaQuery.of(context).size.height * 0.2,
-            child: ListView.builder(
-              itemCount: _products.length,
-              itemBuilder: (context, index) {
-                final productAd = _products[index];
-                final product = productAd.product;
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _products.length,
+            itemBuilder: (context, index) {
+              final productAd = _products[index];
+              final product = productAd.product;
+              final controller = _controllers[product.id]!;
+              final authNotifier = Provider.of<AuthNotifier>(
+                context,
+                listen: false,
+              );
+              final storeId =
+                  (authNotifier.currentUser as ProducerUser)
+                      .stores[authNotifier.selectedStoreIndex]
+                      .id;
 
-                return Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 5),
-                      child: ListTile(
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            productAd.product.imageUrls.first,
-                            width: 70,
-                            height: 70,
-                            fit: BoxFit.cover,
-                          ),
+              return Column(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    child: ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          product.imageUrls.first,
+                          width: 70,
+                          height: 70,
+                          fit: BoxFit.cover,
                         ),
-                        title: Row(
-                          children: [
-                            Flexible(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  product.name,
-                                  style: const TextStyle(fontSize: 20),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                      ),
+                      title: Row(
+                        children: [
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                product.name,
+                                style: const TextStyle(fontSize: 20),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Row(
+                        children: [
+                          Text(
+                            _mode == ManageViewMode.stock ? 'Qtd:' : 'Preço:',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: (_mode == ManageViewMode.stock
+                                    ? (product.stock ?? 0).toString().length *
+                                        14.0
+                                    : product.price.toStringAsFixed(1).length *
+                                        16.0)
+                                .clamp(50.0, 140.0),
+                            child: TextFormField(
+                              controller: controller,
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.numberWithOptions(
+                                decimal: _mode != ManageViewMode.stock,
+                              ),
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 8,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onChanged: (val) async {
+                                setState(() {
+                                  if (_mode == ManageViewMode.stock) {
+                                    product.stock = int.tryParse(val) ?? 0;
+                                  } else {
+                                    product.price = double.tryParse(val) ?? 0.0;
+                                  }
+                                });
 
-                        subtitle: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              _mode == ManageViewMode.stock
-                                  ? 'Qtd:'
-                                  : 'Preço: ',
-                              style: TextStyle(fontSize: 14),
-                            ),
-                            SizedBox(width: 8),
-                            StatefulBuilder(
-                              builder: (context, setStateField) {
-                                final TextEditingController _controller =
-                                    TextEditingController(
-                                      text:
-                                          _mode == ManageViewMode.stock
-                                              ? (product.stock ?? 0).toString()
-                                              : (product.price).toStringAsFixed(
-                                                1,
-                                              ),
-                                    );
-                                return SizedBox(
-                                  width: (_mode == ManageViewMode.stock
-                                          ? (product.stock ?? 0)
-                                                  .toString()
-                                                  .length *
-                                              14.0
-                                          : ((product.price)
-                                                  .toStringAsFixed(1)
-                                                  .length *
-                                              16.0))
-                                      .clamp(50.0, 140.0),
-                                  child: TextFormField(
-                                    controller: _controller,
-                                    textAlign: TextAlign.center,
-                                    keyboardType:
-                                        TextInputType.numberWithOptions(
-                                          decimal:
-                                              _mode != ManageViewMode.stock,
-                                        ),
-                                    decoration: InputDecoration(
-                                      labelStyle: TextStyle(
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 8,
-                                        horizontal: 8,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.surface,
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.surface,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.surface,
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                    onChanged: (val) {
-                                      setStateField(() {
-                                        if (_mode == ManageViewMode.stock) {
-                                          product.stock =
-                                              int.tryParse(val) ?? 0;
-                                        } else {
-                                          product.price =
-                                              double.tryParse(val) ?? 0.0;
-                                        }
-                                      });
-                                    },
-                                  ),
+                                await authNotifier.changeProductStockOrPrice(
+                                  storeId,
+                                  productAd,
+                                  _mode,
                                 );
                               },
                             ),
-                            SizedBox(width: 5),
-                            (_mode != ManageViewMode.stock)
-                                ? Text("€")
-                                : Text(
-                                  " ${product.unit == Unit.KG
-                                      ? product.unit.toDisplayString()
-                                      : (product.unit == Unit.UNIT && product.stock! > 1)
-                                      ? product.unit.toDisplayString() + "s"
-                                      : product.unit.toDisplayString()}",
-                                ),
-                          ],
-                        ),
-                        trailing: StatefulBuilder(
-                          builder: (context, setStateTrailing) {
-                            return Container(
-                              width: MediaQuery.of(context).size.width * 0.2,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        if (_mode == ManageViewMode.stock) {
-                                          if ((product.stock ?? 0) > 0)
-                                            product.stock =
-                                                (product.stock ?? 0) - 1;
-                                        } else {
-                                          product.price = double.parse(
-                                            ((product.price) - 0.1)
-                                                .toStringAsFixed(1),
-                                          );
-                                        }
-                                      });
-                                    },
-                                    child: Icon(
-                                      FontAwesomeIcons.minus,
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        if (_mode == ManageViewMode.stock) {
-                                          product.stock =
-                                              (product.stock ?? 0) + 1;
-                                        } else {
-                                          product.price = double.parse(
-                                            ((product.price) + 0.1)
-                                                .toStringAsFixed(1),
-                                          );
-                                        }
-                                      });
-                                    },
-                                    child: Icon(
-                                      Icons.add,
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
-                                      size: 35,
-                                    ),
-                                  ),
-                                ],
+                          ),
+                          const SizedBox(width: 5),
+                          (_mode != ManageViewMode.stock)
+                              ? const Text("€")
+                              : Text(
+                                " ${product.unit == Unit.KG
+                                    ? product.unit.toDisplayString()
+                                    : (product.unit == Unit.UNIT && product.stock! > 1)
+                                    ? product.unit.toDisplayString() + "s"
+                                    : product.unit.toDisplayString()}",
                               ),
-                            );
-                          },
+                        ],
+                      ),
+                      trailing: Container(
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                setState(() {
+                                  if (_mode == ManageViewMode.stock) {
+                                    if ((product.stock ?? 0) > 0) {
+                                      product.stock = (product.stock ?? 0) - 1;
+                                    }
+                                    controller.text =
+                                        (product.stock ?? 0).toString();
+                                  } else {
+                                    product.price = double.parse(
+                                      ((product.price) - 0.1).toStringAsFixed(
+                                        1,
+                                      ),
+                                    );
+                                    controller.text = product.price
+                                        .toStringAsFixed(1);
+                                  }
+                                });
+
+                                await authNotifier.changeProductStockOrPrice(
+                                  storeId,
+                                  productAd,
+                                  _mode,
+                                );
+                              },
+                              child: Icon(
+                                FontAwesomeIcons.minus,
+                                color: Theme.of(context).colorScheme.surface,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                setState(() {
+                                  if (_mode == ManageViewMode.stock) {
+                                    product.stock = (product.stock ?? 0) + 1;
+                                    controller.text =
+                                        (product.stock ?? 0).toString();
+                                  } else {
+                                    product.price = double.parse(
+                                      ((product.price) + 0.1).toStringAsFixed(
+                                        1,
+                                      ),
+                                    );
+                                    controller.text = product.price
+                                        .toStringAsFixed(1);
+                                  }
+                                });
+
+                                await authNotifier.changeProductStockOrPrice(
+                                  storeId,
+                                  productAd,
+                                  _mode,
+                                );
+                              },
+                              child: Icon(
+                                Icons.add,
+                                color: Theme.of(context).colorScheme.surface,
+                                size: 35,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    Divider(),
-                  ],
-                );
-              },
-            ),
+                  ),
+                  const Divider(),
+                ],
+              );
+            },
           ),
         ],
       ),

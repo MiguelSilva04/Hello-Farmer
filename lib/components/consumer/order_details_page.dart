@@ -35,16 +35,6 @@ class OrderDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final chatService = Provider.of<ChatService>(context, listen: false);
-    bool verifyIfAlreadyExistsConversation(String userAId, String userBId) {
-      final chatList =
-          Provider.of<ChatListNotifier>(context, listen: false).chats;
-
-      return chatList.any(
-        (chat) =>
-            (chat.consumerId == userAId && chat.producerId == userBId) ||
-            (chat.producerId == userAId && chat.consumerId == userBId),
-      );
-    }
 
     Widget buildUserContactSection({
       required BuildContext context,
@@ -67,17 +57,11 @@ class OrderDetailsPage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundImage:
-                      displayedUser.imageUrl != null
-                          ? NetworkImage(displayedUser.imageUrl!)
-                          : null,
-                  child:
-                      displayedUser.imageUrl == null
-                          ? Icon(
-                            isProducerSide ? Icons.store : Icons.person,
-                            size: 30,
-                          )
-                          : null,
+                  backgroundImage: NetworkImage(displayedUser.imageUrl),
+                  child: Icon(
+                    isProducerSide ? Icons.store : Icons.person,
+                    size: 30,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

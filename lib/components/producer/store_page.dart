@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:intl/intl.dart';
@@ -176,14 +177,12 @@ class _StorePageState extends State<StorePage> {
               ),
               child: Row(
                 children: [
-                  if (myStore.storeReviews == []) ...[
-                    _buildTopButton("Banca", showBanca, () {
-                      setState(() => showBanca = true);
-                    }, isLeft: true),
-                    _buildTopButton("Avaliações", !showBanca, () {
-                      setState(() => showBanca = false);
-                    }, isLeft: false),
-                  ],
+                  _buildTopButton("Banca", showBanca, () {
+                    setState(() => showBanca = true);
+                  }, isLeft: true),
+                  _buildTopButton("Avaliações", !showBanca, () {
+                    setState(() => showBanca = false);
+                  }, isLeft: false),
                 ],
               ),
             ),
@@ -215,10 +214,7 @@ class _StorePageState extends State<StorePage> {
             border: Border.all(color: Colors.black26),
             borderRadius: BorderRadius.only(
               topLeft: isLeft ? const Radius.circular(12) : Radius.zero,
-              topRight:
-                  (myStore.storeReviews != []) || !isLeft
-                      ? const Radius.circular(12)
-                      : Radius.zero,
+              topRight: !isLeft ? const Radius.circular(12) : Radius.zero,
             ),
           ),
           alignment: Alignment.center,
@@ -244,14 +240,6 @@ class _StorePageState extends State<StorePage> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.secondary,
               borderRadius: BorderRadius.only(
-                topLeft:
-                    myStore.storeReviews == []
-                        ? Radius.circular(12)
-                        : Radius.zero,
-                topRight:
-                    myStore.storeReviews == []
-                        ? Radius.circular(12)
-                        : Radius.zero,
                 bottomLeft: Radius.circular(12),
                 bottomRight: Radius.circular(12),
               ),
@@ -498,211 +486,252 @@ class _StorePageState extends State<StorePage> {
         ),
         child: Column(
           children: [
-            Row(
-              children: [
-                Text(
-                  medianRating.toStringAsFixed(1),
-                  style: TextStyle(fontSize: 55, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(width: 10),
-                Column(
+            (myStore.storeReviews != null && myStore.storeReviews!.isEmpty)
+                ? Center(child: Text("Sem comentários"))
+                : Column(
                   children: [
-                    RatingBarIndicator(
-                      rating: medianRating,
-                      itemBuilder:
-                          (context, index) =>
-                              Icon(Icons.star, color: Colors.amber.shade700),
-                      itemCount: 5,
-                      itemSize: 24.0,
-                      direction: Axis.horizontal,
-                    ),
-                    Text(
-                      "(${myStore.storeReviews!.length} avaliações)",
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: myStore.storeReviews!.length,
-              itemBuilder:
-                  (ctx, i) => Column(
-                    children: [
-                      Container(
-                        color:
-                            Theme.of(context).colorScheme.onTertiaryContainer,
-                        child: Column(
+                    Row(
+                      children: [
+                        Text(
+                          medianRating.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontSize: 55,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
                           children: [
-                            ListTile(
-                              isThreeLine: true,
-                              subtitle: Column(
-                                children: [
-                                  Text(
-                                    myStore.storeReviews![i].description!,
-                                    style: TextStyle(fontSize: 16),
+                            RatingBarIndicator(
+                              rating: medianRating,
+                              itemBuilder:
+                                  (context, index) => Icon(
+                                    Icons.star,
+                                    color: Colors.amber.shade700,
                                   ),
-                                ],
-                              ),
-                              title: InkWell(
-                                onTap:
-                                    () => Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) => ProfilePage(
-                                              users
-                                                  .where(
-                                                    (el) =>
-                                                        el.id ==
-                                                        myStore
-                                                            .storeReviews![i]
-                                                            .reviewerId,
-                                                  )
-                                                  .first,
-                                            ),
+                              itemCount: 5,
+                              itemSize: 24.0,
+                              direction: Axis.horizontal,
+                            ),
+                            Text(
+                              "(${myStore.storeReviews!.length} avaliações)",
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: myStore.storeReviews!.length,
+                      itemBuilder:
+                          (ctx, i) => Column(
+                            children: [
+                              Container(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.onTertiaryContainer,
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      isThreeLine: true,
+                                      subtitle: Column(
+                                        children: [
+                                          Text(
+                                            myStore
+                                                .storeReviews![i]
+                                                .description!,
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.tertiary,
-                                        backgroundImage: NetworkImage(
-                                          users
-                                              .where(
-                                                (el) =>
-                                                    el.id ==
+                                      title: InkWell(
+                                        onTap:
+                                            () => Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => ProfilePage(
+                                                      users
+                                                          .where(
+                                                            (el) =>
+                                                                el.id ==
+                                                                myStore
+                                                                    .storeReviews![i]
+                                                                    .reviewerId,
+                                                          )
+                                                          .first,
+                                                    ),
+                                              ),
+                                            ),
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          child: Row(
+                                            children: [
+                                              CircleAvatar(
+                                                backgroundColor:
+                                                    Theme.of(
+                                                      context,
+                                                    ).colorScheme.tertiary,
+                                                backgroundImage: NetworkImage(
+                                                  users
+                                                      .where(
+                                                        (el) =>
+                                                            el.id ==
+                                                            myStore
+                                                                .storeReviews![i]
+                                                                .reviewerId,
+                                                      )
+                                                      .first
+                                                      .imageUrl,
+                                                ),
+                                                radius: 10,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  users
+                                                          .where(
+                                                            (el) =>
+                                                                el.id ==
+                                                                myStore
+                                                                    .storeReviews![i]
+                                                                    .reviewerId,
+                                                          )
+                                                          .first
+                                                          .firstName +
+                                                      " " +
+                                                      users
+                                                          .where(
+                                                            (el) =>
+                                                                el.id ==
+                                                                myStore
+                                                                    .storeReviews![i]
+                                                                    .reviewerId,
+                                                          )
+                                                          .first
+                                                          .lastName,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ),
+                                              RatingBarIndicator(
+                                                rating:
                                                     myStore
                                                         .storeReviews![i]
-                                                        .reviewerId,
-                                              )
-                                              .first
-                                              .imageUrl,
-                                        ),
-                                        radius: 10,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          users
-                                                  .where(
-                                                    (el) =>
-                                                        el.id ==
-                                                        myStore
-                                                            .storeReviews![i]
-                                                            .reviewerId,
-                                                  )
-                                                  .first
-                                                  .firstName +
-                                              " " +
-                                              users
-                                                  .where(
-                                                    (el) =>
-                                                        el.id ==
-                                                        myStore
-                                                            .storeReviews![i]
-                                                            .reviewerId,
-                                                  )
-                                                  .first
-                                                  .lastName,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 16),
+                                                        .rating!,
+                                                itemBuilder:
+                                                    (context, index) => Icon(
+                                                      Icons.star,
+                                                      color:
+                                                          Colors.amber.shade700,
+                                                    ),
+                                                itemCount: 5,
+                                                itemSize: 18,
+                                                direction: Axis.horizontal,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                      RatingBarIndicator(
-                                        rating:
-                                            myStore.storeReviews![i].rating!,
-                                        itemBuilder:
-                                            (context, index) => Icon(
-                                              Icons.star,
-                                              color: Colors.amber.shade700,
+                                      trailing: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Text(
+                                            getTimeReviewPosted(
+                                              myStore
+                                                  .storeReviews![i]
+                                                  .dateTime!,
                                             ),
-                                        itemCount: 5,
-                                        itemSize: 18,
-                                        direction: Axis.horizontal,
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              trailing: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Text(
-                                    getTimeReviewPosted(
-                                      myStore.storeReviews![i].dateTime!,
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (widget.store == null)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  bottom: 12,
-                                  left: 12,
-                                  right: 12,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    InkWell(
-                                      onTap:
-                                          () =>
-                                              print("Respondido com sucesso!"),
-                                      child: Text(
-                                        "Responder",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.surface,
+                                    if (widget.store == null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12,
+                                          left: 12,
+                                          right: 12,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            InkWell(
+                                              onTap:
+                                                  () => print(
+                                                    "Respondido com sucesso!",
+                                                  ),
+                                              child: Text(
+                                                "Responder",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.surface,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap:
+                                                  () => print(
+                                                    "Reportado com sucesso!",
+                                                  ),
+                                              child: Text(
+                                                "Reportar",
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color:
+                                                      Theme.of(
+                                                        context,
+                                                      ).colorScheme.surface,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                    InkWell(
-                                      onTap:
-                                          () => print("Reportado com sucesso!"),
-                                      child: Text(
-                                        "Reportar",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.surface,
-                                        ),
-                                      ),
-                                    ),
                                   ],
                                 ),
                               ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 5,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ],
-                  ),
-            ),
+                              Container(
+                                height: 5,
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                            ],
+                          ),
+                    ),
+                  ],
+                ),
           ],
         ),
       ),
     );
   }
 
+  ProducerUser _getProducerFromAd(ProductAd ad) {
+    final allProducers =
+        Provider.of<AuthNotifier>(
+          context,
+          listen: false,
+        ).allUsers.whereType<ProducerUser>();
+
+    return allProducers.firstWhere(
+      (producer) => producer.stores.any(
+        (store) => store.productsAds?.any((a) => a.id == ad.id) ?? false,
+      ),
+    );
+  }
+
   Widget _buildProductsAdsSection(ProductAd productAd) {
+    final producer = _getProducerFromAd(productAd);
     void _onEdit(BuildContext context) {
       print('Editar: ${productAd.id}');
     }
@@ -711,63 +740,73 @@ class _StorePageState extends State<StorePage> {
       print('Apagar: ${productAd.id}');
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              productAd.product.imageUrls.first,
-              width: 100,
-              height: 100,
-              fit: BoxFit.cover,
+    return InkWell(
+      onTap:
+          () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder:
+                  (ctx) =>
+                      ProductAdDetailScreen(ad: productAd, producer: producer!),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  productAd.product.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                Text(productAd.price, style: TextStyle(fontSize: 16)),
-                Text(
-                  productAd.product.category,
-                  style: TextStyle(fontSize: 16),
-                ),
-                Text(
-                  productAd.highlight,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                productAd.product.imageUrls.first,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          if (widget.store == null)
-            Column(
-              children: [
-                IconButton(
-                  onPressed: () => _onEdit(context),
-                  icon: Icon(
-                    Icons.edit,
-                    color: Theme.of(context).colorScheme.primary,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    productAd.product.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
-                ),
-                IconButton(
-                  onPressed: () => _onDelete(context),
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                ),
-              ],
+                  Text(productAd.price, style: TextStyle(fontSize: 16)),
+                  Text(
+                    productAd.product.category,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Text(
+                    productAd.highlight,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-        ],
+            if (widget.store == null)
+              Column(
+                children: [
+                  IconButton(
+                    onPressed: () => _onEdit(context),
+                    icon: Icon(
+                      Icons.edit,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _onDelete(context),
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -306,8 +306,8 @@ class OrderCard extends StatelessWidget {
                       children: [
                         ...visibleAds.map((ad) {
                           final image =
-                              ad.product.imageUrl.isNotEmpty
-                                  ? ad.product.imageUrl.first
+                              ad.product.imageUrls.isNotEmpty
+                                  ? ad.product.imageUrls.first
                                   : null;
                           return Padding(
                             padding: const EdgeInsets.only(right: 2),

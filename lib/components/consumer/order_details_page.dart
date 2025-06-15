@@ -12,21 +12,208 @@ import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/models/app_user.dart';
+import '../../core/models/consumer_user.dart';
 import '../../core/services/auth/auth_notifier.dart';
+import '../../core/services/chat/chat_list_notifier.dart';
+import '../../core/services/chat/chat_service.dart';
+import '../../utils/app_routes.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final Order order;
   final ProducerUser producer;
+  final ConsumerUser? consumer;
 
   const OrderDetailsPage({
     super.key,
     required this.order,
     required this.producer,
+    this.consumer,
   });
 
   @override
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final chatService = Provider.of<ChatService>(context, listen: false);
+    bool verifyIfAlreadyExistsConversation(String userAId, String userBId) {
+      final chatList =
+          Provider.of<ChatListNotifier>(context, listen: false).chats;
+
+      return chatList.any(
+        (chat) =>
+            (chat.consumerId == userAId && chat.producerId == userBId) ||
+            (chat.producerId == userAId && chat.consumerId == userBId),
+      );
+    }
+
+    Widget buildUserContactSection({
+      required BuildContext context,
+      required AppUser displayedUser,
+      required String title,
+      required String? subtitle,
+      required bool isProducerSide,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage:
+                      displayedUser.imageUrl != null
+                          ? NetworkImage(displayedUser.imageUrl!)
+                          : null,
+                  child:
+                      displayedUser.imageUrl == null
+                          ? Icon(
+                            isProducerSide ? Icons.store : Icons.person,
+                            size: 30,
+                          )
+                          : null,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayedUser is ConsumerUser
+                            ? "${displayedUser.firstName} ${displayedUser.lastName}"
+                            : (displayedUser as ProducerUser)
+                                .stores[Provider.of<AuthNotifier>(
+                                  context,
+                                  listen: false,
+                                ).selectedStoreIndex]
+                                .name!,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      if (subtitle != null)
+                        Row(
+                          children: [
+                            const Icon(Icons.pin_drop_rounded),
+                            Text(
+                              subtitle,
+                              style: TextStyle(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.secondaryFixed,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chat),
+                  tooltip:
+                      isProducerSide
+                          ? "Contactar consumidor"
+                          : "Contactar produtor",
+                  onPressed: () async {
+                    final currentUser =
+                        Provider.of<AuthNotifier>(
+                          context,
+                          listen: false,
+                        ).currentUser!;
+                    final otherUser = displayedUser;
+
+                    final chatList =
+                        Provider.of<ChatListNotifier>(
+                          context,
+                          listen: false,
+                        ).chats;
+
+                    final alreadyExists = chatList.any(
+                      (chat) =>
+                          (chat.consumerId == currentUser.id &&
+                              chat.producerId == otherUser.id) ||
+                          (chat.producerId == currentUser.id &&
+                              chat.consumerId == otherUser.id),
+                    );
+
+                    if (alreadyExists) {
+                      final existingChat = chatList.firstWhere(
+                        (chat) =>
+                            (chat.consumerId == currentUser.id &&
+                                chat.producerId == otherUser.id) ||
+                            (chat.producerId == currentUser.id &&
+                                chat.consumerId == otherUser.id),
+                      );
+                      chatService.updateCurrentChat(existingChat);
+                      Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+                      return;
+                    }
+
+                    final _messageController = TextEditingController();
+                    final result = await showDialog<String>(
+                      context: context,
+                      builder:
+                          (ctx) => AlertDialog(
+                            title: const Text("Enviar mensagem"),
+                            content: TextField(
+                              controller: _messageController,
+                              decoration: const InputDecoration(
+                                hintText: "Escreve a tua mensagem...",
+                              ),
+                              maxLines: null,
+                              autofocus: true,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(),
+                                child: const Text("Fechar"),
+                              ),
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.of(
+                                      ctx,
+                                    ).pop(_messageController.text.trim()),
+                                child: const Text("Enviar"),
+                              ),
+                            ],
+                          ),
+                    );
+
+                    if (result != null && result.isNotEmpty) {
+                      final newChat = await chatService.createChat(
+                        currentUser.isProducer ? otherUser.id : currentUser.id,
+                        currentUser.isProducer ? currentUser.id : otherUser.id,
+                      );
+
+                      await chatService.save(result, currentUser, newChat.id);
+
+                      Provider.of<ChatListNotifier>(
+                        context,
+                        listen: false,
+                      ).addChat(newChat);
+                      chatService.updateCurrentChat(newChat);
+                      Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      );
+    }
+
+    final currentUser = authNotifier.currentUser!;
     final date = DateFormat.yMMMEd('pt_PT').format(order.deliveryDate);
     final products = order.ordersItems;
     final deliveryMethod =
@@ -55,7 +242,6 @@ class OrderDetailsPage extends StatelessWidget {
             .first;
     return Scaffold(
       appBar: AppBar(title: const Text("Encomenda")),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -195,110 +381,34 @@ class OrderDetailsPage extends StatelessWidget {
                           fontSize: 15,
                         ),
                         overflow: TextOverflow.ellipsis,
-                        maxLines:
-                            2, // limita a 2 linhas para não estourar muito
+                        maxLines: 2,
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              "Remetente",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            Column(
+              children: [
+                if (!currentUser.isProducer)
+                  buildUserContactSection(
+                    context: context,
+                    displayedUser: producer,
+                    title: "Banca Vendedora",
+                    subtitle:
+                        producer.stores[authNotifier.selectedStoreIndex].city,
+                    isProducerSide: true,
+                  ),
+                if (currentUser.isProducer)
+                  buildUserContactSection(
+                    context: context,
+                    displayedUser: consumer!,
+                    title: "Comprador",
+                    subtitle: consumer!.city,
+                    isProducerSide: false,
+                  ),
+              ],
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage:
-                        producer
-                                    .stores[Provider.of<AuthNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).selectedStoreIndex]
-                                    .imageUrl !=
-                                null
-                            ? NetworkImage(
-                              producer
-                                  .stores[Provider.of<AuthNotifier>(
-                                    context,
-                                    listen: false,
-                                  ).selectedStoreIndex]
-                                  .imageUrl!,
-                            )
-                            : null,
-                    child:
-                        producer
-                                    .stores[Provider.of<AuthNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).selectedStoreIndex]
-                                    .imageUrl ==
-                                null
-                            ? const Icon(Icons.store, size: 30)
-                            : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          producer
-                              .stores[Provider.of<AuthNotifier>(
-                                context,
-                                listen: false,
-                              ).selectedStoreIndex]
-                              .name!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        if (producer
-                                .stores[Provider.of<AuthNotifier>(
-                                  context,
-                                  listen: false,
-                                ).selectedStoreIndex]
-                                .city !=
-                            null)
-                          Row(
-                            children: [
-                              Icon(Icons.pin_drop_rounded),
-                              Text(
-                                producer
-                                    .stores[Provider.of<AuthNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).selectedStoreIndex]
-                                    .city!,
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.secondaryFixed,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chat),
-                    onPressed: () {},
-                    tooltip: "Contactar produtor",
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
             Row(
               children: [
                 Text("Estado: ", style: const TextStyle(fontSize: 16)),
@@ -384,7 +494,7 @@ class OrderDetailsPage extends StatelessWidget {
                   final product = ad.product;
                   final quantityText =
                       product.unit == Unit.KG
-                          ? "${item.qty}${product.unit.toDisplayString()}"
+                          ? "${item.qty} ${product.unit.toDisplayString()}"
                           : "x${item.qty.toStringAsFixed(0)}";
 
                   return Padding(
@@ -424,20 +534,19 @@ class OrderDetailsPage extends StatelessWidget {
                                   fontSize: 16,
                                 ),
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton.icon(
-                                    onPressed: () {
-                                      // lógica de repetir compra
-                                    },
-                                    icon: const Icon(
-                                      Icons.shopping_cart_checkout,
+                              if (!currentUser.isProducer)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton.icon(
+                                      onPressed: () {},
+                                      icon: const Icon(
+                                        Icons.shopping_cart_checkout,
+                                      ),
+                                      label: const Text("Comprar novamente"),
                                     ),
-                                    label: const Text("Comprar novamente"),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),

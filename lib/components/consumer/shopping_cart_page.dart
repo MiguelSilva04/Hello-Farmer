@@ -220,6 +220,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Pedido efetuado com sucesso!")));
+      Navigator.of(context).pop();
     }
   }
 

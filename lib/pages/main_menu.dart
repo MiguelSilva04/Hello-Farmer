@@ -20,7 +20,7 @@ import '../components/producer/manage_page.dart';
 import '../utils/app_routes.dart';
 import '../components/producer/home_page.dart';
 import '../components/producer/sell_page.dart';
-import '../components/producer/sells_page.dart';
+import '../components/producer/orders_page.dart';
 import '../components/producer/store_page.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -97,7 +97,7 @@ class _MainMenuState extends State<MainMenu>
   Widget build(BuildContext context) {
     final List<Widget> _producerPages = [
       ProducerHomePage(),
-      SellsPage(),
+      OrdersProducerPage(),
       SellPage(),
       ChatListPage(),
       ManagePage(),

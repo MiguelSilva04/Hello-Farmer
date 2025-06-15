@@ -562,7 +562,7 @@ class AuthService {
     }
   }
 
-  Future<void> publishAd(
+  Future<ProductAd> createAd(
     String title,
     String description,
     List<File> images,
@@ -608,8 +608,10 @@ class AuthService {
         'visibility': true,
         'keywords': keywords,
       });
+      final adSnap = await docRef.get();
 
-      print("Anúncio publicado com sucesso!");
+      final productAd = ProductAd.fromJson(adSnap.data()!);
+      return productAd;
     } catch (e) {
       print("Erro ao publicar anúncio: $e");
       rethrow;

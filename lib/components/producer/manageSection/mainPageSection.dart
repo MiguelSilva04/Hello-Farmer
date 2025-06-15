@@ -48,11 +48,9 @@ class _MainPageSectionState extends State<MainPageSection> {
   void initState() {
     super.initState();
     authProvider = Provider.of<AuthNotifier>(context, listen: false);
-    if ((authProvider.currentUser as ProducerUser).stores.isNotEmpty) {
-      store =
-          (authProvider.currentUser as ProducerUser).stores[authProvider
-              .selectedStoreIndex];
-    }
+    store =
+        (authProvider.currentUser as ProducerUser).stores[authProvider
+            .selectedStoreIndex];
 
     nameController = TextEditingController(text: store.name ?? '');
     sloganController = TextEditingController(text: store.slogan ?? '');
@@ -497,168 +495,191 @@ class _MainPageSectionState extends State<MainPageSection> {
                       preferBelow: false,
                       child: Icon(Icons.info_outline),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                    Consumer<AuthNotifier>(
+                      builder: (context, auth, _) {
+                        final store =
+                            (auth.currentUser as ProducerUser).stores[auth
+                                .selectedStoreIndex];
+                        final ads = store.productsAds ?? [];
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Anúncios publicados",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              children: [
+                                const Text(
+                                  "Anúncios publicados",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                TextButton.icon(
+                                  onPressed: () {
+                                    Provider.of<BottomNavigationNotifier>(
+                                      context,
+                                      listen: false,
+                                    ).setIndex(2);
+                                  },
+                                  icon: const Icon(Icons.add),
+                                  label: const Text("Novo anúncio"),
+                                ),
+                              ],
                             ),
-                            const Spacer(),
-                            TextButton.icon(
-                              onPressed: () {
-                                Provider.of<BottomNavigationNotifier>(
-                                  context,
-                                  listen: false,
-                                ).setIndex(2);
-                              },
-                              icon: const Icon(Icons.add),
-                              label: const Text("Novo anúncio"),
-                            ),
+                            const SizedBox(height: 8),
+                            ads.isEmpty
+                                ? const Text(
+                                  "Ainda não há anúncios publicados.",
+                                )
+                                : ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: ads.length,
+                                  itemBuilder: (context, index) {
+                                    final ad = ads[index];
+                                    return ListTile(
+                                      leading: Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            child: Image.network(
+                                              ad.product.imageUrls.first,
+                                              width: 75,
+                                              height: 75,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                          if (ad.highlightType ==
+                                              HighlightType.HOME)
+                                            Positioned(
+                                              top: 0,
+                                              left: 0,
+                                              child: Badge(
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .secondaryFixed,
+                                                label: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: const [
+                                                    Icon(
+                                                      Icons.star,
+                                                      size: 10,
+                                                      color: Colors.white,
+                                                    ),
+                                                    SizedBox(width: 3),
+                                                    Text(
+                                                      "Inicio",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          if (ad.highlightType ==
+                                              HighlightType.SEARCH)
+                                            Positioned(
+                                              top: 0,
+                                              left: 0,
+                                              child: Badge(
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .secondaryFixed,
+                                                label: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: const [
+                                                    Icon(
+                                                      Icons.star,
+                                                      size: 10,
+                                                      color: Colors.white,
+                                                    ),
+                                                    SizedBox(width: 3),
+                                                    Text(
+                                                      "Pesquisa",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      title: Row(
+                                        children: [
+                                          Flexible(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(
+                                                ad.product.name,
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          if (ad.highlight.isNotEmpty)
+                                            Tooltip(
+                                              message: ad.highlight,
+                                              showDuration: const Duration(
+                                                seconds: 7,
+                                              ),
+                                              triggerMode:
+                                                  TooltipTriggerMode.tap,
+                                              preferBelow: false,
+                                              child: const Icon(
+                                                Icons.info_outline,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Preço: ${ad.price}€ p/ ${ad.product.unit.toDisplayString()}",
+                                          ),
+                                          Text(
+                                            "Categoria: ${ad.product.category}",
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isEditingAd = true;
+                                            _currentAd = ad;
+                                          });
+                                        },
+                                        icon: Icon(Icons.edit),
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder:
+                                      (context, index) => const Divider(),
+                                ),
+                            const SizedBox(height: 20),
                           ],
-                        ),
-                        const SizedBox(height: 8),
-                        store.productsAds!.isEmpty
-                            ? const Text("Ainda não há anúncios publicados.")
-                            : ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: store.productsAds!.length,
-                              itemBuilder: (context, index) {
-                                final ad = store.productsAds![index];
-                                return ListTile(
-                                  leading: Stack(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(
-                                          ad.product.imageUrls.first,
-                                          width: 75,
-                                          height: 75,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      if (ad.highlightType ==
-                                          HighlightType.HOME)
-                                        Positioned(
-                                          top: 0,
-                                          left: 0,
-                                          child: Badge(
-                                            backgroundColor:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.secondaryFixed,
-                                            label: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: const [
-                                                Icon(
-                                                  Icons.star,
-                                                  size: 10,
-                                                  color: Colors.white,
-                                                ),
-                                                SizedBox(width: 3),
-                                                Text(
-                                                  "Inicio",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      if (ad.highlightType ==
-                                          HighlightType.SEARCH)
-                                        Positioned(
-                                          top: 0,
-                                          left: 0,
-                                          child: Badge(
-                                            backgroundColor:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.secondaryFixed,
-                                            label: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: const [
-                                                Icon(
-                                                  Icons.star,
-                                                  size: 10,
-                                                  color: Colors.white,
-                                                ),
-                                                SizedBox(width: 3),
-                                                Text(
-                                                  "Pesquisa",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  title: Row(
-                                    children: [
-                                      Flexible(
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            ad.product.name,
-                                            style: const TextStyle(
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      if (ad.highlight.isNotEmpty)
-                                        Tooltip(
-                                          message: ad.highlight,
-                                          showDuration: const Duration(
-                                            seconds: 7,
-                                          ),
-                                          triggerMode: TooltipTriggerMode.tap,
-                                          preferBelow: false,
-                                          child: const Icon(Icons.info_outline),
-                                        ),
-                                    ],
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Preço: ${ad.price}€ p/ ${ad.product.unit.toDisplayString()}",
-                                      ),
-                                      Text("Categoria: ${ad.product.category}"),
-                                    ],
-                                  ),
-                                  trailing: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isEditingAd = true;
-                                        _currentAd = ad;
-                                      });
-                                    },
-                                    icon: Icon(Icons.edit),
-                                  ),
-                                );
-                              },
-                              separatorBuilder: (context, index) => Divider(),
-                            ),
-                        const SizedBox(height: 20),
-                      ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -700,6 +721,7 @@ class _EditAdSectionState extends State<EditAdSection> {
   late bool isVisible;
   HighlightType? highlightType;
   bool _isLoading = false;
+  bool _isRemoving = false;
 
   @override
   void initState() {
@@ -837,20 +859,18 @@ class _EditAdSectionState extends State<EditAdSection> {
         isSearch ? HighlightType.SEARCH : HighlightType.HOME;
 
     widget.onSave(widget.ad);
-    print(widget.ad.product.name);
-    print(widget.ad.description);
-    print(widget.ad.product.price);
-    print(widget.ad.product.stock);
-    print(widget.ad.product.unit);
-    print(widget.ad.product.minAmount);
-    print(widget.ad.product.imageUrls.length);
-    print(widget.ad.highlightType!.toDisplayString());
-    print(widget.ad.visibility);
     await Provider.of<StoreService>(
       context,
       listen: false,
     ).saveProductAd(widget.ad, widget.storeId);
     setState(() => _isLoading = false);
+  }
+
+  Future<void> deleteAd(String storeId, String adId) async {
+    await Provider.of<AuthNotifier>(
+      context,
+      listen: false,
+    ).deleteProductAd(storeId, adId);
   }
 
   @override
@@ -1002,11 +1022,23 @@ class _EditAdSectionState extends State<EditAdSection> {
                                           () => Navigator.of(context).pop(),
                                       child: Text("Não"),
                                     ),
-                                    TextButton(
-                                      onPressed:
-                                          () => Navigator.of(context).pop(),
-                                      child: Text("Sim"),
-                                    ),
+                                    (_isRemoving)
+                                        ? Center(
+                                          child: CircularProgressIndicator(),
+                                        )
+                                        : TextButton(
+                                          onPressed: () async {
+                                            setState(() => _isRemoving = true);
+                                            await deleteAd(
+                                              widget.storeId,
+                                              widget.ad.id,
+                                            );
+                                            setState(() => _isRemoving = false);
+                                            Navigator.of(context).pop();
+                                            widget.onCancel();
+                                          },
+                                          child: Text("Sim"),
+                                        ),
                                   ],
                                 ),
                           ),

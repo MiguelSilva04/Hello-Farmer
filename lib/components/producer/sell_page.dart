@@ -126,7 +126,7 @@ class SellPageState extends State<SellPage> {
       List<File> imageFiles =
           images.whereType<FileImage>().map((image) => image.file).toList();
 
-      await AuthService().publishAd(
+      await Provider.of<AuthNotifier>(context, listen: false).publishAd(
         title!,
         description!,
         imageFiles,

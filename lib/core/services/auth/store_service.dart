@@ -132,7 +132,9 @@ class StoreService with ChangeNotifier {
 
   Future<void> saveProductAd(ProductAd productAd, String storeId) async {
     final docRef = cf.FirebaseFirestore.instance
-        .collection('stores').doc(storeId).collection('productAds')
+        .collection('stores')
+        .doc(storeId)
+        .collection('ads')
         .doc(productAd.id);
     await docRef.set(productAd.toJson(), cf.SetOptions(merge: true));
   }

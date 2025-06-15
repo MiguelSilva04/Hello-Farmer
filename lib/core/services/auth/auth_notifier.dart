@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/app_user.dart';
@@ -58,6 +60,40 @@ class AuthNotifier extends ChangeNotifier {
     return cart?.productsQty?.firstWhereOrNull(
       (item) => item.productAdId == productId,
     );
+  }
+
+  Future<void> publishAd(
+    String title,
+    String description,
+    List<File> images,
+    String category,
+    double minQty,
+    String unit,
+    double price,
+    int stock,
+    String storeId,
+    List<String> keywords,
+  ) async {
+    final ad = await AuthService().createAd(
+      title,
+      description,
+      images,
+      category,
+      minQty,
+      unit,
+      price,
+      stock,
+      storeId,
+      keywords,
+    );
+
+    final store = (currentUser as ProducerUser).stores.firstWhere(
+      (s) => s.id == storeId,
+    );
+    store.productsAds ??= [];
+    store.productsAds!.add(ad);
+    notifyListeners();
+    notifyListeners();
   }
 
   Future<void> addToCart(ProductAd productAd, double quantity) async {
@@ -296,7 +332,8 @@ class AuthNotifier extends ChangeNotifier {
     _currentUser!.municipality = municipality!;
     _currentUser!.phone = phone!;
     if (imageUrl != null) _currentUser!.imageUrl = imageUrl;
-    if (backgroundImageUrl != null) _currentUser!.backgroundUrl = backgroundImageUrl;
+    if (backgroundImageUrl != null)
+      _currentUser!.backgroundUrl = backgroundImageUrl;
 
     notifyListeners();
   }
@@ -457,5 +494,17 @@ class AuthNotifier extends ChangeNotifier {
       _selectedStoreIndex = index;
       notifyListeners();
     }
+  }
+
+  Future<void> deleteProductAd(String storeId, String productAdId) async {
+    final docRef = cf.FirebaseFirestore.instance
+        .collection('stores')
+        .doc(storeId)
+        .collection('ads')
+        .doc(productAdId);
+    await docRef.delete();
+    (currentUser as ProducerUser).stores[selectedStoreIndex].productsAds!
+        .removeWhere((ad) => ad.id == productAdId);
+    notifyListeners();
   }
 }

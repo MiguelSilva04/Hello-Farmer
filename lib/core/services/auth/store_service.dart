@@ -130,12 +130,52 @@ class StoreService with ChangeNotifier {
     return downloadUrl;
   }
 
-  Future<void> saveProductAd(ProductAd productAd, String storeId) async {
-    final docRef = cf.FirebaseFirestore.instance
-        .collection('stores')
-        .doc(storeId)
-        .collection('ads')
-        .doc(productAd.id);
-    await docRef.set(productAd.toJson(), cf.SetOptions(merge: true));
+  Future<void> editProductAd(ProductAd ad, String storeId) async {
+    final FirebaseStorage _storage = FirebaseStorage.instance;
+
+    try {
+      final docRef = firestore
+          .collection('stores')
+          .doc(storeId)
+          .collection('ads')
+          .doc(ad.id);
+
+      final List<String> imageUrls = [];
+
+      for (int i = 0; i < ad.product.imageUrls.length; i++) {
+        final image = ad.product.imageUrls[i];
+
+        if (image.startsWith('http')) {
+          imageUrls.add(image);
+        } else {
+          final imageFile = File(image);
+          final imageRef = _storage.ref().child(
+            'stores/$storeId/ads/${ad.id}/image_$i.jpg',
+          );
+          final uploadTask = await imageRef.putFile(imageFile);
+          final imageUrl = await uploadTask.ref.getDownloadURL();
+          imageUrls.add(imageUrl);
+        }
+      }
+
+      await docRef.set({
+        'title': ad.product.name,
+        'description': ad.description,
+        'imageUrls': imageUrls,
+        'category': ad.product.category,
+        'minQty': ad.product.minAmount,
+        'unit': ad.product.unit.name,
+        'price': ad.product.price,
+        'stock': ad.product.stock,
+        'visibility': ad.visibility,
+        'highlightType': ad.highlightType?.name,
+        'highlightDate': ad.highlightDate,
+        'keywords': ad.keywords,
+        'updatedAt': cf.FieldValue.serverTimestamp(),
+      }, cf.SetOptions(merge: true));
+    } catch (e) {
+      print("Erro ao editar anúncio: $e");
+      rethrow;
+    }
   }
 }

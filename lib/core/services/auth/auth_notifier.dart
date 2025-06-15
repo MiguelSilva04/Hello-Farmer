@@ -73,6 +73,7 @@ class AuthNotifier extends ChangeNotifier {
     int stock,
     String storeId,
     List<String> keywords,
+    String? highlight,
   ) async {
     final ad = await AuthService().createAd(
       title,
@@ -85,6 +86,7 @@ class AuthNotifier extends ChangeNotifier {
       stock,
       storeId,
       keywords,
+      highlight,
     );
 
     final store = (currentUser as ProducerUser).stores.firstWhere(
@@ -204,6 +206,7 @@ class AuthNotifier extends ChangeNotifier {
       final ads =
           adSnapshot.docs.map((adDoc) {
             final adData = adDoc.data();
+            print(adData);
             return ProductAd.fromJson({
               ...adData,
               'id': adDoc.id,
@@ -223,7 +226,6 @@ class AuthNotifier extends ChangeNotifier {
   Future<AppUser> loadUser() async {
     _currentUser = await AuthService().getCurrentUser();
 
-    loadAllUsers();
     StoreService.instance.loadStores();
 
     if (_currentUser is ProducerUser) {

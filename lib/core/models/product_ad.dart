@@ -5,7 +5,19 @@ import 'product.dart';
 import 'store.dart';
 import 'user_view.dart';
 
-enum HighlightType { SEARCH, HOME }
+enum HighlightType {
+  SEARCH,
+  HOME;
+
+  static HighlightType? fromKey(String? key) {
+    if (key == null) return null;
+    try {
+      return HighlightType.values.firstWhere((e) => e.name == key);
+    } catch (e) {
+      return null;
+    }
+  }
+}
 
 extension HighlightTypeExtension on HighlightType {
   String toDisplayString() {
@@ -24,7 +36,6 @@ class ProductAd {
   final DateTime createdAt;
   String description = "";
   String price;
-  String highlight = "Não está destacado";
   DateTime? highlightDate;
   HighlightType? highlightType;
   List<UserView>? viewsByUserDateTime;
@@ -37,7 +48,6 @@ class ProductAd {
     required this.product,
     String? description,
     String? price,
-    String? highlight,
     this.viewsByUserDateTime,
     this.highlightDate,
     this.visibility,
@@ -47,25 +57,34 @@ class ProductAd {
   }) : description = description ?? "",
        price =
            price ??
-           "${product.price.toStringAsFixed(2)}€ | ${product.unit.toDisplayString()}" {
+           "${product.price.toStringAsFixed(2)}€ | ${product.unit.toDisplayString()}" {}
+
+  String get highlight {
     if (highlightDate != null) {
       final now = DateTime.now();
       final diff = now.difference(highlightDate!);
       if (diff.inDays >= 1) {
-        this.highlight = "Este anúncio está destacado há ${diff.inDays} dias";
+        return "Este anúncio está destacado há ${diff.inDays} dias";
       } else if (diff.inHours >= 1) {
-        this.highlight = "Este anúncio está destacado há ${diff.inHours} horas";
+        return "Este anúncio está destacado há ${diff.inHours} horas";
       } else if (diff.inMinutes >= 1) {
-        this.highlight =
-            "Este anúncio está destacado há ${diff.inMinutes} minutos";
+        return "Este anúncio está destacado há ${diff.inMinutes} minutos";
       } else {
-        this.highlight =
-            "Este anúncio está destacado há ${diff.inSeconds} segundos";
+        return "Este anúncio está destacado há ${diff.inSeconds} segundos";
       }
-    } else if (highlight != null) {
-      this.highlight = highlight;
     } else {
-      this.highlight = "Não está destacado";
+      return "Não está destacado";
+    }
+  }
+
+  HighlightType? highlightTypeFromString(String? value) {
+    switch (value) {
+      case "topo_pesquisa":
+        return HighlightType.SEARCH;
+      case "pagina_principal":
+        return HighlightType.HOME;
+      default:
+        return null;
     }
   }
 
@@ -98,10 +117,9 @@ class ProductAd {
       },
       'description': description,
       'price': price,
-      'highlight': highlight,
       'highlightDate':
           highlightDate != null ? cf.Timestamp.fromDate(highlightDate!) : null,
-      'highlightType': highlightType?.toString(),
+      'highlightType': highlightType?.name,
       'visibility': visibility,
       'keywords': keywords,
       'viewsByUserDateTime':
@@ -139,18 +157,12 @@ class ProductAd {
       ),
       description: json['description'],
       price: json['price']?.toString(),
-      highlight: json['highlight'],
+      highlightType: HighlightType.fromKey(json['highlightType']),
       highlightDate:
           json['highlightDate'] is cf.Timestamp
               ? (json['highlightDate'] as cf.Timestamp).toDate()
               : DateTime.tryParse(json['highlightDate']?.toString() ?? ''),
       visibility: json['visibility'] ?? true,
-      highlightType:
-          json['highlightType'] != null
-              ? HighlightType.values.firstWhere(
-                (h) => h.toString() == json['highlightType'],
-              )
-              : null,
       viewsByUserDateTime:
           json['viewsByUserDateTime'] != null
               ? (json['viewsByUserDateTime'] as List)

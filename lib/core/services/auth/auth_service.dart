@@ -573,6 +573,7 @@ class AuthService {
     int stock,
     String storeId,
     List<String> keywords,
+    String? highlight,
   ) async {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -607,6 +608,7 @@ class AuthService {
         'storeId': storeId,
         'visibility': true,
         'keywords': keywords,
+        'highlightType': highlight ?? '',
       });
       final adSnap = await docRef.get();
 

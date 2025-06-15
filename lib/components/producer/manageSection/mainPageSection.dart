@@ -14,6 +14,7 @@ import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/store_service.dart';
 import '../../../core/services/other/bottom_navigation_notifier.dart';
 import '../../../utils/categories.dart';
+import '../../../utils/keywords.dart';
 import '../../create_store.dart';
 
 class MainPageSection extends StatefulWidget {
@@ -545,13 +546,34 @@ class _MainPageSectionState extends State<MainPageSection> {
                                             borderRadius: BorderRadius.circular(
                                               8,
                                             ),
-                                            child: Image.network(
-                                              ad.product.imageUrls.first,
-                                              width: 75,
-                                              height: 75,
-                                              fit: BoxFit.cover,
+                                            child: Opacity(
+                                              opacity:
+                                                  ad.visibility == false
+                                                      ? 0.3
+                                                      : 1.0,
+                                              child: Image.network(
+                                                ad.product.imageUrls.first,
+                                                width: 80,
+                                                height: 80,
+                                                fit: BoxFit.cover,
+                                              ),
                                             ),
                                           ),
+
+                                          if (ad.visibility == false)
+                                            Positioned(
+                                              top: 25,
+                                              left: 25,
+                                              child: Icon(
+                                                Icons.visibility_off,
+                                                size: 30,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .surface
+                                                    .withValues(alpha: 0.8),
+                                              ),
+                                            ),
+
                                           if (ad.highlightType ==
                                               HighlightType.HOME)
                                             Positioned(
@@ -620,6 +642,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                                             ),
                                         ],
                                       ),
+
                                       title: Row(
                                         children: [
                                           Flexible(
@@ -722,11 +745,16 @@ class _EditAdSectionState extends State<EditAdSection> {
   HighlightType? highlightType;
   bool _isLoading = false;
   bool _isRemoving = false;
+  DateTime? highlightDate;
+  bool _dataChanged = false;
+  Set<String> _selectedKeywords = {};
 
   @override
   void initState() {
     super.initState();
+    _selectedKeywords = widget.ad.keywords?.toSet() ?? {};
     highlightType = widget.ad.highlightType;
+    highlightDate = widget.ad.highlightDate;
     nameController = TextEditingController(text: widget.ad.product.name);
     descController = TextEditingController(text: widget.ad.description);
     priceController = TextEditingController(
@@ -766,6 +794,7 @@ class _EditAdSectionState extends State<EditAdSection> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('${index + 1}ª imagem selecionada')),
             );
+            setState(() => _dataChanged = true);
           }
         });
       },
@@ -841,8 +870,11 @@ class _EditAdSectionState extends State<EditAdSection> {
     widget.ad.product.stock = newStock;
     widget.ad.product.minAmount = newMinQty;
     widget.ad.product.unit = unit == "Kg" ? Unit.KG : Unit.UNIT;
+    widget.ad.highlightType = highlightType;
+    widget.ad.highlightDate = highlightDate;
 
     widget.ad.product.imageUrls.clear();
+    widget.ad.keywords = _selectedKeywords.toList();
     for (var image in images) {
       if (image != null) {
         if (image is FileImage) {
@@ -855,14 +887,14 @@ class _EditAdSectionState extends State<EditAdSection> {
       }
     }
 
-    widget.ad.highlightType =
-        isSearch ? HighlightType.SEARCH : HighlightType.HOME;
-
     widget.onSave(widget.ad);
     await Provider.of<StoreService>(
       context,
       listen: false,
-    ).saveProductAd(widget.ad, widget.storeId);
+    ).editProductAd(widget.ad, widget.storeId);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Anúncio editado com sucesso')));
     setState(() => _isLoading = false);
   }
 
@@ -1063,11 +1095,17 @@ class _EditAdSectionState extends State<EditAdSection> {
             TextField(
               controller: nameController,
               decoration: const InputDecoration(labelText: 'Nome Produto'),
+              onChanged: (_) {
+                _dataChanged = true;
+              },
             ),
             TextField(
               controller: descController,
               decoration: const InputDecoration(labelText: 'Descrição'),
               maxLines: null,
+              onChanged: (_) {
+                _dataChanged = true;
+              },
             ),
             DropdownButtonFormField<String>(
               value: category,
@@ -1080,7 +1118,11 @@ class _EditAdSectionState extends State<EditAdSection> {
                         ),
                       )
                       .toList(),
-              onChanged: (val) => setState(() => category = val!),
+              onChanged:
+                  (val) => setState(() {
+                    _dataChanged = true;
+                    category = val!;
+                  }),
               decoration: InputDecoration(labelText: "Categoria"),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.tertiaryFixed,
@@ -1091,12 +1133,18 @@ class _EditAdSectionState extends State<EditAdSection> {
               controller: priceController,
               decoration: const InputDecoration(labelText: 'Preço (€)'),
               keyboardType: TextInputType.numberWithOptions(decimal: true),
+              onChanged: (_) {
+                _dataChanged = true;
+              },
             ),
 
             TextField(
               controller: stockController,
               decoration: InputDecoration(labelText: 'Stock ($unit)'),
               keyboardType: TextInputType.number,
+              onChanged: (_) {
+                _dataChanged = true;
+              },
             ),
 
             const SizedBox(height: 8),
@@ -1110,7 +1158,11 @@ class _EditAdSectionState extends State<EditAdSection> {
                     title: const Text("Kg", style: TextStyle(fontSize: 12)),
                     value: "Kg",
                     groupValue: unit,
-                    onChanged: (val) => setState(() => unit = val!),
+                    onChanged:
+                        (val) => setState(() {
+                          _dataChanged = true;
+                          unit = val!;
+                        }),
                     dense: true,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -1124,7 +1176,11 @@ class _EditAdSectionState extends State<EditAdSection> {
                     ),
                     value: "Unidade(s)",
                     groupValue: unit,
-                    onChanged: (val) => setState(() => unit = val!),
+                    onChanged:
+                        (val) => setState(() {
+                          _dataChanged = true;
+                          unit = val!;
+                        }),
                     dense: true,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -1144,6 +1200,9 @@ class _EditAdSectionState extends State<EditAdSection> {
                 ),
               ),
               keyboardType: TextInputType.number,
+              onChanged: (_) {
+                _dataChanged = true;
+              },
             ),
 
             const SizedBox(height: 12),
@@ -1194,6 +1253,8 @@ class _EditAdSectionState extends State<EditAdSection> {
                                         highlightType == HighlightType.SEARCH,
                                     onChanged: (val) {
                                       setState(() {
+                                        _dataChanged = true;
+                                        highlightDate = DateTime.now();
                                         if (highlightType ==
                                             HighlightType.SEARCH) {
                                           highlightType = null;
@@ -1249,12 +1310,13 @@ class _EditAdSectionState extends State<EditAdSection> {
                                     value: highlightType == HighlightType.HOME,
                                     onChanged: (val) {
                                       setState(() {
+                                        _dataChanged = true;
+                                        highlightDate = DateTime.now();
                                         if (highlightType ==
                                             HighlightType.HOME) {
-                                          highlightType = null; // desativa
+                                          highlightType = null;
                                         } else {
-                                          highlightType =
-                                              HighlightType.HOME; // ativa esse
+                                          highlightType = HighlightType.HOME;
                                         }
                                       });
                                     },
@@ -1276,6 +1338,58 @@ class _EditAdSectionState extends State<EditAdSection> {
             ),
             const SizedBox(height: 10),
 
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children:
+                  Keywords.keywords.map((keyword) {
+                    final isSelected = _selectedKeywords.contains(keyword.name);
+                    return FilterChip(
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            keyword.icon,
+                            size: 18,
+                            color:
+                                isSelected
+                                    ? Theme.of(context).colorScheme.secondary
+                                    : Theme.of(
+                                      context,
+                                    ).colorScheme.tertiaryFixed,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            keyword.name,
+                            style: TextStyle(
+                              color:
+                                  isSelected
+                                      ? Theme.of(context).colorScheme.secondary
+                                      : Theme.of(
+                                        context,
+                                      ).colorScheme.tertiaryFixed,
+                            ),
+                          ),
+                        ],
+                      ),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _dataChanged = true;
+                          if (selected) {
+                            _selectedKeywords.add(keyword.name);
+                          } else {
+                            _selectedKeywords.remove(keyword.name);
+                          }
+                        });
+                      },
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      selectedColor: Theme.of(context).colorScheme.surface,
+                      checkmarkColor: Theme.of(context).colorScheme.secondary,
+                    );
+                  }).toList(),
+            ),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -1292,7 +1406,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                         foregroundColor:
                             Theme.of(context).colorScheme.secondary,
                       ),
-                      onPressed: _save,
+                      onPressed: _dataChanged ? _save : null,
                       child: const Text("Guardar"),
                     ),
               ],

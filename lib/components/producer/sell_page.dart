@@ -137,6 +137,7 @@ class SellPageState extends State<SellPage> {
         int.parse(stock!),
         selectedStore.id,
         _selectedKeywords.toList(),
+        _highlightOption,
       );
     } catch (e) {
       print('Erro ao publicar anúncio: $e');

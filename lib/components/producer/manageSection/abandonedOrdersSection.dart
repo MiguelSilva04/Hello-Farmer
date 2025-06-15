@@ -24,7 +24,7 @@ class AbandonedOrdersPage extends StatelessWidget {
         orders
             .where(
               (o) =>
-                  o.state == OrderState.Abandonned &&
+                  o.state == OrderState.Abandoned &&
                   (Provider.of<AuthNotifier>(context, listen: false).currentUser
                           as ProducerUser)
                       .stores

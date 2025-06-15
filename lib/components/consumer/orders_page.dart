@@ -114,11 +114,11 @@ class _OrdersPageState extends State<OrdersPage> {
                       ),
                       const SizedBox(width: 5),
                       InkWell(
-                        onTap: () => setState(() => state = OrderState.Pendent),
+                        onTap: () => setState(() => state = OrderState.Pending),
                         child: Container(
                           decoration: BoxDecoration(
                             color:
-                                state == OrderState.Pendent
+                                state == OrderState.Pending
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(
                                       context,
@@ -133,7 +133,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color:
-                                    state != OrderState.Pendent
+                                    state != OrderState.Pending
                                         ? Theme.of(context).colorScheme.tertiary
                                         : Theme.of(
                                           context,
@@ -209,11 +209,11 @@ class _OrdersPageState extends State<OrdersPage> {
                       const SizedBox(width: 5),
                       InkWell(
                         onTap:
-                            () => setState(() => state = OrderState.Abandonned),
+                            () => setState(() => state = OrderState.Abandoned),
                         child: Container(
                           decoration: BoxDecoration(
                             color:
-                                state == OrderState.Abandonned
+                                state == OrderState.Abandoned
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(
                                       context,
@@ -228,7 +228,7 @@ class _OrdersPageState extends State<OrdersPage> {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color:
-                                    state != OrderState.Abandonned
+                                    state != OrderState.Abandoned
                                         ? Theme.of(context).colorScheme.tertiary
                                         : Theme.of(
                                           context,
@@ -386,7 +386,7 @@ class OrderCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (order.state == OrderState.Sent ||
-                          order.state == OrderState.Pendent)
+                          order.state == OrderState.Pending)
                         Text(
                           "Data prevista de entrega:",
                           style: const TextStyle(
@@ -394,7 +394,7 @@ class OrderCard extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      if (order.state == OrderState.Abandonned)
+                      if (order.state == OrderState.Abandoned)
                         Text(
                           "Sem entrega",
                           style: const TextStyle(
@@ -402,7 +402,7 @@ class OrderCard extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      if (order.state != OrderState.Abandonned)
+                      if (order.state != OrderState.Abandoned)
                         Text(
                           DateFormat.yMMMEd('pt_PT').format(order.deliveryDate),
                           style: const TextStyle(

@@ -1,18 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 
-enum OrderState { Delivered, Pendent, Sent, Abandonned }
+enum OrderState { Pending, Sent, Ready, Delivered, Abandoned }
 
 extension OrderStateExtension on OrderState {
   String toDisplayString() {
     switch (this) {
       case OrderState.Delivered:
         return "Entregue";
-      case OrderState.Pendent:
+      case OrderState.Pending:
         return "Pendente";
       case OrderState.Sent:
         return "Enviada";
-      case OrderState.Abandonned:
+      case OrderState.Abandoned:
         return "Abandonada";
+      case OrderState.Ready:
+        return "Pronta para recolha";
     }
   }
 }
@@ -104,4 +106,6 @@ class Order {
       'storeId': storeId,
     };
   }
+
+  void changeState(OrderState state) => state = state;
 }

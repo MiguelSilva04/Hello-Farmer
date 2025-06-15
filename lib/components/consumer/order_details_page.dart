@@ -1,5 +1,3 @@
-// order_detail_page.dart
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/invoice_page.dart';
@@ -11,6 +9,7 @@ import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:timelines_plus/timelines_plus.dart';
 
 import '../../core/models/app_user.dart';
 import '../../core/models/consumer_user.dart';
@@ -58,10 +57,6 @@ class OrderDetailsPage extends StatelessWidget {
                 CircleAvatar(
                   radius: 30,
                   backgroundImage: NetworkImage(displayedUser.imageUrl),
-                  child: Icon(
-                    isProducerSide ? Icons.store : Icons.person,
-                    size: 30,
-                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -261,7 +256,7 @@ class OrderDetailsPage extends StatelessWidget {
                                 minFontSize: 10,
                               ),
                             ],
-                            if ((order.state == OrderState.Pendent ||
+                            if ((order.state == OrderState.Pending ||
                                 order.state == OrderState.Sent)) ...[
                               AutoSizeText(
                                 "Entrega prevista para: ",
@@ -393,18 +388,6 @@ class OrderDetailsPage extends StatelessWidget {
                   ),
               ],
             ),
-            Row(
-              children: [
-                Text("Estado: ", style: const TextStyle(fontSize: 16)),
-                Text(
-                  order.state.toDisplayString(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -435,6 +418,13 @@ class OrderDetailsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
+            const Text(
+              "Consultar estado",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            OrderTimeline(state: order.state, orderId: order.id),
+
             const Divider(),
             const Text(
               "Produtos Encomendados",
@@ -442,7 +432,6 @@ class OrderDetailsPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            /// Lista de produtos
             Expanded(
               child: ListView.separated(
                 itemCount: products.length,
@@ -578,6 +567,158 @@ class OrderDetailsPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class OrderTimeline extends StatefulWidget {
+  final OrderState state;
+  final String orderId;
+
+  OrderTimeline({required this.state, required this.orderId});
+
+  @override
+  State<OrderTimeline> createState() => _OrderTimelineState();
+}
+
+class _OrderTimelineState extends State<OrderTimeline> {
+  final List<OrderState> steps = [
+    OrderState.Pending,
+    OrderState.Sent,
+    OrderState.Delivered,
+  ];
+  late int currentStep;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    currentStep = steps.indexOf(widget.state);
+    print(currentStep);
+    print(steps.length);
+  }
+
+  Future<void> updateOrderState() async {
+    setState(() => _isLoading = true);
+    final newOrderState = steps[currentStep];
+    await Provider.of<AuthNotifier>(
+      context,
+      listen: false,
+    ).changeOrderState(widget.orderId, newOrderState);
+    setState(() => _isLoading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          height: 100,
+          width:
+              MediaQuery.of(context).size.width *
+              ((currentStep < steps.length - 1) ? 0.5 : 0.7),
+          child: TimelineTheme(
+            data: TimelineThemeData(
+              direction: Axis.vertical,
+              nodePosition: 0.5,
+              connectorTheme: ConnectorThemeData(
+                color: Colors.grey.shade300,
+                thickness: 4.0,
+              ),
+              indicatorTheme: const IndicatorThemeData(size: 20.0),
+            ),
+            child: FixedTimeline.tileBuilder(
+              builder: TimelineTileBuilder.connected(
+                connectionDirection: ConnectionDirection.after,
+                itemCount: steps.length,
+                contentsBuilder: (context, index) {
+                  final isActive = index <= currentStep;
+                  return SizedBox(
+                    width:
+                        (MediaQuery.of(context).size.width * 0.7) /
+                        steps.length,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        steps[index].toDisplayString(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight:
+                              isActive ? FontWeight.bold : FontWeight.normal,
+                          color:
+                              isActive
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                indicatorBuilder: (context, index) {
+                  final isActive = index <= currentStep;
+                  return DotIndicator(
+                    size: 20,
+                    color:
+                        isActive
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey,
+                    child:
+                        isActive
+                            ? const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 12,
+                            )
+                            : null,
+                  );
+                },
+                connectorBuilder: (context, index, _) {
+                  final isActive = index < currentStep;
+                  return SolidLineConnector(
+                    color:
+                        isActive
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey.shade300,
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        if (currentStep < steps.length - 1)
+          (_isLoading)
+              ? Center(child: CircularProgressIndicator())
+              : ElevatedButton(
+                onPressed:
+                    () => showDialog(
+                      context: context,
+                      builder:
+                          (ctx) => AlertDialog(
+                            title: const Text("Aviso"),
+                            content: const Text("Pretende enviar a encomenda?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text("Não"),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    currentStep += 1;
+                                  });
+                                  await updateOrderState();
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("Sim"),
+                              ),
+                            ],
+                          ),
+                    ),
+                child: const Text("Próximo passo"),
+              ),
+      ],
     );
   }
 }

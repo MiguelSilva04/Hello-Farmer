@@ -8,7 +8,7 @@ import 'package:harvestly/components/producer/manageSection/billingSection.dart'
 import 'package:harvestly/components/producer/manageSection/breadCrumbNavigator.dart';
 import 'package:harvestly/components/producer/manageSection/clientsSection.dart';
 import 'package:harvestly/components/producer/manageSection/basketSection.dart';
-import 'package:harvestly/components/producer/manageSection/abandonnedOrdersSection.dart';
+import 'package:harvestly/components/producer/manageSection/abandonedOrdersSection.dart';
 import 'package:harvestly/components/producer/manageSection/deliveryMethodsSection.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';

@@ -52,7 +52,8 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
 
           if (auth.currentUser == null ||
               !(auth.currentUser is ProducerUser) ||
-              (auth.currentUser as ProducerUser).stores.isEmpty) {
+              (auth.currentUser as ProducerUser).stores.isEmpty ||
+              store.orders == null) {
             return const Center(child: CircularProgressIndicator());
           }
           return ListView.builder(
@@ -61,9 +62,12 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                 (context, index) => Card(
                   child: ListTile(
                     onTap: () {
-                      final consumer = auth.allUsers.where(
-                        (u) => u.id == ordersFiltered[index].consumerId,
-                      ).first;
+                      final consumer =
+                          auth.allUsers
+                              .where(
+                                (u) => u.id == ordersFiltered[index].consumerId,
+                              )
+                              .first;
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder:
@@ -171,7 +175,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
               controller: _tabController,
               children: [
                 Center(child: getAllFilter()),
-                Center(child: getAllFilter(OrderState.Pendent)),
+                Center(child: getAllFilter(OrderState.Pending)),
                 Center(child: getAllFilter(OrderState.Sent)),
                 Center(child: getAllFilter(OrderState.Delivered)),
               ],

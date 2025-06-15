@@ -10,6 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../models/consumer_user.dart';
 import '../../models/offer.dart';
+import '../../models/order.dart';
 import '../../models/producer_user.dart';
 import '../../models/product_ad.dart';
 import '../../models/store.dart';
@@ -617,6 +618,19 @@ class AuthService {
     } catch (e) {
       print("Erro ao publicar anúncio: $e");
       rethrow;
+    }
+  }
+
+  Future<void> changeOrderState(String orderId, OrderState state) async {
+    print("Cheguei aqui");
+    try {
+      final docRef = FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId);
+
+      await docRef.update({'status': state.toDisplayString()});
+    } catch (e) {
+      print("Erro ao mudar o estado");
     }
   }
 

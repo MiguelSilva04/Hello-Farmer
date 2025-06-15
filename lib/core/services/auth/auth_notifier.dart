@@ -528,4 +528,14 @@ class AuthNotifier extends ChangeNotifier {
         .removeWhere((ad) => ad.id == productAdId);
     notifyListeners();
   }
+
+  Future<void> changeOrderState(String orderId, OrderState state) async {
+    print("Cheguei aqui");
+    await AuthService().changeOrderState(orderId, state);
+    (currentUser as ProducerUser).stores[selectedStoreIndex].orders!
+        .where((o) => o.id == orderId)
+        .first
+        .changeState(state);
+    notifyListeners();
+  }
 }

@@ -10,6 +10,7 @@ import 'package:harvestly/core/models/shopping_cart.dart';
 import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:collection/collection.dart';
+import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/services/auth/auth_notifier.dart';
@@ -39,11 +40,13 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   bool _isCheckout = false;
   final _checkoutFormKey = GlobalKey<FormState>();
   String? fullName, address, postalCode, city, phoneNumber, discountCode;
+  late AppUser currentUser;
 
   @override
   void initState() {
     super.initState();
     authNotifier = Provider.of(context, listen: false);
+    currentUser = authNotifier.currentUser!;
     cart = (authNotifier.currentUser as ConsumerUser).shoppingCart;
     users = AuthService().users;
     finder = ProductAdFinder(users);
@@ -78,6 +81,10 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       phone: phoneNumber!,
       discountCode: discountCode,
     );
+    await Provider.of<NotificationNotifier>(
+      context,
+      listen: false,
+    ).addOrderSentNofication(currentUser, storeId);
     setState(() => _isLoading = false);
     _loadCartProducts();
   }

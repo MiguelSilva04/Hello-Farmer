@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/app_user.dart';
@@ -8,6 +9,7 @@ import 'package:harvestly/core/models/shopping_cart.dart';
 
 import '../../../components/producer/manageSection/manageProductsSection.dart';
 import '../../models/consumer_user.dart';
+import '../../models/notification.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
 import '../../models/order.dart';
@@ -207,7 +209,6 @@ class AuthNotifier extends ChangeNotifier {
       final ads =
           adSnapshot.docs.map((adDoc) {
             final adData = adDoc.data();
-            print(adData);
             return ProductAd.fromJson({
               ...adData,
               'id': adDoc.id,
@@ -236,6 +237,8 @@ class AuthNotifier extends ChangeNotifier {
     if (_currentUser is ConsumerUser) {
       await _loadShoppingCart();
     }
+
+    _initFCMToken();
 
     notifyListeners();
 
@@ -463,6 +466,32 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _initFCMToken() async {
+    final fcm = FirebaseMessaging.instance;
+
+    final token = await fcm.getToken();
+
+    if (token != null) {
+      final userId = AuthService().currentUser?.id;
+      if (userId != null) {
+        await cf.FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .update({'token': token});
+      }
+    }
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      final userId = AuthService().currentUser?.id;
+      if (userId != null) {
+        await cf.FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .update({'token': newToken});
+      }
+    });
+  }
+
   Future<void> createOrder({
     required String consumerId,
     required String storeId,
@@ -480,13 +509,13 @@ class AuthNotifier extends ChangeNotifier {
       'consumerId': consumerId,
       'storeId': storeId,
       'address': address,
-      "postalCode": postalCode,
-      "phone": phone,
-      "discountCode": discountCode,
+      'postalCode': postalCode,
+      'phone': phone,
+      'discountCode': discountCode,
       'status': 'Pendente',
       'createdAt': cf.Timestamp.now(),
       'deliveryDate': cf.Timestamp.fromDate(
-        DateTime.now().add(Duration(days: 2)),
+        DateTime.now().add(const Duration(days: 2)),
       ),
       'items': cartItems,
       'totalPrice': totalPrice,
@@ -494,6 +523,34 @@ class AuthNotifier extends ChangeNotifier {
 
     await docRef.set(orderData);
 
+    // Atualizar o stock dos produtos comprados
+    for (final item in cartItems) {
+      final productId = item['productId'] as String;
+      final quantityOrdered = item['quantity'] as double;
+
+      final adRef = fireStore
+          .collection('stores')
+          .doc(storeId)
+          .collection('ads')
+          .doc(productId);
+
+      await fireStore.runTransaction((transaction) async {
+        final adSnapshot = await transaction.get(adRef);
+
+        if (adSnapshot.exists) {
+          final data = adSnapshot.data();
+          final currentStock = (data?['stock'] as double?) ?? 0;
+          final newStock = (currentStock - quantityOrdered).clamp(
+            0,
+            currentStock,
+          );
+
+          transaction.update(adRef, {'stock': newStock});
+        }
+      });
+    }
+
+    // Limpar o carrinho no Firestore
     final shoppingCartQuery =
         await fireStore
             .collection('shoppingCarts')
@@ -504,8 +561,10 @@ class AuthNotifier extends ChangeNotifier {
       await doc.reference.delete();
     }
 
-    (_currentUser as ConsumerUser).shoppingCart?.productsQty?.clear();
-    (_currentUser as ConsumerUser).shoppingCart?.totalPrice = 0;
+    // Limpar o carrinho local
+    final shoppingCart = (_currentUser as ConsumerUser).shoppingCart;
+    shoppingCart?.productsQty?.clear();
+    shoppingCart?.totalPrice = 0;
 
     notifyListeners();
   }
@@ -530,7 +589,6 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   Future<void> changeOrderState(String orderId, OrderState state) async {
-    print("Cheguei aqui");
     await AuthService().changeOrderState(orderId, state);
     (currentUser as ProducerUser).stores[selectedStoreIndex].orders!
         .where((o) => o.id == orderId)

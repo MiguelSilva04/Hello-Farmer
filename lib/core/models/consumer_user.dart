@@ -24,6 +24,7 @@ class ConsumerUser extends AppUser {
     required super.municipality,
     super.recoveryEmail,
     super.dateOfBirth,
+    super.token,
     this.offers,
     this.shoppingCart,
     this.orders,
@@ -46,6 +47,7 @@ class ConsumerUser extends AppUser {
       offers: map['offers'] as List<Offer>?,
       shoppingCart: map['shoppingCart'] as ShoppingCart?,
       orders: map['orders'] as List<Order>?,
+      token: map['token'] as String?,
     );
   }
 

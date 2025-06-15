@@ -24,6 +24,7 @@ class ProducerUser extends AppUser {
     super.taxpayerNumber,
     super.backgroundUrl,
     super.aboutMe,
+    super.token,
     required this.baskets,
     this.billingAddress,
   });
@@ -44,6 +45,7 @@ class ProducerUser extends AppUser {
               .toList() ??
           [],
       billingAddress: map['billingAddress'] as String?,
+      token: map['token'] as String?,
     );
   }
 
@@ -61,6 +63,7 @@ class ProducerUser extends AppUser {
       imageUrl: json['imageUrl'] as String,
       recoveryEmail: json['recoveryEmail'] as String?,
       dateOfBirth: json['dateOfBirth'] as String?,
+      token: json['token'] as String?,
       baskets:
           (json['baskets'] as List<dynamic>?)
               ?.map((e) => Basket.fromMap(e as Map<String, dynamic>))

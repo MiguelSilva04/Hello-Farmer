@@ -19,6 +19,7 @@ import '../pages/auth_or_app_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'core/services/auth/notification_notifier.dart';
 import 'core/services/other/bottom_navigation_notifier.dart';
 import 'core/services/other/manage_section_notifier.dart';
 import 'pages/settings_page.dart';
@@ -46,6 +47,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => StoreService.instance),
         ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
         ChangeNotifierProvider(create: (_) => SearchNotifier()),
+        ChangeNotifierProvider(create: (_) => NotificationNotifier()),
       ],
       child: const MyApp(),
     ),

@@ -7,6 +7,7 @@ import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/core/services/other/search_notifier.dart';
@@ -131,6 +132,24 @@ class _MainMenuState extends State<MainMenu>
 
       await authProvider.loadAllUsers();
 
+      final notificationNotifier = Provider.of<NotificationNotifier>(
+        context,
+        listen: false,
+      );
+
+      (user.isProducer)
+          ? await notificationNotifier.loadNotifications(
+            id:
+                (user as ProducerUser)
+                    .stores[authProvider.selectedStoreIndex]
+                    .id,
+            isProducer: user.isProducer,
+          )
+          : await notificationNotifier.loadNotifications(
+            id: user.id,
+            isProducer: user.isProducer,
+          );
+
       return user;
     }
 
@@ -180,7 +199,7 @@ class _MainMenuState extends State<MainMenu>
                             key: const ValueKey('searchBar'),
                             padding: const EdgeInsets.all(8),
                             child: SizedBox(
-                              width: 250,
+                              width: MediaQuery.of(context).size.width * 0.70,
                               child: TextField(
                                 autofocus: true,
                                 decoration: InputDecoration(
@@ -291,26 +310,27 @@ class _MainMenuState extends State<MainMenu>
                           ],
                         ),
                       ),
-                      PopupMenuItem(
-                        value: "Notifications",
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Badge.count(
-                              count: user.notifications?.length ?? 0,
-                              child: Icon(
-                                Icons.notifications_none_rounded,
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.secondaryFixed,
+                      if (!user.isProducer)
+                        PopupMenuItem(
+                          value: "Notifications",
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Badge.count(
+                                count: user.notifications?.length ?? 0,
+                                child: Icon(
+                                  Icons.notifications_none_rounded,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryFixed,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 10),
-                            Text("Notificações"),
-                          ],
+                              SizedBox(width: 10),
+                              Text("Notificações"),
+                            ],
+                          ),
                         ),
-                      ),
                       if (!user.isProducer)
                         PopupMenuItem(
                           value: "Favorites",
@@ -347,30 +367,56 @@ class _MainMenuState extends State<MainMenu>
               Consumer<AuthNotifier>(
                 builder: (context, userProvider, _) {
                   final user = userProvider.currentUser;
-                  if (user == null || user.isProducer) return SizedBox.shrink();
+                  if (user == null) return SizedBox.shrink();
 
-                  return InkWell(
-                    onTap:
-                        () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => ShoppingCartPage(),
+                  // Se for consumidor, mostra o carrinho
+                  if (!user.isProducer) {
+                    return InkWell(
+                      onTap:
+                          () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => ShoppingCartPage(),
+                            ),
+                          ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Badge.count(
+                          count:
+                              (user as ConsumerUser)
+                                  .shoppingCart
+                                  ?.productsQty
+                                  ?.length ??
+                              0,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Icon(Icons.shopping_cart_rounded),
                           ),
                         ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Badge.count(
-                        count:
-                            (user as ConsumerUser)
-                                .shoppingCart
-                                ?.productsQty
-                                ?.length ??
-                            0,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Icon(Icons.shopping_cart_rounded),
-                        ),
                       ),
-                    ),
+                    );
+                  }
+
+                  return Consumer<NotificationNotifier>(
+                    builder: (context, notificationProvider, _) {
+                      final count = notificationProvider.notifications.length;
+
+                      return InkWell(
+                        onTap:
+                            () => Navigator.of(
+                              context,
+                            ).pushNamed(AppRoutes.NOTIFICATION_PAGE),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Badge.count(
+                            count: count,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Icon(Icons.notifications),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

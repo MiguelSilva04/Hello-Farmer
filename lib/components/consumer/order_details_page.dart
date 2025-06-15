@@ -616,7 +616,13 @@ class _OrderTimelineState extends State<OrderTimeline> {
           height: 100,
           width:
               MediaQuery.of(context).size.width *
-              ((currentStep < steps.length - 1) ? 0.5 : 0.7),
+              ((Provider.of<AuthNotifier>(
+                        context,
+                        listen: false,
+                      ).currentUser!.isProducer) &&
+                      currentStep < steps.length - 1
+                  ? 0.5
+                  : 0.7),
           child: TimelineTheme(
             data: TimelineThemeData(
               direction: Axis.vertical,
@@ -687,7 +693,11 @@ class _OrderTimelineState extends State<OrderTimeline> {
           ),
         ),
         const SizedBox(width: 10),
-        if (currentStep < steps.length - 1)
+        if ((Provider.of<AuthNotifier>(
+              context,
+              listen: false,
+            ).currentUser!.isProducer) &&
+            currentStep < steps.length - 1)
           (_isLoading)
               ? Center(child: CircularProgressIndicator())
               : ElevatedButton(

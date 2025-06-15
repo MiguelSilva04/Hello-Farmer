@@ -836,7 +836,12 @@ class _QuantityDialogState extends State<QuantityDialog> {
   void _updateQuantity(double newValue) {
     setState(() {
       _quantity =
-          newValue.clamp(widget.product.minAmount!.toDouble(), 999).toDouble();
+          newValue
+              .clamp(
+                widget.product.minAmount!.toDouble(),
+                widget.product.stock!,
+              )
+              .toDouble();
       _controller.text =
           widget.product.unit == Unit.KG
               ? _quantity.toStringAsFixed(2)

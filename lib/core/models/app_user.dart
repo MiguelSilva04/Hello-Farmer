@@ -18,6 +18,7 @@ abstract class AppUser {
   bool isProducer;
   String? iban;
   List<NotificationItem>? notifications = null;
+  String? token;
 
   AppUser({
     required this.id,
@@ -36,6 +37,7 @@ abstract class AppUser {
     this.country,
     this.municipality,
     this.city,
+    this.token,
   });
 
   @override

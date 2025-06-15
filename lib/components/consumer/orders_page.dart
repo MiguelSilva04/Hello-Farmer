@@ -370,10 +370,10 @@ class OrderCard extends StatelessWidget {
                       children: [
                         Text(
                           "${order.totalPrice.toStringAsFixed(2)}€",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: Theme.of(context).colorScheme.surface,
                           ),
                         ),
                       ],
@@ -403,12 +403,26 @@ class OrderCard extends StatelessWidget {
                           ),
                         ),
                       if (order.state != OrderState.Abandoned)
-                        Text(
-                          DateFormat.yMMMEd('pt_PT').format(order.deliveryDate),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Entregue a:",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              DateFormat.yMMMEd(
+                                'pt_PT',
+                              ).format(order.deliveryDate),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       const SizedBox(height: 4),
                       Row(

@@ -40,6 +40,39 @@ class NotificationNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> removeNotification({
+    required NotificationItem notification,
+    required bool isProducer,
+    required String id,
+  }) async {
+    final firestore = FirebaseFirestore.instance;
+
+    final docRef =
+        isProducer
+            ? firestore
+                .collection('stores')
+                .doc(id)
+                .collection('notifications')
+                .doc(notification.id)
+            : firestore
+                .collection('users')
+                .doc(id)
+                .collection('notifications')
+                .doc(notification.id);
+
+    try {
+      await docRef.delete();
+      remove(notification);
+    } catch (e) {
+      debugPrint('Erro ao remover notificação: $e');
+    }
+  }
+
+  void remove(NotificationItem notification) {
+    _notifications.removeWhere((n) => n.id == notification.id);
+    notifyListeners();
+  }
+
   void clear() {
     _notifications.clear();
     notifyListeners();

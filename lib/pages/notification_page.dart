@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/models/notification.dart';
@@ -15,8 +17,9 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
-    final notifications =
-        Provider.of<NotificationNotifier>(context).notifications;
+    final notificationProvider = Provider.of<NotificationNotifier>(context);
+    final notifications = notificationProvider.notifications;
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Notificações')),
@@ -45,10 +48,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        onDismissed: (_) {
-                          setState(() {
-                            notifications.removeAt(index);
-                          });
+                        onDismissed: (_) async {
+                          await notificationProvider.removeNotification(
+                            notification: notification,
+                            isProducer: authNotifier.currentUser!.isProducer,
+                            id:
+                                (!authNotifier.currentUser!.isProducer)
+                                    ? authNotifier.currentUser!.id
+                                    : (authNotifier.currentUser!
+                                            as ProducerUser)
+                                        .stores[authNotifier.selectedStoreIndex]
+                                        .id,
+                          );
                         },
                         child: ListTile(
                           leading: CircleAvatar(

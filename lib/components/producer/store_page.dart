@@ -746,7 +746,7 @@ class _StorePageState extends State<StorePage> {
             MaterialPageRoute(
               builder:
                   (ctx) =>
-                      ProductAdDetailScreen(ad: productAd, producer: producer!),
+                      ProductAdDetailScreen(ad: productAd, producer: producer),
             ),
           ),
       child: Padding(

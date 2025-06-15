@@ -6,6 +6,7 @@ import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/shopping_cart.dart';
 
+import '../../../components/producer/manageSection/manageProductsSection.dart';
 import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
@@ -315,6 +316,24 @@ class AuthNotifier extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<void> changeProductStockOrPrice(
+    String storeId,
+    ProductAd productAd,
+    ManageViewMode mode,
+  ) async {
+    await fireStore
+        .collection('stores')
+        .doc(storeId)
+        .collection('ads')
+        .doc(productAd.id)
+        .update({
+          mode == ManageViewMode.stock ? 'stock' : 'price':
+              mode == ManageViewMode.stock
+                  ? productAd.product.stock
+                  : productAd.product.price,
+        });
   }
 
   Future<void> changePersonalDetailsCurrentUser({

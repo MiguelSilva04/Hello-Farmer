@@ -19,7 +19,6 @@ import '../components/consumer/map_page.dart';
 import '../components/consumer/orders_page.dart';
 import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/store_service.dart';
-import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/manage_page.dart';
 import '../utils/app_routes.dart';
 import '../components/producer/home_page.dart';

@@ -64,6 +64,11 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
         section: 'Explorar',
         onTap: () => navNotifier.setIndex(4),
       ),
+      SearchResultItem(
+        title: 'Encomendas',
+        section: 'Geral',
+        onTap: () => navNotifier.setIndex(1),
+      ),
     ]);
 
     for (var otherUser in authNotifier.allUsers) {

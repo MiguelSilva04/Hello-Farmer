@@ -19,7 +19,6 @@ import '../components/consumer/map_page.dart';
 import '../components/consumer/orders_page.dart';
 import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/store_service.dart';
-import '../core/services/chat/chat_list_notifier.dart';
 import '../components/producer/manage_page.dart';
 import '../utils/app_routes.dart';
 import '../components/producer/home_page.dart';
@@ -48,6 +47,7 @@ class _MainMenuState extends State<MainMenu>
   late AppUser user;
   late AuthNotifier authProvider;
   String _searchQuery = "";
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -64,16 +64,22 @@ class _MainMenuState extends State<MainMenu>
     _animationController.forward();
   }
 
-  void _toggleSearch() {
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch(AppUser user) {
     setState(() {
       _isSearching = !_isSearching;
       if (!_isSearching) {
-        context.read<SearchNotifier>().search("", user.isProducer, context);
+        context.read<SearchNotifier>().clear();
         _searchQuery = "";
       }
     });
   }
-
 
   void _navigateToPage(String route) {
     Navigator.of(context).push(
@@ -179,20 +185,34 @@ class _MainMenuState extends State<MainMenu>
                                 autofocus: true,
                                 decoration: InputDecoration(
                                   hintText: "Procurar...",
-                                  border: const OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: BorderSide.none,
+                                  ),
                                   suffixIcon: IconButton(
                                     icon: const Icon(Icons.close),
-                                    onPressed: _toggleSearch,
+                                    onPressed: () => _toggleSearch(user),
                                   ),
                                 ),
                                 onChanged: (query) {
-                                  setState(() {
-                                    _searchQuery = query;
-                                  });
-                                  context.read<SearchNotifier>().search(
-                                    query,
-                                    user.isProducer,
-                                    context,
+                                  _searchQuery = query;
+
+                                  if (_debounce?.isActive ?? false)
+                                    _debounce!.cancel();
+                                  _debounce = Timer(
+                                    const Duration(milliseconds: 300),
+                                    () {
+                                      context.read<SearchNotifier>().search(
+                                        query,
+                                        user.isProducer,
+                                        context,
+                                      );
+                                    },
                                   );
                                 },
                               ),
@@ -201,7 +221,7 @@ class _MainMenuState extends State<MainMenu>
                           : IconButton(
                             key: const ValueKey('searchIcon'),
                             icon: const Icon(Icons.search),
-                            onPressed: _toggleSearch,
+                            onPressed: () => _toggleSearch(user),
                           ),
                 ),
               PopupMenuButton<String>(
@@ -363,9 +383,14 @@ class _MainMenuState extends State<MainMenu>
                     ? Consumer<SearchNotifier>(
                       builder: (context, searchNotifier, _) {
                         return GlobalSearchResults(
-                          filteredItems:
-                              searchNotifier.results,
-                              query: _searchQuery,
+                          filteredItems: searchNotifier.results,
+                          query: _searchQuery,
+                          onSelect: (item) {
+                            setState(() {
+                              _isSearching = false;
+                            });
+                            item.onTap();
+                          },
                         );
                       },
                     )

@@ -18,12 +18,13 @@ class SearchNotifier extends ChangeNotifier {
     final dynamicSearchItems = getDynamicSearchItems(context);
 
     final allItems = [...staticSearchItems, ...dynamicSearchItems];
+    final queryNormalized = normalize(query);
 
     final filteredItems =
         allItems.where((item) {
-          final matches = item.title.toLowerCase().contains(
-            query.toLowerCase(),
-          );
+          final titleNormalized = normalize(item.title);
+
+          final matches = titleNormalized.contains(queryNormalized);
 
           final validForUser =
               !(item.isProducerOnly && !isProducer) &&
@@ -33,6 +34,19 @@ class SearchNotifier extends ChangeNotifier {
         }).toList();
 
     _results = filteredItems;
+    notifyListeners();
+  }
+
+  String normalize(String input) {
+    return input
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]+'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+  
+  void clear() {
+    _results = [];
     notifyListeners();
   }
 }

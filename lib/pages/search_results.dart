@@ -4,11 +4,13 @@ import 'package:harvestly/core/models/search.dart';
 class GlobalSearchResults extends StatelessWidget {
   final List<SearchResultItem> filteredItems;
   final String query;
+  final void Function(SearchResultItem)? onSelect;
 
   const GlobalSearchResults({
     super.key,
     required this.filteredItems,
     required this.query,
+    this.onSelect,
   });
 
   @override
@@ -19,7 +21,9 @@ class GlobalSearchResults extends StatelessWidget {
           padding: const EdgeInsets.all(32),
           child: Text(
             'Digite algo para pesquisar.',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).colorScheme.surface,
+            ),
             textAlign: TextAlign.center,
           ),
         ),
@@ -32,7 +36,9 @@ class GlobalSearchResults extends StatelessWidget {
           padding: const EdgeInsets.all(32),
           child: Text(
             'Sem resultados.',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).colorScheme.surface,
+            ),
             textAlign: TextAlign.center,
           ),
         ),
@@ -41,38 +47,67 @@ class GlobalSearchResults extends StatelessWidget {
 
     final sections = filteredItems.map((e) => e.section).toSet().toList();
 
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 16),
       itemCount: sections.length,
-      separatorBuilder: (_, __) => const Divider(height: 32),
       itemBuilder: (context, sectionIndex) {
         final section = sections[sectionIndex];
         final itemsInSection =
             filteredItems.where((item) => item.section == section).toList();
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8,
-              ),
-              child: Text(
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
                 section,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.surface,
+                ),
               ),
-            ),
-            ...itemsInSection.map(
-              (item) => ListTile(
-                title: Text(item.title),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: item.onTap,
+              const SizedBox(height: 8),
+              ...itemsInSection.map(
+                (item) => Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      if (onSelect != null) {
+                        onSelect!(item);
+                      } else {
+                        item.onTap();
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

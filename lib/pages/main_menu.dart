@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
@@ -7,7 +9,9 @@ import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
+import 'package:harvestly/core/services/other/search_notifier.dart';
 import 'package:harvestly/pages/loading_page.dart';
+import 'package:harvestly/pages/search_results.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
 import '../components/consumer/home_page.dart';
@@ -43,6 +47,7 @@ class _MainMenuState extends State<MainMenu>
   late Animation<double> _opacityAnimation;
   late AppUser user;
   late AuthNotifier authProvider;
+  String _searchQuery = "";
 
   @override
   void initState() {
@@ -63,13 +68,12 @@ class _MainMenuState extends State<MainMenu>
     setState(() {
       _isSearching = !_isSearching;
       if (!_isSearching) {
-        Provider.of<ChatListNotifier>(
-          context,
-          listen: false,
-        ).setSearchQuery("");
+        context.read<SearchNotifier>().search("", user.isProducer, context);
+        _searchQuery = "";
       }
     });
   }
+
 
   void _navigateToPage(String route) {
     Navigator.of(context).push(
@@ -163,50 +167,39 @@ class _MainMenuState extends State<MainMenu>
                       (user as ProducerUser).stores.length > 0) ||
                   (!user.isProducer))
                 AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(opacity: animation, child: child);
-                  },
+                  duration: Duration(milliseconds: 300),
                   child:
                       _isSearching
                           ? Padding(
-                            key: const ValueKey(1),
+                            key: const ValueKey('searchBar'),
                             padding: const EdgeInsets.all(8),
                             child: SizedBox(
-                              width:
-                                  MediaQuery.of(context).size.width *
-                                  (user.isProducer ? 0.80 : 0.70),
-                              child: SearchBar(
-                                autoFocus: true,
-                                hintText: "Procurar...",
-                                onChanged: (query) {
-                                  Provider.of<ChatListNotifier>(
-                                    context,
-                                    listen: false,
-                                  ).setSearchQuery(query);
-                                },
-                                trailing: [
-                                  IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _isSearching = false;
-                                      });
-                                      Provider.of<ChatListNotifier>(
-                                        context,
-                                        listen: false,
-                                      ).setSearchQuery("");
-                                    },
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.grey,
-                                    ),
+                              width: 250,
+                              child: TextField(
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  hintText: "Procurar...",
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: _toggleSearch,
                                   ),
-                                ],
+                                ),
+                                onChanged: (query) {
+                                  setState(() {
+                                    _searchQuery = query;
+                                  });
+                                  context.read<SearchNotifier>().search(
+                                    query,
+                                    user.isProducer,
+                                    context,
+                                  );
+                                },
                               ),
                             ),
                           )
                           : IconButton(
-                            key: const ValueKey(2),
+                            key: const ValueKey('searchIcon'),
                             icon: const Icon(Icons.search),
                             onPressed: _toggleSearch,
                           ),
@@ -366,7 +359,17 @@ class _MainMenuState extends State<MainMenu>
           body: FadeTransition(
             opacity: _opacityAnimation,
             child:
-                user is ProducerUser
+                _isSearching
+                    ? Consumer<SearchNotifier>(
+                      builder: (context, searchNotifier, _) {
+                        return GlobalSearchResults(
+                          filteredItems:
+                              searchNotifier.results,
+                              query: _searchQuery,
+                        );
+                      },
+                    )
+                    : user is ProducerUser
                     ? user.stores.isEmpty
                         ? CreateStore(isFirstTime: true)
                         : _producerPages[Provider.of<BottomNavigationNotifier>(

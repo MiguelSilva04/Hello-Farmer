@@ -2,6 +2,7 @@ import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/store_service.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
+import 'package:harvestly/core/services/other/search_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:harvestly/pages/auth_page.dart';
 import 'package:harvestly/pages/profile_page.dart';
@@ -44,6 +45,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthNotifier()),
         ChangeNotifierProvider(create: (_) => StoreService.instance),
         ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
+        ChangeNotifierProvider(create: (_) => SearchNotifier()),
       ],
       child: const MyApp(),
     ),

@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../models/app_user.dart';
 import '../../models/notification.dart';
@@ -11,7 +13,24 @@ class NotificationNotifier extends ChangeNotifier {
   final List<NotificationItem> _notifications = [];
   StreamSubscription? _notificationsSubscription;
 
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   List<NotificationItem> get notifications => List.unmodifiable(_notifications);
+
+  NotificationNotifier() {
+    _initializeLocalNotifications();
+  }
+
+  Future<void> _initializeLocalNotifications() async {
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/launcher_icon',
+    );
+    const initializationSettings = InitializationSettings(
+      android: androidSettings,
+    );
+    await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
 
   void listenToNotifications({required String id, required bool isProducer}) {
     final collectionPath =
@@ -23,13 +42,74 @@ class NotificationNotifier extends ChangeNotifier {
         .collection(collectionPath)
         .orderBy('dateTime', descending: true)
         .snapshots()
-        .listen((snapshot) {
-          _notifications.clear();
-          _notifications.addAll(
-            snapshot.docs.map((doc) => NotificationItem.fromJson(doc.data())),
-          );
-          notifyListeners();
-        });
+        .listen(
+          (snapshot) {
+            _notifications.clear();
+            try {
+              _notifications.addAll(
+                snapshot.docs.map(
+                  (doc) => NotificationItem.fromJson(doc.data()),
+                ),
+              );
+              notifyListeners();
+            } catch (e) {
+              print('Erro ao converter notificação: $e');
+            }
+          },
+          onError: (error) {
+            print('Erro no listen das notificações: $error');
+          },
+        );
+  }
+
+  Future<void> setupFCM({required String id, required bool isProducer}) async {
+    final messaging = FirebaseMessaging.instance;
+
+    await messaging.requestPermission();
+
+    final token = await messaging.getToken();
+    print("FCM Token: $token");
+
+    if (token != null) {
+      await _saveToken(id: id, isProducer: isProducer, token: token);
+    }
+
+    FirebaseMessaging.onMessage.listen((message) {
+      print('Mensagem recebida em foreground!');
+      print('Título: ${message.notification?.title}');
+      print('Corpo: ${message.notification?.body}');
+      if (message.notification != null) _showLocalNotification(message);
+    });
+  }
+
+  Future<void> _saveToken({
+    required String id,
+    required bool isProducer,
+    required String token,
+  }) async {
+    final docRef = FirebaseFirestore.instance
+        .collection(isProducer ? 'stores' : 'users')
+        .doc(id);
+    await docRef.set({'token': token}, SetOptions(merge: true));
+  }
+
+  void _showLocalNotification(RemoteMessage message) {
+    const androidDetails = AndroidNotificationDetails(
+      'default_channel',
+      'Notificações',
+      channelDescription: 'Canal de notificações padrão',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const notificationDetails = NotificationDetails(android: androidDetails);
+
+    _flutterLocalNotificationsPlugin.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      message.notification?.title,
+      message.notification?.body,
+      notificationDetails,
+    );
   }
 
   @override
@@ -94,18 +174,29 @@ class NotificationNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> _addNotificationToFirestore({
+  // Método auxiliar para obter token do usuário/produtor
+  Future<String> _getToken(String id, bool isProducer) async {
+    final doc =
+        await FirebaseFirestore.instance
+            .collection(isProducer ? 'stores' : 'users')
+            .doc(id)
+            .get();
+    return doc.data()?['token'] ?? '';
+  }
+
+  // Método genérico para criar e enviar notificação
+  Future<void> _createAndSendNotification({
     required String userId,
-    required String userToken,
     required NotificationType type,
     required Map<String, String> data,
     required bool isProducer,
     required String title,
     required String body,
   }) async {
-    final firestore = FirebaseFirestore.instance;
+    final userToken = await _getToken(userId, isProducer);
+
     final docRef =
-        firestore
+        FirebaseFirestore.instance
             .collection(isProducer ? 'stores' : 'users')
             .doc(userId)
             .collection('notifications')
@@ -139,145 +230,79 @@ class NotificationNotifier extends ChangeNotifier {
     }
   }
 
-  Future<void> addOrderPlacedNotification(
-    AppUser consumer,
-    String storeId,
-  ) async {
-    final storeDoc =
-        await FirebaseFirestore.instance
-            .collection('stores')
-            .doc(storeId)
-            .get();
-    final token = storeDoc.data()?['token'] ?? '';
+  // Métodos públicos para tipos específicos de notificações
+  Future<void> addOrderPlacedNotification(AppUser consumer, String storeId) =>
+      _createAndSendNotification(
+        userId: storeId,
+        type: NotificationType.orderPlaced,
+        data: {'consumer': consumer.id, 'store': storeId},
+        isProducer: true,
+        title: 'Nova encomenda!',
+        body: 'Recebeste uma nova encomenda na tua loja.',
+      );
 
-    await _addNotificationToFirestore(
-      userId: storeId,
-      userToken: token,
-      type: NotificationType.orderPlaced,
-      data: {'consumer': consumer.id, 'store': storeId},
-      isProducer: true,
-      title: 'Nova encomenda!',
-      body: 'Recebeste uma nova encomenda na tua loja.',
-    );
-  }
-
-  Future<void> addOrderSentNotification(AppUser store, String userId) async {
-    final userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    final token = userDoc.data()?['token'] ?? '';
-
-    await _addNotificationToFirestore(
-      userId: userId,
-      userToken: token,
-      type: NotificationType.orderSent,
-      data: {'store': store.id},
-      isProducer: false,
-      title: 'A tua encomenda foi enviada!',
-      body: 'A tua encomenda da loja ${store.id} foi enviada.',
-    );
-  }
+  Future<void> addOrderSentNotification(AppUser store, String userId) =>
+      _createAndSendNotification(
+        userId: userId,
+        type: NotificationType.orderSent,
+        data: {'store': store.id},
+        isProducer: false,
+        title: 'A tua encomenda foi enviada!',
+        body: 'A tua encomenda da loja ${store.id} foi enviada.',
+      );
 
   Future<void> addDeliveryScheduledNotification(
     String userId,
     String orderId,
-  ) async {
-    final userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    final token = userDoc.data()?['token'] ?? '';
+  ) => _createAndSendNotification(
+    userId: userId,
+    type: NotificationType.deliveryScheduled,
+    data: {'order': orderId},
+    isProducer: false,
+    title: 'Entrega agendada!',
+    body: 'A entrega da encomenda $orderId foi agendada.',
+  );
 
-    await _addNotificationToFirestore(
-      userId: userId,
-      userToken: token,
-      type: NotificationType.deliveryScheduled,
-      data: {'order': orderId},
-      isProducer: false,
-      title: 'Entrega agendada!',
-      body: 'A entrega da encomenda $orderId foi agendada.',
-    );
-  }
-
-  Future<void> addNewReviewNotification(
-    String storeId,
-    String consumerId,
-  ) async {
-    final storeDoc =
-        await FirebaseFirestore.instance
-            .collection('stores')
-            .doc(storeId)
-            .get();
-    final token = storeDoc.data()?['token'] ?? '';
-
-    await _addNotificationToFirestore(
-      userId: storeId,
-      userToken: token,
-      type: NotificationType.newReview,
-      data: {'consumer': consumerId},
-      isProducer: true,
-      title: 'Nova avaliação!',
-      body: 'Recebeste uma nova avaliação de um cliente.',
-    );
-  }
+  Future<void> addNewReviewNotification(String storeId, String consumerId) =>
+      _createAndSendNotification(
+        userId: storeId,
+        type: NotificationType.newReview,
+        data: {'consumer': consumerId},
+        isProducer: true,
+        title: 'Nova avaliação!',
+        body: 'Recebeste uma nova avaliação de um cliente.',
+      );
 
   Future<void> addNewMessageNotification(
     String receiverId,
     String senderId, {
     required bool isProducer,
-  }) async {
-    final doc = FirebaseFirestore.instance
-        .collection(isProducer ? 'stores' : 'users')
-        .doc(receiverId);
-    final snapshot = await doc.get();
-    final token = snapshot.data()?['token'] ?? '';
+  }) => _createAndSendNotification(
+    userId: receiverId,
+    type: NotificationType.newMessage,
+    data: {'consumer': senderId},
+    isProducer: isProducer,
+    title: 'Nova mensagem',
+    body: 'Recebeste uma nova mensagem.',
+  );
 
-    await _addNotificationToFirestore(
-      userId: receiverId,
-      userToken: token,
-      type: NotificationType.newMessage,
-      data: {'consumer': senderId},
-      isProducer: isProducer,
-      title: 'Nova mensagem',
-      body: 'Recebeste uma nova mensagem.',
-    );
-  }
+  Future<void> addAbandonedOrderNotification(String storeId, String orderId) =>
+      _createAndSendNotification(
+        userId: storeId,
+        type: NotificationType.abandonedOrder,
+        data: {'order': orderId},
+        isProducer: true,
+        title: 'Encomenda abandonada',
+        body: 'Uma encomenda foi abandonada.',
+      );
 
-  Future<void> addAbandonedOrderNotification(
-    String storeId,
-    String orderId,
-  ) async {
-    final storeDoc =
-        await FirebaseFirestore.instance
-            .collection('stores')
-            .doc(storeId)
-            .get();
-    final token = storeDoc.data()?['token'] ?? '';
-
-    await _addNotificationToFirestore(
-      userId: storeId,
-      userToken: token,
-      type: NotificationType.abandonedOrder,
-      data: {'order': orderId},
-      isProducer: true,
-      title: 'Encomenda abandonada',
-      body: 'Uma encomenda foi abandonada.',
-    );
-  }
-
-  Future<void> addLowStockNotification(String storeId, String adId) async {
-    final storeDoc =
-        await FirebaseFirestore.instance
-            .collection('stores')
-            .doc(storeId)
-            .get();
-    final token = storeDoc.data()?['token'] ?? '';
-
-    await _addNotificationToFirestore(
-      userId: storeId,
-      userToken: token,
-      type: NotificationType.lowStock,
-      data: {'ad': adId},
-      isProducer: true,
-      title: 'Stock baixo',
-      body: 'O produto $adId está com stock baixo.',
-    );
-  }
+  Future<void> addLowStockNotification(String storeId, String adId) =>
+      _createAndSendNotification(
+        userId: storeId,
+        type: NotificationType.lowStock,
+        data: {'ad': adId},
+        isProducer: true,
+        title: 'Stock baixo',
+        body: 'O produto $adId está com stock baixo.',
+      );
 }

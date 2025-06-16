@@ -1,43 +1,19 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import { onRequest } from "firebase-functions/v2/https";
 
-const {onCall} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
-
-const admin = require("firebase-admin");
-admin.initializeApp();
-
-exports.sendNotification = onCall(async (request) => {
-  const {token, title, body, data: notificationData} = request.data;
+export const sendNotification = onRequest(async (req, res) => {
+  const { token, title, body, data: notificationData } = req.body;
 
   try {
     const message = {
-      token: token,
-      notification: {
-        title: title,
-        body: body,
-      },
+      token,
+      notification: { title, body },
       data: notificationData || {},
     };
 
     const response = await admin.messaging().send(message);
-    return {success: true, response};
+    res.status(200).send({ success: true, response });
   } catch (error) {
     logger.error("Erro ao enviar notificação:", error);
-    throw new Error(error.message);
+    res.status(500).send({ success: false, error: error.message });
   }
 });
-
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
-
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });

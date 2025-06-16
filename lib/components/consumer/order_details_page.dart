@@ -700,33 +700,45 @@ class _OrderTimelineState extends State<OrderTimeline> {
             currentStep < steps.length - 1)
           (_isLoading)
               ? Center(child: CircularProgressIndicator())
-              : ElevatedButton(
-                onPressed:
-                    () => showDialog(
-                      context: context,
-                      builder:
-                          (ctx) => AlertDialog(
-                            title: const Text("Aviso"),
-                            content: const Text("Pretende enviar a encomenda?"),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text("Não"),
+              : Expanded(
+                child: ElevatedButton.icon(
+                  iconAlignment: IconAlignment.end,
+                  onPressed:
+                      () => showDialog(
+                        context: context,
+                        builder:
+                            (ctx) => AlertDialog(
+                              title: const Text("Aviso"),
+                              content: const Text(
+                                "Pretende enviar a encomenda?",
                               ),
-                              TextButton(
-                                onPressed: () async {
-                                  setState(() {
-                                    currentStep += 1;
-                                  });
-                                  await updateOrderState();
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text("Sim"),
-                              ),
-                            ],
-                          ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text("Não"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    setState(() {
+                                      currentStep += 1;
+                                    });
+                                    await updateOrderState();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text("Sim"),
+                                ),
+                              ],
+                            ),
+                      ),
+                  icon: Icon(Icons.next_plan_rounded, size: 30),
+                  label: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: const Text(
+                      "Próximo passo",
+                      style: TextStyle(fontSize: 14),
                     ),
-                child: const Text("Próximo passo"),
+                  ),
+                ),
               ),
       ],
     );

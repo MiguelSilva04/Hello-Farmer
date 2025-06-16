@@ -138,33 +138,37 @@ class _MainMenuState extends State<MainMenu>
         context,
         listen: false,
       );
-
-      (user.isProducer)
-          ? notificationNotifier.listenToNotifications(
-            id:
-                (user as ProducerUser)
-                    .stores[authProvider.selectedStoreIndex]
-                    .id,
-            isProducer: user.isProducer,
-          )
-          : notificationNotifier.listenToNotifications(
-            id: user.id,
-            isProducer: user.isProducer,
-          );
+      if (user.isProducer) {
+        notificationNotifier.setupFCM(
+          id: (user as ProducerUser).stores[authProvider.selectedStoreIndex].id,
+          isProducer: true,
+        );
+        notificationNotifier.listenToNotifications(
+          id: user.stores[authProvider.selectedStoreIndex].id,
+          isProducer: true,
+        );
+      } else {
+        notificationNotifier.setupFCM(id: user.id, isProducer: false);
+        notificationNotifier.listenToNotifications(
+          id: user.id,
+          isProducer: false,
+        );
+      }
 
       final chatService = Provider.of<ChatService>(context, listen: false);
-      final currentChat = chatService.currentChat!;
-
-      chatService.listenToCurrentChatMessages((messages) {
-        if (messages.isNotEmpty) {
-          final lastMessage = messages.first;
-          final notifier = Provider.of<ChatListNotifier>(
-            context,
-            listen: false,
-          );
-          notifier.updateLastMessage(currentChat.id, lastMessage);
-        }
-      });
+      final currentChat = chatService.currentChat;
+      if (currentChat != null) {
+        chatService.listenToCurrentChatMessages((messages) {
+          if (messages.isNotEmpty) {
+            final lastMessage = messages.first;
+            final notifier = Provider.of<ChatListNotifier>(
+              context,
+              listen: false,
+            );
+            notifier.updateLastMessage(currentChat.id, lastMessage);
+          }
+        });
+      }
 
       return user;
     }

@@ -79,6 +79,7 @@ dependencies:
   light_sensor: ^3.0.1
   timelines_plus: ^1.0.7
   cloud_functions: ^5.5.2
+  flutter_local_notifications: ^19.2.1
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:

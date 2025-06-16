@@ -95,8 +95,6 @@ class _MessagesState extends State<Messages> {
         final messages = snapshot.data ?? [];
         final List<MapEntry<DateTime, Widget>> timelineEntries = [];
 
-        // _loadUserEntryDates();
-
         for (var entry in userEntryDates.entries) {
           final user = chatUsers.firstWhereOrNull((u) => u.id == entry.key);
           if (user != null && user.id != currentUser!.id) {

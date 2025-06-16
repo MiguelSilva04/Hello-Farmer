@@ -21,6 +21,8 @@ import '../components/consumer/orders_page.dart';
 import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/store_service.dart';
 import '../components/producer/manage_page.dart';
+import '../core/services/chat/chat_list_notifier.dart';
+import '../core/services/chat/chat_service.dart';
 import '../utils/app_routes.dart';
 import '../components/producer/home_page.dart';
 import '../components/producer/sell_page.dart';
@@ -138,17 +140,31 @@ class _MainMenuState extends State<MainMenu>
       );
 
       (user.isProducer)
-          ? await notificationNotifier.loadNotifications(
+          ? notificationNotifier.listenToNotifications(
             id:
                 (user as ProducerUser)
                     .stores[authProvider.selectedStoreIndex]
                     .id,
             isProducer: user.isProducer,
           )
-          : await notificationNotifier.loadNotifications(
+          : notificationNotifier.listenToNotifications(
             id: user.id,
             isProducer: user.isProducer,
           );
+
+      final chatService = Provider.of<ChatService>(context, listen: false);
+      final currentChat = chatService.currentChat!;
+
+      chatService.listenToCurrentChatMessages((messages) {
+        if (messages.isNotEmpty) {
+          final lastMessage = messages.first;
+          final notifier = Provider.of<ChatListNotifier>(
+            context,
+            listen: false,
+          );
+          notifier.updateLastMessage(currentChat.id, lastMessage);
+        }
+      });
 
       return user;
     }

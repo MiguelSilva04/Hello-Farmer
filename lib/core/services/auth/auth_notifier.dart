@@ -9,7 +9,6 @@ import 'package:harvestly/core/models/shopping_cart.dart';
 
 import '../../../components/producer/manageSection/manageProductsSection.dart';
 import '../../models/consumer_user.dart';
-import '../../models/notification.dart';
 import '../../models/producer_user.dart';
 import '../../models/store.dart';
 import '../../models/order.dart';
@@ -20,7 +19,7 @@ import 'package:collection/collection.dart';
 class AuthNotifier extends ChangeNotifier {
   AppUser? _currentUser;
   int _selectedStoreIndex = 0;
-
+  bool _isOrdersLoading = false;
   List<AppUser> _allUsers = [];
   List<AppUser> get allUsers => _allUsers;
   AppUser? get currentUser => _currentUser;
@@ -35,6 +34,7 @@ class AuthNotifier extends ChangeNotifier {
       _allUsers.whereType<ProducerUser>().toList();
 
   final fireStore = cf.FirebaseFirestore.instance;
+  bool get isOrdersLoading => _isOrdersLoading;
 
   Future<void> loadAllUsers() async {
     final userSnapshot = await fireStore.collection('users').get();
@@ -469,26 +469,33 @@ class AuthNotifier extends ChangeNotifier {
   void _initFCMToken() async {
     final fcm = FirebaseMessaging.instance;
 
-    final token = await fcm.getToken();
+    Future<void> _saveToken(String token) async {
+      final user = _currentUser;
 
-    if (token != null) {
-      final userId = AuthService().currentUser?.id;
-      if (userId != null) {
-        await cf.FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .update({'token': token});
+      if (user == null) return;
+
+      final firestore = cf.FirebaseFirestore.instance;
+
+      if (user.isProducer && (user as ProducerUser).stores.isNotEmpty) {
+        final storeId = user.stores[selectedStoreIndex].id;
+
+        await firestore.collection('stores').doc(storeId).update({
+          'token': token,
+        });
+      } else {
+        await firestore.collection('users').doc(user.id).update({
+          'token': token,
+        });
       }
     }
 
-    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-      final userId = AuthService().currentUser?.id;
-      if (userId != null) {
-        await cf.FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .update({'token': newToken});
-      }
+    final token = await fcm.getToken();
+    if (token != null) {
+      await _saveToken(token);
+    }
+
+    fcm.onTokenRefresh.listen((newToken) async {
+      await _saveToken(newToken);
     });
   }
 

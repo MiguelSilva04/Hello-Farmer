@@ -78,6 +78,7 @@ dependencies:
   rxdart: ^0.28.0
   light_sensor: ^3.0.1
   timelines_plus: ^1.0.7
+  cloud_functions: ^5.5.2
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:

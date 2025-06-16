@@ -54,7 +54,11 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
               !(auth.currentUser is ProducerUser) ||
               (auth.currentUser as ProducerUser).stores.isEmpty ||
               store.orders == null) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            );
           }
           return ListView.builder(
             itemCount: ordersFiltered.length,

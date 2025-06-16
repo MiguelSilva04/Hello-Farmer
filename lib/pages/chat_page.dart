@@ -105,24 +105,13 @@ class _ChatPageState extends State<ChatPage> {
             leadingWidth: 70,
             leading: getLeadingAppBarWidget(context, consumer, producer),
             title: Text(
-              (authNotifier.currentUser == currentChat.consumerId)
-                  ? consumer.firstName + " " + consumer.lastName
-                  : producer.firstName + " " + producer.lastName,
+              (authNotifier.currentUser!.id == currentChat.consumerId)
+                  ? producer.firstName + " " + producer.lastName
+                  : consumer.firstName + " " + consumer.lastName,
             ),
             centerTitle: false,
             titleSpacing: 5,
             titleTextStyle: const TextStyle(fontSize: 22),
-            actions: [
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AppRoutes.CHAT_SETTINGS_PAGE);
-                },
-                icon: Icon(
-                  Icons.settings,
-                  color: Theme.of(context).primaryIconTheme.color,
-                ),
-              ),
-            ],
           ),
           body: SafeArea(
             child: Column(

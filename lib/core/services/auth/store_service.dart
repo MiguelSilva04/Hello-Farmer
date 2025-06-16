@@ -1,11 +1,9 @@
 import 'dart:io';
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:harvestly/core/models/store.dart';
-
 import '../../models/order.dart';
 import '../../models/product_ad.dart';
 
@@ -15,14 +13,12 @@ class StoreService with ChangeNotifier {
   static final StoreService instance = StoreService._privateConstructor();
 
   final List<Store> _allStores = [];
+  final firestore = cf.FirebaseFirestore.instance;
 
   List<Store> get allStores => List.unmodifiable(_allStores);
 
-  final firestore = cf.FirebaseFirestore.instance;
-
   Future<void> loadStores() async {
     final snapshot = await firestore.collection('stores').get();
-
     _allStores.clear();
 
     for (final doc in snapshot.docs) {
@@ -31,17 +27,15 @@ class StoreService with ChangeNotifier {
 
       final store = Store.fromJson({...storeData, 'id': storeId});
 
-      final adsSnapshot =
-          await firestore
-              .collection('stores')
-              .doc(storeId)
-              .collection('ads')
-              .get();
+      final adsSnapshot = await firestore
+          .collection('stores')
+          .doc(storeId)
+          .collection('ads')
+          .get();
 
-      final ads =
-          adsSnapshot.docs.map((adDoc) {
-            return ProductAd.fromJson(adDoc.data());
-          }).toList();
+      final ads = adsSnapshot.docs.map((adDoc) {
+        return ProductAd.fromJson(adDoc.data());
+      }).toList();
 
       store.productsAds = ads;
 
@@ -52,30 +46,28 @@ class StoreService with ChangeNotifier {
   }
 
   List<Store> getStoresByOwner(String ownerId) {
-    final stores =
-        _allStores.where((store) => store.ownerId == ownerId).toList();
+    final stores = _allStores.where((store) => store.ownerId == ownerId).toList();
 
     for (final store in stores) {
-      _loadOrdersForStore(store);
+      if (store.orders == null) {
+        listenToOrdersForStore(store);
+      }
     }
 
     return stores;
   }
 
-  Future<void> _loadOrdersForStore(Store store) async {
-    final orderSnapshot =
-        await firestore
-            .collection('orders')
-            .where('storeId', isEqualTo: store.id)
-            .get();
-
-    store.orders =
-        orderSnapshot.docs.map((doc) {
-          final data = doc.data();
-          return Order.fromJson({...data, 'id': doc.id});
-        }).toList();
-
-    notifyListeners();
+  void listenToOrdersForStore(Store store) {
+    firestore
+        .collection('orders')
+        .where('storeId', isEqualTo: store.id)
+        .snapshots()
+        .listen((snapshot) {
+      store.orders = snapshot.docs
+          .map((doc) => Order.fromJson({...doc.data(), 'id': doc.id}))
+          .toList();
+      notifyListeners();
+    });
   }
 
   Future<void> updateStoreData({
@@ -90,9 +82,7 @@ class StoreService with ChangeNotifier {
     String? backgroundImageUrl,
     required String storeId,
   }) async {
-    final storeRef = cf.FirebaseFirestore.instance
-        .collection('stores')
-        .doc(storeId);
+    final storeRef = firestore.collection('stores').doc(storeId);
 
     await storeRef.update({
       'name': name,
@@ -111,23 +101,15 @@ class StoreService with ChangeNotifier {
   }
 
   Future<String> updateProfileImage(File file, String storeId) async {
-    final ref = FirebaseStorage.instance.ref().child(
-      'stores/$storeId/profile.jpg',
-    );
-
+    final ref = FirebaseStorage.instance.ref().child('stores/$storeId/profile.jpg');
     await ref.putFile(file);
-    final downloadUrl = await ref.getDownloadURL();
-    return downloadUrl;
+    return await ref.getDownloadURL();
   }
 
   Future<String> updateBackgroundImage(File file, String storeId) async {
-    final ref = FirebaseStorage.instance.ref().child(
-      'stores/$storeId/background.jpg',
-    );
-
+    final ref = FirebaseStorage.instance.ref().child('stores/$storeId/background.jpg');
     await ref.putFile(file);
-    final downloadUrl = await ref.getDownloadURL();
-    return downloadUrl;
+    return await ref.getDownloadURL();
   }
 
   Future<void> editProductAd(ProductAd ad, String storeId) async {

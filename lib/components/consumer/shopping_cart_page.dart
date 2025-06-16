@@ -84,7 +84,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     await Provider.of<NotificationNotifier>(
       context,
       listen: false,
-    ).addOrderSentNofication(currentUser, storeId);
+    ).addOrderPlacedNotification(currentUser, storeId);
     setState(() => _isLoading = false);
     _loadCartProducts();
   }

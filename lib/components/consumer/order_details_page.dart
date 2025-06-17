@@ -195,30 +195,7 @@ class OrderDetailsPage extends StatelessWidget {
     final currentUser = authNotifier.currentUser!;
     final date = DateFormat.yMMMEd('pt_PT').format(order.deliveryDate);
     final products = order.ordersItems;
-    final deliveryMethod =
-        (AuthService().users
-                    .whereType<ProducerUser>()
-                    .expand((p) {
-                      if (p.stores.isNotEmpty) {
-                        return p
-                                .stores[Provider.of<AuthNotifier>(
-                                  context,
-                                  listen: false,
-                                ).selectedStoreIndex]
-                                .productsAds ??
-                            [];
-                      } else {
-                        return [];
-                      }
-                    })
-                    .firstWhere(
-                      (ad) => ad.id == products.first.productAdId,
-                      orElse:
-                          () => throw Exception("ProductAd não encontrado."),
-                    )
-                as ProductAd)
-            .preferredDeliveryMethods(authNotifier.producerUsers)
-            .first;
+    final deliveryMethod = order.deliveryMethod!.toDisplayString();
     return Scaffold(
       appBar: AppBar(title: const Text("Encomenda")),
       body: Padding(
@@ -408,7 +385,7 @@ class OrderDetailsPage extends StatelessWidget {
                 style: TextStyle(fontSize: 16),
                 children: [
                   TextSpan(
-                    text: deliveryMethod.toDisplayString(),
+                    text: deliveryMethod,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -423,7 +400,8 @@ class OrderDetailsPage extends StatelessWidget {
               "Consultar estado",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            OrderTimeline(state: order.state, orderId: order.id),
+            const SizedBox(height: 16),
+            OrderTimeline(order: order),
 
             const Divider(),
             const Text(
@@ -572,30 +550,29 @@ class OrderDetailsPage extends StatelessWidget {
 }
 
 class OrderTimeline extends StatefulWidget {
-  final OrderState state;
-  final String orderId;
+  final Order order;
 
-  OrderTimeline({required this.state, required this.orderId});
+  OrderTimeline({required this.order});
 
   @override
   State<OrderTimeline> createState() => _OrderTimelineState();
 }
 
 class _OrderTimelineState extends State<OrderTimeline> {
-  final List<OrderState> steps = [
-    OrderState.Pending,
-    OrderState.Sent,
-    OrderState.Delivered,
-  ];
+  late List<OrderState> steps;
   late int currentStep;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    currentStep = steps.indexOf(widget.state);
-    print(currentStep);
-    print(steps.length);
+
+    steps =
+        widget.order.deliveryMethod == DeliveryMethod.PICKUP
+            ? [OrderState.Pending, OrderState.Ready, OrderState.Delivered]
+            : [OrderState.Pending, OrderState.Sent, OrderState.Delivered];
+
+    currentStep = steps.indexOf(widget.order.state);
   }
 
   Future<void> updateOrderState() async {
@@ -604,25 +581,24 @@ class _OrderTimelineState extends State<OrderTimeline> {
     await Provider.of<AuthNotifier>(
       context,
       listen: false,
-    ).changeOrderState(widget.orderId, newOrderState);
+    ).changeOrderState(widget.order.id, newOrderState);
     setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isProducer =
+        Provider.of<AuthNotifier>(
+          context,
+          listen: false,
+        ).currentUser!.isProducer;
+    final canAdvance = isProducer && currentStep < steps.length - 1;
+
     return Row(
       children: [
         SizedBox(
-          height: 100,
-          width:
-              MediaQuery.of(context).size.width *
-              ((Provider.of<AuthNotifier>(
-                        context,
-                        listen: false,
-                      ).currentUser!.isProducer) &&
-                      currentStep < steps.length - 1
-                  ? 0.5
-                  : 0.7),
+          height: MediaQuery.of(context).size.height * 0.13,
+          width: MediaQuery.of(context).size.width * (canAdvance ? 0.5 : 0.7),
           child: TimelineTheme(
             data: TimelineThemeData(
               direction: Axis.vertical,
@@ -693,13 +669,9 @@ class _OrderTimelineState extends State<OrderTimeline> {
           ),
         ),
         const SizedBox(width: 10),
-        if ((Provider.of<AuthNotifier>(
-              context,
-              listen: false,
-            ).currentUser!.isProducer) &&
-            currentStep < steps.length - 1)
+        if (canAdvance)
           (_isLoading)
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : Expanded(
                 child: ElevatedButton.icon(
                   iconAlignment: IconAlignment.end,
@@ -710,7 +682,7 @@ class _OrderTimelineState extends State<OrderTimeline> {
                             (ctx) => AlertDialog(
                               title: const Text("Aviso"),
                               content: const Text(
-                                "Pretende enviar a encomenda?",
+                                "Pretende avançar o estado da encomenda?",
                               ),
                               actions: [
                                 TextButton(
@@ -719,9 +691,7 @@ class _OrderTimelineState extends State<OrderTimeline> {
                                 ),
                                 TextButton(
                                   onPressed: () async {
-                                    setState(() {
-                                      currentStep += 1;
-                                    });
+                                    setState(() => currentStep += 1);
                                     await updateOrderState();
                                     Navigator.of(context).pop();
                                   },
@@ -730,10 +700,10 @@ class _OrderTimelineState extends State<OrderTimeline> {
                               ],
                             ),
                       ),
-                  icon: Icon(Icons.next_plan_rounded, size: 30),
-                  label: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: const Text(
+                  icon: const Icon(Icons.next_plan_rounded, size: 30),
+                  label: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2),
+                    child: Text(
                       "Próximo passo",
                       style: TextStyle(fontSize: 14),
                     ),

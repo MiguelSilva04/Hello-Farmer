@@ -22,6 +22,17 @@ extension DeliveryMethodExtension on DeliveryMethod {
     }
   }
 
+  IconData toIcon() {
+    switch (this) {
+      case DeliveryMethod.COURIER:
+        return Icons.local_shipping;
+      case DeliveryMethod.HOME_DELIVERY:
+        return Icons.home;
+      case DeliveryMethod.PICKUP:
+        return Icons.store;
+    }
+  }
+
   static DeliveryMethod fromString(String value) {
     switch (value) {
       case "Entrega ao Domicílio":
@@ -142,7 +153,7 @@ class Store {
               ? (json['viewsByUserDateTime'] as List).map((item) {
                 final key = DateTime.parse(item.keys.first);
                 final value = item.values.first;
-                return UserView(date: key,user: value,);
+                return UserView(date: key, user: value);
               }).toList()
               : [],
       preferredDeliveryMethod:

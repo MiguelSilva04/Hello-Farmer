@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:provider/provider.dart';
+import '../../core/models/producer_user.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
 import '../../utils/app_routes.dart';
 
@@ -31,14 +34,43 @@ class AccountPage extends StatelessWidget {
     );
 
     if (shouldLogout == true) {
-      Provider.of<BottomNavigationNotifier>(context, listen: false).setIndex(0);
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        context.read<ChatListNotifier>().clearChats();
-        await AuthService().logout();
-        Navigator.of(
+      final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+      final user = authNotifier.currentUser;
+
+      if (user != null) {
+        final notificationNotifier = Provider.of<NotificationNotifier>(
           context,
-        ).pushNamedAndRemoveUntil(AppRoutes.AUTH_OR_APP_PAGE, (route) => false);
-      });
+          listen: false,
+        );
+
+        await notificationNotifier
+            .removeToken(
+              id:
+                  user.isProducer
+                      ? (user as ProducerUser)
+                          .stores[authNotifier.selectedStoreIndex]
+                          .id
+                      : user.id,
+              isProducer: user.isProducer,
+            )
+            .then((_) {
+              Provider.of<BottomNavigationNotifier>(
+                context,
+                listen: false,
+              ).setIndex(0);
+
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                context.read<ChatListNotifier>().clearChats();
+                await AuthService().logout();
+
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  AppRoutes.AUTH_OR_APP_PAGE,
+                  (route) => false,
+                );
+              });
+              Navigator.of(context).pop();
+            });
+      }
     }
   }
 

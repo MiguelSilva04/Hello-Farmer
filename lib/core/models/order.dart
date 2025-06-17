@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
+import 'package:harvestly/core/models/store.dart';
 
 enum OrderState { Pending, Sent, Ready, Delivered, Abandoned }
 
@@ -50,6 +51,7 @@ class Order {
   final double totalPrice;
   final String consumerId;
   final String storeId;
+  final DeliveryMethod? deliveryMethod;
 
   Order({
     required this.id,
@@ -63,6 +65,7 @@ class Order {
     required this.storeId,
     required this.postalCode,
     required this.phone,
+    required this.deliveryMethod,
     this.discountCode,
   });
 
@@ -91,6 +94,12 @@ class Order {
       discountCode: json['discountCode'] ?? '',
       phone: json['phone'] ?? '',
       postalCode: json['postalCode'] ?? '',
+      deliveryMethod:
+          json['deliveryMethod'] != null
+              ? DeliveryMethodExtension.fromString(
+                json['deliveryMethod'] as String,
+              )
+              : null,
     );
   }
 
@@ -104,6 +113,7 @@ class Order {
       'totalPrice': totalPrice,
       'consumerId': consumerId,
       'storeId': storeId,
+      'deliveryMethod': deliveryMethod?.toDisplayString() ?? null,
     };
   }
 

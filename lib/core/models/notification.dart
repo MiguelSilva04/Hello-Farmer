@@ -16,10 +16,10 @@ class NotificationItem {
 
   String get title {
     switch (type) {
-      case NotificationType.orderSent:
-        return "Encomenda enviada";
       case NotificationType.orderPlaced:
         return "Encomendada colocada";
+      case NotificationType.orderSent:
+        return "Encomenda enviada";
       case NotificationType.newMessage:
         return "Nova mensagem";
       case NotificationType.newReview:
@@ -35,10 +35,10 @@ class NotificationItem {
 
   String get description {
     switch (type) {
-      case NotificationType.orderSent:
-        return "Encomenda enviada por ${data["store"]}";
       case NotificationType.orderPlaced:
         return "Encomenda colocada por ${data["consumer"]}";
+      case NotificationType.orderSent:
+        return "Encomenda enviada por ${data["store"]}";
       case NotificationType.newMessage:
         return "Nova mensagem de ${data["consumer"]}";
       case NotificationType.newReview:

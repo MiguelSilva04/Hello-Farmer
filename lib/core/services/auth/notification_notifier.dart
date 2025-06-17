@@ -68,7 +68,6 @@ class NotificationNotifier extends ChangeNotifier {
     await messaging.requestPermission();
 
     final token = await messaging.getToken();
-    print("FCM Token: $token");
 
     if (token != null) {
       await _saveToken(id: id, isProducer: isProducer, token: token);
@@ -90,7 +89,40 @@ class NotificationNotifier extends ChangeNotifier {
     final docRef = FirebaseFirestore.instance
         .collection(isProducer ? 'stores' : 'users')
         .doc(id);
-    await docRef.set({'token': token}, SetOptions(merge: true));
+    await docRef.set({
+      'tokens': FieldValue.arrayUnion([token]),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> removeToken({
+    required String id,
+    required bool isProducer,
+  }) async {
+    print(id);
+    print(isProducer);
+    final messaging = FirebaseMessaging.instance;
+    final token = await messaging.getToken();
+    if (token != null) {
+      final docRef = FirebaseFirestore.instance
+          .collection(isProducer ? 'stores' : 'users')
+          .doc(id);
+      await docRef.update({
+        'tokens': FieldValue.arrayRemove([token]),
+      });
+    }
+  }
+
+  Future<List<String>> _getTokens(String id, bool isProducer) async {
+    final doc =
+        await FirebaseFirestore.instance
+            .collection(isProducer ? 'stores' : 'users')
+            .doc(id)
+            .get();
+    final tokens = doc.data()?['tokens'];
+    if (tokens is List) {
+      return List<String>.from(tokens);
+    }
+    return [];
   }
 
   void _showLocalNotification(RemoteMessage message) {
@@ -153,38 +185,29 @@ class NotificationNotifier extends ChangeNotifier {
   }
 
   Future<void> triggerPushNotificationViaFunction({
-    required String token,
+    required List<String> tokens,
     required String title,
     required String body,
     Map<String, dynamic>? data,
   }) async {
-    try {
-      final callable = FirebaseFunctions.instance.httpsCallable(
-        'sendNotification',
-      );
-      final response = await callable.call({
-        'token': token,
-        'title': title,
-        'body': body,
-        'data': data ?? {},
-      });
-      print('Push enviada com sucesso: ${response.data}');
-    } catch (e) {
-      print('Erro ao chamar função sendNotification: $e');
+    final callable = FirebaseFunctions.instance.httpsCallable(
+      'sendNotification',
+    );
+    for (final token in tokens) {
+      try {
+        final response = await callable.call({
+          'token': token,
+          'title': title,
+          'body': body,
+          'data': data ?? {},
+        });
+        print('Push enviada para $token com sucesso: ${response.data}');
+      } catch (e) {
+        print('Erro ao enviar push para $token: $e');
+      }
     }
   }
 
-  // Método auxiliar para obter token do usuário/produtor
-  Future<String> _getToken(String id, bool isProducer) async {
-    final doc =
-        await FirebaseFirestore.instance
-            .collection(isProducer ? 'stores' : 'users')
-            .doc(id)
-            .get();
-    return doc.data()?['token'] ?? '';
-  }
-
-  // Método genérico para criar e enviar notificação
   Future<void> _createAndSendNotification({
     required String userId,
     required NotificationType type,
@@ -193,7 +216,7 @@ class NotificationNotifier extends ChangeNotifier {
     required String title,
     required String body,
   }) async {
-    final userToken = await _getToken(userId, isProducer);
+    final userTokens = await _getTokens(userId, isProducer);
 
     final docRef =
         FirebaseFirestore.instance
@@ -215,14 +238,14 @@ class NotificationNotifier extends ChangeNotifier {
       'dateTime': Timestamp.fromDate(notification.dateTime),
       'data': data,
       'userId': userId,
-      'userToken': userToken,
+      'userTokens': userTokens,
     });
 
     addNotification(notification);
 
-    if (userToken.isNotEmpty) {
+    if (userTokens.isNotEmpty) {
       await triggerPushNotificationViaFunction(
-        token: userToken,
+        tokens: userTokens,
         title: title,
         body: body,
         data: {'notificationId': notification.id, 'userId': userId},
@@ -230,7 +253,7 @@ class NotificationNotifier extends ChangeNotifier {
     }
   }
 
-  // Métodos públicos para tipos específicos de notificações
+  // Métodos públicos para notificações específicas continuam iguais, só passam para _createAndSendNotification
   Future<void> addOrderPlacedNotification(AppUser consumer, String storeId) =>
       _createAndSendNotification(
         userId: storeId,
@@ -293,16 +316,6 @@ class NotificationNotifier extends ChangeNotifier {
         data: {'order': orderId},
         isProducer: true,
         title: 'Encomenda abandonada',
-        body: 'Uma encomenda foi abandonada.',
-      );
-
-  Future<void> addLowStockNotification(String storeId, String adId) =>
-      _createAndSendNotification(
-        userId: storeId,
-        type: NotificationType.lowStock,
-        data: {'ad': adId},
-        isProducer: true,
-        title: 'Stock baixo',
-        body: 'O produto $adId está com stock baixo.',
+        body: 'Uma encomenda foi abandonada no carrinho.',
       );
 }

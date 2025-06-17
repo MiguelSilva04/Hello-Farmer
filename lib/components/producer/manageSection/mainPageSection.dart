@@ -443,18 +443,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                       spacing: 10,
                       children:
                           store.preferredDeliveryMethod.map((method) {
-                            IconData icon;
-                            switch (method) {
-                              case DeliveryMethod.COURIER:
-                                icon = Icons.local_shipping;
-                                break;
-                              case DeliveryMethod.HOME_DELIVERY:
-                                icon = Icons.home;
-                                break;
-                              case DeliveryMethod.PICKUP:
-                                icon = Icons.store;
-                                break;
-                            }
+                            IconData icon = method.toIcon();
                             return Chip(
                               avatar: Icon(
                                 icon,

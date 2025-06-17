@@ -29,6 +29,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   Store? store;
   bool multipleStoresDetected = false;
   late ShoppingCart? cart;
+  DeliveryMethod? selectedDeliveryMethod;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
@@ -53,6 +54,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     productAdQuantities = {};
 
     _loadCartProducts();
+    if (store != null && store!.preferredDeliveryMethod.length == 1) {
+      selectedDeliveryMethod = store!.preferredDeliveryMethod.first;
+    }
   }
 
   double roundDouble(double value, int places) {
@@ -69,6 +73,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     required String discountCode,
     required List<Map<String, dynamic>> cartItems,
     required double totalPrice,
+    required DeliveryMethod deliveryMethod,
   }) async {
     setState(() => _isLoading = true);
     await authNotifier.createOrder(
@@ -80,6 +85,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       postalCode: postalCode,
       phone: phoneNumber!,
       discountCode: discountCode,
+      deliveryMethod: deliveryMethod,
     );
     await Provider.of<NotificationNotifier>(
       context,
@@ -215,6 +221,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         postalCode: postalCode!,
         phone: phoneNumber!,
         discountCode: discountCode ?? '',
+        deliveryMethod: selectedDeliveryMethod!,
       );
 
       setState(() {
@@ -273,11 +280,88 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
               onSaved: (value) => discountCode = value,
             ),
             SizedBox(height: 24),
+            (store != null && store!.preferredDeliveryMethod.length > 1)
+                ? DropdownButtonFormField<DeliveryMethod>(
+                  dropdownColor: Theme.of(context).colorScheme.secondary,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.tertiaryFixed,
+                  ),
+                  decoration: InputDecoration(labelText: "Método de entrega"),
+                  value: selectedDeliveryMethod,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedDeliveryMethod = value;
+                    });
+                  },
+                  validator:
+                      (value) =>
+                          value == null
+                              ? "Selecione um método de entrega"
+                              : null,
+                  items:
+                      store!.preferredDeliveryMethod.map((method) {
+                        return DropdownMenuItem(
+                          value: method,
+                          child: Text(method.toDisplayString()),
+                        );
+                      }).toList(),
+                )
+                : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Método de entrega:",
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Card(
+                      color: Theme.of(context).colorScheme.surface,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              selectedDeliveryMethod!.toIcon(),
+                              size: 20,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              selectedDeliveryMethod!.toDisplayString(),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 OutlinedButton(
-                  onPressed: () => setState(() => _isCheckout = false),
+                  onPressed:
+                      () => setState(() {
+                        selectedDeliveryMethod = null;
+                        _isCheckout = false;
+                      }),
                   child: Text("Cancelar"),
                 ),
                 (_isLoading)

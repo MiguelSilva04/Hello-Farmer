@@ -508,6 +508,7 @@ class AuthNotifier extends ChangeNotifier {
     required String discountCode,
     required List<Map<String, dynamic>> cartItems,
     required double totalPrice,
+    required DeliveryMethod deliveryMethod,
   }) async {
     final docRef = fireStore.collection('orders').doc();
 
@@ -526,6 +527,7 @@ class AuthNotifier extends ChangeNotifier {
       ),
       'items': cartItems,
       'totalPrice': totalPrice,
+      'deliveryMethod': deliveryMethod.toDisplayString(),
     };
 
     await docRef.set(orderData);

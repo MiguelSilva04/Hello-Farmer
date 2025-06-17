@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:harvestly/components/consumer/map_page.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
@@ -387,6 +388,25 @@ class _StorePageState extends State<StorePage> {
                 ),
 
                 const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MapPage(initialStore: myStore),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: Text(
+                      "Ver localização",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

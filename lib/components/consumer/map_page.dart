@@ -15,7 +15,8 @@ class StoreLocation {
 }
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  final dynamic initialStore;
+  const MapPage({super.key, this.initialStore});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -119,6 +120,16 @@ class _MapPageState extends State<MapPage> {
         GoogleMap(
           onMapCreated: (controller) {
             _mapController = controller;
+
+            if (widget.initialStore != null &&
+                widget.initialStore.coordinates != null) {
+              _goToStore(widget.initialStore.coordinates);
+              setState(() {
+                _selectedStore = widget.initialStore;
+              });
+            } else {
+              _goToStore(_currentPosition!);
+            }
           },
           initialCameraPosition: CameraPosition(
             target: _currentPosition!,
@@ -133,6 +144,19 @@ class _MapPageState extends State<MapPage> {
             });
           },
         ),
+        //Botão de voltar se ow idget estiver a ser acedido externamente
+        if (Navigator.canPop(context))
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 10,
+            child: FloatingActionButton.small(
+              heroTag: 'backButton',
+              onPressed: () => Navigator.pop(context),
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              child: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface, size: 20),
+            ),
+          ),
+
         Positioned(
           left: 20,
           right: 20,
@@ -168,8 +192,10 @@ class _MapPageState extends State<MapPage> {
                                                 'assets/images/simpleLogo.png',
                                               )
                                               as ImageProvider,
-                                  backgroundColor: Theme.of(context).colorScheme
-                                      .secondaryContainer,
+                                  backgroundColor:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryContainer,
                                   onBackgroundImageError: (_, __) {},
                                 ),
                                 const SizedBox(width: 12),

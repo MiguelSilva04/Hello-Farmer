@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -22,26 +23,33 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   LatLng? _currentPosition;
+  GoogleMapController? _mapController;
+  Set<Marker> _markers = {};
 
-  Set<Marker> get _markers {
-    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final producers = authNotifier.producerUsers;
+  dynamic _selectedStore;
 
-    final markers = <Marker>{};
+  void _goToStore(LatLng coords) {
+    _mapController?.animateCamera(CameraUpdate.newLatLng(coords));
+  }
+
+  void _loadMarkers(List producers) {
+    final newMarkers = <Marker>{};
     int markerId = 0;
 
     for (final producer in producers) {
       for (final store in producer.stores) {
         final coords = store.coordinates;
         if (coords != null) {
-          markers.add(
+          newMarkers.add(
             Marker(
-              markerId: MarkerId('producer_store_$markerId'),
+              markerId: MarkerId('store_$markerId'),
               position: coords,
-              infoWindow: InfoWindow(
-                title: store.name,
-                snippet: store.description ?? 'Loja do produtor',
-              ),
+              onTap: () {
+                setState(() {
+                  _selectedStore = store;
+                });
+                _goToStore(coords);
+              },
               icon: BitmapDescriptor.defaultMarkerWithHue(
                 BitmapDescriptor.hueGreen,
               ),
@@ -52,7 +60,17 @@ class _MapPageState extends State<MapPage> {
       }
     }
 
-    return markers;
+    setState(() {
+      _markers = newMarkers;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    _loadMarkers(authNotifier.producerUsers);
   }
 
   @override
@@ -93,17 +111,110 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return _currentPosition == null
-        ? const Center(child: CircularProgressIndicator())
-        : GoogleMap(
-          onMapCreated: (controller) {},
+    if (_currentPosition == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Stack(
+      children: [
+        GoogleMap(
+          onMapCreated: (controller) {
+            _mapController = controller;
+          },
           initialCameraPosition: CameraPosition(
             target: _currentPosition!,
-            zoom: 15,
+            zoom: 14,
           ),
           myLocationEnabled: true,
           myLocationButtonEnabled: true,
           markers: _markers,
-        );
+          onTap: (LatLng position) {
+            setState(() {
+              _selectedStore = null;
+            });
+          },
+        ),
+        Positioned(
+          left: 20,
+          right: 20,
+          bottom: 20,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child:
+                _selectedStore != null
+                    ? Card(
+                      key: ValueKey(_selectedStore),
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      color: Theme.of(context).colorScheme.surface,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage:
+                                      _selectedStore.imageUrl != null &&
+                                              _selectedStore.imageUrl.isNotEmpty
+                                          ? NetworkImage(
+                                            _selectedStore.imageUrl,
+                                          )
+                                          : AssetImage(
+                                                'assets/images/simpleLogo.png',
+                                              )
+                                              as ImageProvider,
+                                  backgroundColor: Theme.of(context).colorScheme
+                                      .secondaryContainer,
+                                  onBackgroundImageError: (_, __) {},
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _selectedStore.name,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_selectedStore.description != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(_selectedStore.description),
+                              ),
+                            const SizedBox(height: 10),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.store),
+                                label: const Text('Ver Banca'),
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) =>
+                                              StorePage(store: _selectedStore),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    : const SizedBox.shrink(),
+          ),
+        ),
+      ],
+    );
   }
 }

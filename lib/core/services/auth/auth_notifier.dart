@@ -57,6 +57,13 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSelectedStoreIndex(int index) {
+    if (index >= 0 && index < stores.length) {
+      _selectedStoreIndex = index;
+      notifyListeners();
+    }
+  }
+
   Stream<List<ProductAd>> getAllProductAdsStream() {
     final storeCollection = fireStore.collection('stores');
 

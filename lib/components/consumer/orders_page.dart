@@ -14,18 +14,48 @@ class OrdersPage extends StatefulWidget {
   State<OrdersPage> createState() => _OrdersPageState();
 }
 
-class _OrdersPageState extends State<OrdersPage> {
+class _OrdersPageState extends State<OrdersPage>
+    with SingleTickerProviderStateMixin {
   late final String? currentUserId;
   late final List<Order> orders;
   late final List<ProductAd> allAds;
   late AuthNotifier authNotifier;
   OrderState? state = null;
+  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 5, vsync: this);
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     currentUserId = authNotifier.currentUser?.id;
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        switch (_tabController.index) {
+          case 0:
+            setState(() => state = null);
+            break;
+          case 1:
+            setState(() => state = OrderState.Pending);
+            break;
+          case 2:
+            setState(() => state = OrderState.Sent);
+            break;
+          case 3:
+            setState(() => state = OrderState.Ready);
+            break;
+          case 4:
+            setState(() => state = OrderState.Delivered);
+            break;
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -67,171 +97,197 @@ class _OrdersPageState extends State<OrdersPage> {
         return SingleChildScrollView(
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      InkWell(
-                        onTap: () => setState(() => state = null),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:
-                                state == null
-                                    ? Theme.of(context).colorScheme.tertiary
-                                    : Theme.of(
-                                      context,
-                                    ).colorScheme.inverseSurface,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Text(
-                              "Todas",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    state != null
-                                        ? Theme.of(context).colorScheme.tertiary
-                                        : Theme.of(
-                                          context,
-                                        ).colorScheme.inverseSurface,
-                              ),
-                            ),
-                          ),
-                        ),
+              // Padding(
+              //   padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+              //   child: SingleChildScrollView(
+              //     scrollDirection: Axis.horizontal,
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //       children: [
+              //         InkWell(
+              //           onTap: () => setState(() => state = null),
+              //           child: Container(
+              //             decoration: BoxDecoration(
+              //               color:
+              //                   state == null
+              //                       ? Theme.of(context).colorScheme.tertiary
+              //                       : Theme.of(
+              //                         context,
+              //                       ).colorScheme.inverseSurface,
+              //               borderRadius: BorderRadius.circular(10),
+              //             ),
+              //             child: Padding(
+              //               padding: const EdgeInsets.all(5),
+              //               child: Text(
+              //                 "Todas",
+              //                 style: TextStyle(
+              //                   fontSize: 13,
+              //                   fontWeight: FontWeight.w700,
+              //                   color:
+              //                       state != null
+              //                           ? Theme.of(context).colorScheme.tertiary
+              //                           : Theme.of(
+              //                             context,
+              //                           ).colorScheme.inverseSurface,
+              //                 ),
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //         const SizedBox(width: 5),
+              //         InkWell(
+              //           onTap: () => setState(() => state = OrderState.Pending),
+              //           child: Container(
+              //             decoration: BoxDecoration(
+              //               color:
+              //                   state == OrderState.Pending
+              //                       ? Theme.of(context).colorScheme.tertiary
+              //                       : Theme.of(
+              //                         context,
+              //                       ).colorScheme.inverseSurface,
+              //               borderRadius: BorderRadius.circular(10),
+              //             ),
+              //             child: Padding(
+              //               padding: const EdgeInsets.all(5),
+              //               child: Text(
+              //                 "Pendente",
+              //                 style: TextStyle(
+              //                   fontSize: 13,
+              //                   fontWeight: FontWeight.w700,
+              //                   color:
+              //                       state != OrderState.Pending
+              //                           ? Theme.of(context).colorScheme.tertiary
+              //                           : Theme.of(
+              //                             context,
+              //                           ).colorScheme.inverseSurface,
+              //                 ),
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //         const SizedBox(width: 5),
+              //         InkWell(
+              //           onTap: () => setState(() => state = OrderState.Sent),
+              //           child: Container(
+              //             decoration: BoxDecoration(
+              //               color:
+              //                   state == OrderState.Sent
+              //                       ? Theme.of(context).colorScheme.tertiary
+              //                       : Theme.of(
+              //                         context,
+              //                       ).colorScheme.inverseSurface,
+              //               borderRadius: BorderRadius.circular(10),
+              //             ),
+              //             child: Padding(
+              //               padding: const EdgeInsets.all(5),
+              //               child: Text(
+              //                 "Enviada",
+              //                 style: TextStyle(
+              //                   fontSize: 13,
+              //                   fontWeight: FontWeight.w700,
+              //                   color:
+              //                       state != OrderState.Sent
+              //                           ? Theme.of(context).colorScheme.tertiary
+              //                           : Theme.of(
+              //                             context,
+              //                           ).colorScheme.inverseSurface,
+              //                 ),
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //         const SizedBox(width: 5),
+              //         InkWell(
+              //           onTap:
+              //               () => setState(() => state = OrderState.Delivered),
+              //           child: Container(
+              //             decoration: BoxDecoration(
+              //               color:
+              //                   state == OrderState.Delivered
+              //                       ? Theme.of(context).colorScheme.tertiary
+              //                       : Theme.of(
+              //                         context,
+              //                       ).colorScheme.inverseSurface,
+              //               borderRadius: BorderRadius.circular(10),
+              //             ),
+              //             child: Padding(
+              //               padding: const EdgeInsets.all(5),
+              //               child: Text(
+              //                 "Entregue",
+              //                 style: TextStyle(
+              //                   fontSize: 13,
+              //                   fontWeight: FontWeight.w700,
+              //                   color:
+              //                       state != OrderState.Delivered
+              //                           ? Theme.of(context).colorScheme.tertiary
+              //                           : Theme.of(
+              //                             context,
+              //                           ).colorScheme.inverseSurface,
+              //                 ),
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //         const SizedBox(width: 5),
+              //         InkWell(
+              //           onTap:
+              //               () => setState(() => state = OrderState.Abandoned),
+              //           child: Container(
+              //             decoration: BoxDecoration(
+              //               color:
+              //                   state == OrderState.Abandoned
+              //                       ? Theme.of(context).colorScheme.tertiary
+              //                       : Theme.of(
+              //                         context,
+              //                       ).colorScheme.inverseSurface,
+              //               borderRadius: BorderRadius.circular(10),
+              //             ),
+              //             child: Padding(
+              //               padding: const EdgeInsets.all(5),
+              //               child: Text(
+              //                 "Abandonada",
+              //                 style: TextStyle(
+              //                   fontSize: 13,
+              //                   fontWeight: FontWeight.w700,
+              //                   color:
+              //                       state != OrderState.Abandoned
+              //                           ? Theme.of(context).colorScheme.tertiary
+              //                           : Theme.of(
+              //                             context,
+              //                           ).colorScheme.inverseSurface,
+              //                 ),
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+              Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TabBar(
+                      labelStyle: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
-                      const SizedBox(width: 5),
-                      InkWell(
-                        onTap: () => setState(() => state = OrderState.Pending),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:
-                                state == OrderState.Pending
-                                    ? Theme.of(context).colorScheme.tertiary
-                                    : Theme.of(
-                                      context,
-                                    ).colorScheme.inverseSurface,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Text(
-                              "Pendente",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    state != OrderState.Pending
-                                        ? Theme.of(context).colorScheme.tertiary
-                                        : Theme.of(
-                                          context,
-                                        ).colorScheme.inverseSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      InkWell(
-                        onTap: () => setState(() => state = OrderState.Sent),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:
-                                state == OrderState.Sent
-                                    ? Theme.of(context).colorScheme.tertiary
-                                    : Theme.of(
-                                      context,
-                                    ).colorScheme.inverseSurface,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Text(
-                              "Enviada",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    state != OrderState.Sent
-                                        ? Theme.of(context).colorScheme.tertiary
-                                        : Theme.of(
-                                          context,
-                                        ).colorScheme.inverseSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      InkWell(
-                        onTap:
-                            () => setState(() => state = OrderState.Delivered),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:
-                                state == OrderState.Delivered
-                                    ? Theme.of(context).colorScheme.tertiary
-                                    : Theme.of(
-                                      context,
-                                    ).colorScheme.inverseSurface,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Text(
-                              "Entregue",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    state != OrderState.Delivered
-                                        ? Theme.of(context).colorScheme.tertiary
-                                        : Theme.of(
-                                          context,
-                                        ).colorScheme.inverseSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      InkWell(
-                        onTap:
-                            () => setState(() => state = OrderState.Abandoned),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color:
-                                state == OrderState.Abandoned
-                                    ? Theme.of(context).colorScheme.tertiary
-                                    : Theme.of(
-                                      context,
-                                    ).colorScheme.inverseSurface,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Text(
-                              "Abandonada",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color:
-                                    state != OrderState.Abandoned
-                                        ? Theme.of(context).colorScheme.tertiary
-                                        : Theme.of(
-                                          context,
-                                        ).colorScheme.inverseSurface,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                      controller: _tabController,
+                      labelColor: Theme.of(context).colorScheme.tertiaryFixed,
+                      unselectedLabelColor:
+                          Theme.of(context).colorScheme.secondaryFixed,
+                      indicatorColor:
+                          Theme.of(context).colorScheme.tertiaryFixed,
+                      tabs: const [
+                        Tab(text: 'Todas'),
+                        Tab(text: 'Pendentes'),
+                        Tab(text: 'Enviadas'),
+                        Tab(text: 'Entregues'),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               ListView.builder(

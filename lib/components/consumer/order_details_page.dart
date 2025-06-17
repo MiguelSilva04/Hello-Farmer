@@ -637,56 +637,58 @@ class _OrderTimelineState extends State<OrderTimeline> {
                 ),
                 indicatorTheme: const IndicatorThemeData(size: 30),
               ),
-              child: FixedTimeline.tileBuilder(
-                builder: TimelineTileBuilder.connected(
-                  connectionDirection: ConnectionDirection.after,
-                  itemExtent: 70,
-                  itemCount: steps.length,
-                  contentsBuilder: (context, index) {
-                    final isActive = index <= currentStep;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 5, left: 8),
-                      child: Text(
-                        steps[index].toDisplayString(),
-                        style: TextStyle(
-                          fontWeight:
-                              isActive ? FontWeight.w600 : FontWeight.normal,
-                          color:
-                              isActive
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Colors.grey.shade600,
-                          fontSize: 16,
+              child: SingleChildScrollView(
+                child: FixedTimeline.tileBuilder(
+                  builder: TimelineTileBuilder.connected(
+                    connectionDirection: ConnectionDirection.after,
+                    itemExtent: 70,
+                    itemCount: steps.length,
+                    contentsBuilder: (context, index) {
+                      final isActive = index <= currentStep;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 5, left: 8),
+                        child: Text(
+                          steps[index].toDisplayString(),
+                          style: TextStyle(
+                            fontWeight:
+                                isActive ? FontWeight.w600 : FontWeight.normal,
+                            color:
+                                isActive
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.grey.shade600,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  indicatorBuilder: (context, index) {
-                    final isActive = index <= currentStep;
-                    return DotIndicator(
-                      size: 24,
-                      color:
-                          isActive
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey.shade400,
-                      child:
-                          isActive
-                              ? const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 14,
-                              )
-                              : null,
-                    );
-                  },
-                  connectorBuilder: (context, index, _) {
-                    final isActive = index < currentStep;
-                    return SolidLineConnector(
-                      color:
-                          isActive
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.grey.shade300,
-                    );
-                  },
+                      );
+                    },
+                    indicatorBuilder: (context, index) {
+                      final isActive = index <= currentStep;
+                      return DotIndicator(
+                        size: 24,
+                        color:
+                            isActive
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey.shade400,
+                        child:
+                            isActive
+                                ? const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 14,
+                                )
+                                : null,
+                      );
+                    },
+                    connectorBuilder: (context, index, _) {
+                      final isActive = index < currentStep;
+                      return SolidLineConnector(
+                        color:
+                            isActive
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey.shade300,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

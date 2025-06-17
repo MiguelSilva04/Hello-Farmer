@@ -142,20 +142,26 @@ class NotificationsPage extends StatelessWidget {
           ),
           const SizedBox(height: 15),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.update_outlined,
-                    color: Theme.of(context).colorScheme.tertiaryFixed,
-                  ),
-                  const SizedBox(width: 15),
-                  Text(
-                    "Atualizações de produtos",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                  ),
-                ],
+              Icon(
+                Icons.update_outlined,
+                color: Theme.of(context).colorScheme.tertiaryFixed,
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Atualizações de produtos",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Switch(
                 value: notifier.productsUpdates,

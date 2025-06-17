@@ -76,49 +76,63 @@ class InvoicePageConsumer extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Encomenda Nº ",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
-                  Text(order.id, style: const TextStyle(fontSize: 18)),
+                  Flexible(
+                    child: Text(
+                      order.id,
+                      style: const TextStyle(fontSize: 18),
+                      softWrap: true,
+                    ),
+                  ),
                 ],
               ),
+
               const SizedBox(height: 24),
 
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Cliente:",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Cliente:",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(consumerName, style: const TextStyle(fontSize: 16)),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          consumerName,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        "Data:",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          "Data:",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        order.deliveryDate.toLocal().toString().split(' ')[0],
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          order.deliveryDate.toLocal().toString().split(' ')[0],
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

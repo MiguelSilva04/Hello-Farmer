@@ -62,6 +62,9 @@ class _CreateStoreState extends State<CreateStore> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Formulário inválido.')));
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -69,6 +72,9 @@ class _CreateStoreState extends State<CreateStore> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Imagem principal não selecionada.')),
       );
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -76,6 +82,9 @@ class _CreateStoreState extends State<CreateStore> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Imagem de fundo não selecionada.')),
       );
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -83,6 +92,9 @@ class _CreateStoreState extends State<CreateStore> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Localização não selecionada.')));
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -90,8 +102,12 @@ class _CreateStoreState extends State<CreateStore> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Nenhum método de entrega selecionado.')),
       );
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
+
     try {
       await AuthService().addStore(
         name: nameController.text.trim(),
@@ -106,17 +122,22 @@ class _CreateStoreState extends State<CreateStore> {
             selectedDeliveryMethods.map((m) => m.toDisplayString()).toList(),
         coordinates: coordinates!,
       );
+
+      if (widget.isFirstTime != true) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    final content = SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
         key: _formKey,
@@ -187,7 +208,6 @@ class _CreateStoreState extends State<CreateStore> {
                 );
               },
             ),
-
             const SizedBox(height: 20),
             Text(
               "Foto da banca:",
@@ -203,7 +223,6 @@ class _CreateStoreState extends State<CreateStore> {
                 icon: Icon(Icons.image),
                 label: Text("Selecionar imagem principal"),
               ),
-
             const SizedBox(height: 16),
             Text(
               "Foto de fundo:",
@@ -260,6 +279,15 @@ class _CreateStoreState extends State<CreateStore> {
         ),
       ),
     );
+
+    if (widget.isFirstTime == true) {
+      return content;
+    } else {
+      return Scaffold(
+        appBar: AppBar(title: Text("Criar Banca")),
+        body: content,
+      );
+    }
   }
 
   Widget _buildTextField(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:harvestly/components/consumer/map_page.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
+import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:intl/intl.dart';
@@ -28,6 +30,110 @@ class _StorePageState extends State<StorePage> {
 
   late Store myStore;
   late ProducerUser? currentProducerUser;
+
+  void _openManageStoresMenu() {
+    final stores = currentProducerUser!.stores;
+    String? selectedStoreName = myStore.name;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Gerir Bancas",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedStoreName,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: "Selecionar banca",
+                  border: OutlineInputBorder(),
+                ),
+                items:
+                    stores.map((store) {
+                      return DropdownMenuItem(
+                        value: store.name,
+                        child: Text(store.name!),
+                      );
+                    }).toList(),
+                onChanged: (value) {
+                  selectedStoreName = value;
+                },
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _showCreateStoreDialog();
+                },
+                icon: const Icon(Icons.add),
+                label: const Text("Criar Nova Banca"),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () {
+                  final storeToDelete = stores.firstWhere(
+                    (store) => store.name == selectedStoreName,
+                    orElse: () => myStore,
+                  );
+                  _confirmDeleteStore(storeToDelete);
+                },
+                icon: const Icon(Icons.delete),
+                label: const Text("Eliminar Banca Selecionada"),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCreateStoreDialog() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CreateStore(isFirstTime: false)),
+    );
+    currentProducerUser = await AuthService().getCurrentUser() as ProducerUser;
+    setState(() {});
+  }
+
+  void _confirmDeleteStore(Store store) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Eliminar Banca"),
+          content: Text("Tens a certeza que queres eliminar '${store.name}'?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Eliminar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -125,7 +231,21 @@ class _StorePageState extends State<StorePage> {
                                       }).toList(),
                                   onChanged: (value) {
                                     if (value != null) {
-                                      print(value);
+                                      final index = currentProducerUser!.stores
+                                          .indexWhere(
+                                            (store) => store.name == value,
+                                          );
+                                      if (index != -1) {
+                                        Provider.of<AuthNotifier>(
+                                          context,
+                                          listen: false,
+                                        ).setSelectedStoreIndex(index);
+                                        setState(() {
+                                          myStore =
+                                              currentProducerUser!
+                                                  .stores[index];
+                                        });
+                                      }
                                     }
                                   },
                                 ),
@@ -141,7 +261,9 @@ class _StorePageState extends State<StorePage> {
                               backgroundColor:
                                   Theme.of(context).colorScheme.secondary,
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              _openManageStoresMenu();
+                            },
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
@@ -387,6 +509,25 @@ class _StorePageState extends State<StorePage> {
                 ),
 
                 const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MapPage(initialStore: myStore),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                  child: Text(
+                    "Ver localização",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -737,7 +878,7 @@ class _StorePageState extends State<StorePage> {
     }
 
     void _onDelete(BuildContext context) {
-      print('Apagar: ${productAd.id}');
+      
     }
 
     return InkWell(

@@ -13,6 +13,7 @@ import '../../models/offer.dart';
 import '../../models/order.dart';
 import '../../models/producer_user.dart';
 import '../../models/product_ad.dart';
+import '../../models/review.dart';
 import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
 
@@ -619,6 +620,39 @@ class AuthService {
       print("Erro ao publicar anúncio: $e");
       rethrow;
     }
+  }
+
+  Future<Review> submitNewReview(
+    String storeId,
+    String adId,
+    double rating,
+    String description,
+    String reviewerId,
+  ) async {
+    final docRef =
+        FirebaseFirestore.instance
+            .collection('stores')
+            .doc(storeId)
+            .collection('ads')
+            .doc(adId)
+            .collection('reviews')
+            .doc();
+    final dateTimeNow = Timestamp.now();
+
+    await docRef.set({
+      'id': docRef.id,
+      'createdAt': dateTimeNow,
+      'reviewerId': currentUser!.id,
+      'rating': rating,
+      'description': description,
+    });
+    return Review(
+      id: docRef.id,
+      dateTime: dateTimeNow.toDate(),
+      description: description,
+      rating: rating,
+      reviewerId: reviewerId,
+    );
   }
 
   Future<void> changeOrderState(String orderId, OrderState state) async {

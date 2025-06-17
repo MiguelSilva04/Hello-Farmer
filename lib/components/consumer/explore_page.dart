@@ -106,6 +106,7 @@ class _ExplorePageState extends State<ExplorePage> {
   }
 
   void applyFilters() {
+    print(_searchText);
     final currentSeason = calculateCurrentSeason();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final selectedIndex = authNotifier.selectedStoreIndex;
@@ -129,16 +130,17 @@ class _ExplorePageState extends State<ExplorePage> {
     for (final ad in allAds) {
       final product = ad.product;
 
-      final isCurrentSeason =
-          (_searchText == "Season") &&
-          (product.season == currentSeason || product.season == Season.ALL);
+      final nameMatch =
+          _searchText.trim().length >= 1 &&
+          product.name.toLowerCase().contains(_searchText.toLowerCase());
 
-      final nameMatch = product.name.toLowerCase().contains(
-        _searchText.toLowerCase(),
-      );
-      final categoryMatch = product.category.toLowerCase().contains(
-        _searchText.toLowerCase(),
-      );
+      final categoryMatch =
+          _searchText.trim().length >= 2 &&
+          product.category.toLowerCase().contains(_searchText.toLowerCase());
+
+      final isCurrentSeason =
+          _searchText == "Season" &&
+          (product.season == currentSeason || product.season == Season.ALL);
 
       final keywordMatch =
           _selectedKeyword == null
@@ -170,17 +172,14 @@ class _ExplorePageState extends State<ExplorePage> {
 
       final matchesAllFilters = keywordMatch && cityMatch && priceMatch;
 
-      if ((nameMatch || categoryMatch || isCurrentSeason) &&
-          matchesAllFilters) {
+      if (nameMatch && matchesAllFilters) {
         matching.add(ad);
-      } else if (matchesAllFilters) {
+      } else if ((categoryMatch || isCurrentSeason) && matchesAllFilters) {
         others.add(ad);
       }
     }
 
-    // Junta os resultados → os matching primeiro
     final filtered = [...matching, ...others];
-
     sortProducts(filtered);
 
     setState(() {

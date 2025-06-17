@@ -34,6 +34,9 @@ class ProductAdDetailScreen extends StatefulWidget {
 }
 
 class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
+  double _rating = 0;
+  bool _isLoading = false;
+  final reviewController = TextEditingController();
   Future<void> addToCart(double quantity) async {
     await Provider.of<AuthNotifier>(
       context,
@@ -91,6 +94,30 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
       } else {
         return DateFormat('dd/MM/y', 'pt_PT').format(date);
       }
+    }
+
+    Future<void> submitReview() async {
+      setState(() => _isLoading = true);
+      if (_rating == 0.0 || reviewController.text == "") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Preencha o campo de comentário e a respetiva avaliação",
+            ),
+          ),
+        );
+      }
+
+      try {
+        await authNotifier.submitNewReview(
+          widget.ad.id,
+          _rating,
+          reviewController.text,
+        );
+      } catch (e) {
+        print("Erro $e");
+      }
+      setState(() => _isLoading = false);
     }
 
     return Scaffold(
@@ -639,14 +666,14 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Comentar:"),
+                              Text("Avaliação:"),
                               const SizedBox(height: 10),
                               TextFormField(
+                                controller: reviewController,
                                 decoration: InputDecoration(
                                   labelText: 'Comentário',
                                   hintText: 'Escreve o teu comentário...',
-
-                                  border: OutlineInputBorder(),
+                                  border: const OutlineInputBorder(),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color:
@@ -660,7 +687,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                       color:
                                           Theme.of(context).colorScheme.surface,
                                       width: 0.5,
-                                    ), // cor quando focado
+                                    ),
                                   ),
                                   alignLabelWithHint: true,
                                 ),
@@ -671,17 +698,48 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                             ],
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {},
-                                child: Text("Publicar"),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            RatingBar.builder(
+                              initialRating: _rating,
+                              minRating: 1,
+                              direction: Axis.horizontal,
+                              allowHalfRating: true,
+                              itemCount: 5,
+                              itemPadding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
                               ),
-                            ],
-                          ),
+                              itemBuilder:
+                                  (context, _) => Icon(
+                                    Icons.star,
+                                    color: Colors.amberAccent,
+                                  ),
+                              onRatingUpdate: (rating) {
+                                setState(() {
+                                  _rating = rating;
+                                });
+                              },
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  (_isLoading)
+                                      ? Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                      : ElevatedButton(
+                                        onPressed: () => submitReview(),
+                                        child: Text("Publicar"),
+                                      ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

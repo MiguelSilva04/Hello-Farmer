@@ -59,7 +59,7 @@ dependencies:
   google_sign_in: ^6.3.0
   flutter_facebook_auth: ^7.1.2
   reorderable_grid_view: ^2.2.8
-  flutter_rating_bar: ^4.0.0
+  flutter_rating_bar: ^4.0.1
   eva_icons_flutter: ^3.1.0
   intl_phone_field: ^3.2.0
   country_state_city_picker: ^1.2.8

@@ -140,23 +140,19 @@ class _MainMenuState extends State<MainMenu>
       );
 
       if (user.isProducer) {
-        // Pega a loja selecionada para usar o id correto
         final selectedStoreId =
             (user as ProducerUser).stores[authProvider.selectedStoreIndex].id;
 
-        // 1. Configura o Firebase Messaging e salva o token para a loja produtora
         await notificationNotifier.setupFCM(
           id: selectedStoreId,
           isProducer: true,
         );
 
-        // 2. Começa a escutar notificações para essa loja produtora
         notificationNotifier.listenToNotifications(
           id: selectedStoreId,
           isProducer: true,
         );
       } else {
-        // Consumidor: passa o id do usuário e isProducer = false
         await notificationNotifier.setupFCM(id: user.id, isProducer: false);
 
         notificationNotifier.listenToNotifications(
@@ -165,9 +161,13 @@ class _MainMenuState extends State<MainMenu>
         );
       }
 
-      // Chat
       final chatService = Provider.of<ChatService>(context, listen: false);
+      final chatNotifier = Provider.of<ChatListNotifier>(
+        context,
+        listen: false,
+      );
       final currentChat = chatService.currentChat;
+      chatNotifier.listenToChats();
       if (currentChat != null) {
         chatService.listenToCurrentChatMessages((messages) {
           if (messages.isNotEmpty) {

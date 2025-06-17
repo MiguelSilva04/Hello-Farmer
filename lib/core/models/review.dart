@@ -21,9 +21,20 @@ class Review {
       reviewerId: json['reviewerId'] ?? '',
       description: json['description'] ?? '',
       rating: (json['rating'] ?? 0).toDouble(),
-      dateTime: json['dateTime'] != null
-          ? DateTime.parse(json['dateTime'])
-          : DateTime.now(),
+      dateTime:
+          json['dateTime'] != null
+              ? DateTime.parse(json['dateTime'])
+              : DateTime.now(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'reviewerId': reviewerId,
+      'rating': rating,
+      'description': description,
+      'dateTime': dateTime?.toIso8601String(),
+    };
   }
 }

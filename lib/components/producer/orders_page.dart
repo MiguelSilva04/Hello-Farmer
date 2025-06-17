@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/models/order.dart';
 import '../../core/services/auth/auth_notifier.dart';
+import '../../core/services/auth/store_service.dart';
 
 class OrdersProducerPage extends StatefulWidget {
   const OrdersProducerPage({super.key});
@@ -39,21 +40,39 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
   }
 
   Widget getAllFilter([OrderState? stateFilter]) {
+    final storeId =
+        (authNotifier.currentUser as ProducerUser)
+            .stores[authNotifier.selectedStoreIndex]
+            .id;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: StreamBuilder<List<Order>>(
-        stream: authNotifier.storeOrdersStream(
-          (authNotifier.currentUser as ProducerUser)
-              .stores[authNotifier.selectedStoreIndex]
-              .id,
-        ),
+        stream: authNotifier.storeOrdersStream(storeId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Sem encomendas ainda."));
+            return RefreshIndicator(
+              color: Theme.of(context).colorScheme.secondary,
+              onRefresh: () async {
+                final store = StoreService.instance
+                    .getStoresByOwner(authNotifier.currentUser!.id!)
+                    .firstWhere((s) => s.id == storeId);
+                StoreService.instance.listenToOrdersForStore(store);
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(
+                    height: 300,
+                    child: Center(child: Text("Sem encomendas ainda.")),
+                  ),
+                ],
+              ),
+            );
           }
 
           final orders = snapshot.data!;
@@ -64,80 +83,92 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                       .where((order) => order.state == stateFilter)
                       .toList();
 
-          return ListView.builder(
-            itemCount: filteredOrders.length,
-            itemBuilder: (context, index) {
-              final order = filteredOrders[index];
-              final consumer =
-                  authNotifier.allUsers
-                          .where((u) => u.id == order.consumerId)
-                          .first
-                      as ConsumerUser;
-
-              return Card(
-                child: ListTile(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder:
-                            (ctx) => OrderDetailsPage(
-                              order: order,
-                              producer:
-                                  (authNotifier.currentUser as ProducerUser),
-                              consumer: consumer,
-                            ),
-                      ),
-                    );
-                  },
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Pedido",
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            " #${order.id}",
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.tertiary,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          child: AutoSizeText(
-                            order.state.toDisplayString(),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  subtitle: Text(
-                    "Data da Encomenda: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(order.createdAt)}\n"
-                    "Data de Entrega Prevista: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(order.deliveryDate)}\n"
-                    "Morada: ${order.address}",
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  isThreeLine: true,
-                ),
-              );
+          return RefreshIndicator(
+            color: Theme.of(context).colorScheme.secondary,
+            onRefresh: () async {
+              final store = StoreService.instance
+                  .getStoresByOwner(authNotifier.currentUser!.id)
+                  .firstWhere((s) => s.id == storeId);
+              StoreService.instance.listenToOrdersForStore(store);
             },
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: filteredOrders.length,
+              itemBuilder: (context, index) {
+                final order = filteredOrders[index];
+                final consumer =
+                    authNotifier.allUsers
+                            .where((u) => u.id == order.consumerId)
+                            .first
+                        as ConsumerUser;
+
+                return Card(
+                  child: ListTile(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder:
+                              (ctx) => OrderDetailsPage(
+                                order: order,
+                                producer:
+                                    (authNotifier.currentUser as ProducerUser),
+                                consumer: consumer,
+                              ),
+                        ),
+                      );
+                    },
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Pedido",
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              " #${order.id}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.tertiary,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: AutoSizeText(
+                              order.state.toDisplayString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Text(
+                      "Data da Encomenda: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(order.createdAt)}\n"
+                      "Data de Entrega Prevista: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(order.deliveryDate)}\n"
+                      "Morada: ${order.address}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    isThreeLine: true,
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
@@ -150,28 +181,31 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
       children: [
         Container(
           color: Theme.of(context).colorScheme.surface,
-          child: Column(
-            children: [
-              TabBar(
-                isScrollable: true,
-                labelStyle: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              children: [
+                TabBar(
+                  isScrollable: true,
+                  labelStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  controller: _tabController,
+                  labelColor: Theme.of(context).colorScheme.secondary,
+                  unselectedLabelColor:
+                      Theme.of(context).colorScheme.secondaryFixed,
+                  indicatorColor: Theme.of(context).colorScheme.secondary,
+                  tabs: const [
+                    Tab(text: 'Todas'),
+                    Tab(text: 'Pendentes'),
+                    Tab(text: 'Enviadas'),
+                    Tab(text: 'Prontas para recolha'),
+                    Tab(text: 'Entregues'),
+                  ],
                 ),
-                controller: _tabController,
-                labelColor: Theme.of(context).colorScheme.secondary,
-                unselectedLabelColor:
-                    Theme.of(context).colorScheme.secondaryFixed,
-                indicatorColor: Theme.of(context).colorScheme.secondary,
-                tabs: const [
-                  Tab(text: 'Todas'),
-                  Tab(text: 'Pendentes'),
-                  Tab(text: 'Enviadas'),
-                  Tab(text: 'Prontas para recolha'),
-                  Tab(text: 'Entregues'),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Expanded(

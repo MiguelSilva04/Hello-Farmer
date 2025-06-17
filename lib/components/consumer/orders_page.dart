@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/order_details_page.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:collection/collection.dart';
+
 import '../../core/models/order.dart';
 import '../../core/models/producer_user.dart';
 import '../../core/models/product_ad.dart';
@@ -16,40 +18,40 @@ class OrdersPage extends StatefulWidget {
 
 class _OrdersPageState extends State<OrdersPage>
     with SingleTickerProviderStateMixin {
-  late final String? currentUserId;
-  late final List<Order> orders;
-  late final List<ProductAd> allAds;
-  late AuthNotifier authNotifier;
-  OrderState? state = null;
   late final TabController _tabController;
+  OrderState? _selectedState;
+  late final AuthNotifier _authNotifier;
 
   @override
   void initState() {
     super.initState();
+    _authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     _tabController = TabController(length: 5, vsync: this);
-    authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    currentUserId = authNotifier.currentUser?.id;
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) {
+      setState(() {
         switch (_tabController.index) {
           case 0:
-            setState(() => state = null);
+            _selectedState = null;
             break;
           case 1:
-            setState(() => state = OrderState.Pending);
+            _selectedState = OrderState.Pending;
             break;
           case 2:
-            setState(() => state = OrderState.Sent);
+            _selectedState = OrderState.Sent;
             break;
           case 3:
-            setState(() => state = OrderState.Ready);
+            _selectedState = OrderState.Ready;
             break;
           case 4:
-            setState(() => state = OrderState.Delivered);
+            _selectedState = OrderState.Delivered;
             break;
         }
-      }
-    });
+      });
+    }
   }
 
   @override
@@ -58,261 +60,107 @@ class _OrdersPageState extends State<OrdersPage>
     super.dispose();
   }
 
+  List<ProductAd> _getAllAds() {
+    return _authNotifier.allUsers
+        .whereType<ProducerUser>()
+        .expand(
+          (producer) =>
+              producer.stores.expand((store) => store.productsAds ?? []),
+        )
+        .whereType<ProductAd>()
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Order>>(
-      stream: authNotifier.consumerOrdersStream(authNotifier.currentUser!.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return FutureBuilder<List<ProductAd>>(
+      future: Future(() => _getAllAds()),
+      builder: (context, adsSnapshot) {
+        if (!adsSnapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text("Não tem encomendas efetuadas ainda..."),
-          );
-        }
+        final allAds = adsSnapshot.data!;
 
-        final orders =
-            snapshot.data!
-                .where((o) => state == null || o.state == state)
-                .toList();
-        final filteredOrders =
-            orders
-                .where((order) => state == null || order.state == state)
-                .toList();
-
-        final allAds =
-            authNotifier.allUsers
-                .whereType<ProducerUser>()
-                .where((p) => p.stores.isNotEmpty)
-                .expand(
-                  (p) =>
-                      p.stores[authNotifier.selectedStoreIndex].productsAds ??
-                      [],
-                )
-                .toList()
-                .cast<ProductAd>();
-
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              // Padding(
-              //   padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-              //   child: SingleChildScrollView(
-              //     scrollDirection: Axis.horizontal,
-              //     child: Row(
-              //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //       children: [
-              //         InkWell(
-              //           onTap: () => setState(() => state = null),
-              //           child: Container(
-              //             decoration: BoxDecoration(
-              //               color:
-              //                   state == null
-              //                       ? Theme.of(context).colorScheme.tertiary
-              //                       : Theme.of(
-              //                         context,
-              //                       ).colorScheme.inverseSurface,
-              //               borderRadius: BorderRadius.circular(10),
-              //             ),
-              //             child: Padding(
-              //               padding: const EdgeInsets.all(5),
-              //               child: Text(
-              //                 "Todas",
-              //                 style: TextStyle(
-              //                   fontSize: 13,
-              //                   fontWeight: FontWeight.w700,
-              //                   color:
-              //                       state != null
-              //                           ? Theme.of(context).colorScheme.tertiary
-              //                           : Theme.of(
-              //                             context,
-              //                           ).colorScheme.inverseSurface,
-              //                 ),
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //         const SizedBox(width: 5),
-              //         InkWell(
-              //           onTap: () => setState(() => state = OrderState.Pending),
-              //           child: Container(
-              //             decoration: BoxDecoration(
-              //               color:
-              //                   state == OrderState.Pending
-              //                       ? Theme.of(context).colorScheme.tertiary
-              //                       : Theme.of(
-              //                         context,
-              //                       ).colorScheme.inverseSurface,
-              //               borderRadius: BorderRadius.circular(10),
-              //             ),
-              //             child: Padding(
-              //               padding: const EdgeInsets.all(5),
-              //               child: Text(
-              //                 "Pendente",
-              //                 style: TextStyle(
-              //                   fontSize: 13,
-              //                   fontWeight: FontWeight.w700,
-              //                   color:
-              //                       state != OrderState.Pending
-              //                           ? Theme.of(context).colorScheme.tertiary
-              //                           : Theme.of(
-              //                             context,
-              //                           ).colorScheme.inverseSurface,
-              //                 ),
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //         const SizedBox(width: 5),
-              //         InkWell(
-              //           onTap: () => setState(() => state = OrderState.Sent),
-              //           child: Container(
-              //             decoration: BoxDecoration(
-              //               color:
-              //                   state == OrderState.Sent
-              //                       ? Theme.of(context).colorScheme.tertiary
-              //                       : Theme.of(
-              //                         context,
-              //                       ).colorScheme.inverseSurface,
-              //               borderRadius: BorderRadius.circular(10),
-              //             ),
-              //             child: Padding(
-              //               padding: const EdgeInsets.all(5),
-              //               child: Text(
-              //                 "Enviada",
-              //                 style: TextStyle(
-              //                   fontSize: 13,
-              //                   fontWeight: FontWeight.w700,
-              //                   color:
-              //                       state != OrderState.Sent
-              //                           ? Theme.of(context).colorScheme.tertiary
-              //                           : Theme.of(
-              //                             context,
-              //                           ).colorScheme.inverseSurface,
-              //                 ),
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //         const SizedBox(width: 5),
-              //         InkWell(
-              //           onTap:
-              //               () => setState(() => state = OrderState.Delivered),
-              //           child: Container(
-              //             decoration: BoxDecoration(
-              //               color:
-              //                   state == OrderState.Delivered
-              //                       ? Theme.of(context).colorScheme.tertiary
-              //                       : Theme.of(
-              //                         context,
-              //                       ).colorScheme.inverseSurface,
-              //               borderRadius: BorderRadius.circular(10),
-              //             ),
-              //             child: Padding(
-              //               padding: const EdgeInsets.all(5),
-              //               child: Text(
-              //                 "Entregue",
-              //                 style: TextStyle(
-              //                   fontSize: 13,
-              //                   fontWeight: FontWeight.w700,
-              //                   color:
-              //                       state != OrderState.Delivered
-              //                           ? Theme.of(context).colorScheme.tertiary
-              //                           : Theme.of(
-              //                             context,
-              //                           ).colorScheme.inverseSurface,
-              //                 ),
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //         const SizedBox(width: 5),
-              //         InkWell(
-              //           onTap:
-              //               () => setState(() => state = OrderState.Abandoned),
-              //           child: Container(
-              //             decoration: BoxDecoration(
-              //               color:
-              //                   state == OrderState.Abandoned
-              //                       ? Theme.of(context).colorScheme.tertiary
-              //                       : Theme.of(
-              //                         context,
-              //                       ).colorScheme.inverseSurface,
-              //               borderRadius: BorderRadius.circular(10),
-              //             ),
-              //             child: Padding(
-              //               padding: const EdgeInsets.all(5),
-              //               child: Text(
-              //                 "Abandonada",
-              //                 style: TextStyle(
-              //                   fontSize: 13,
-              //                   fontWeight: FontWeight.w700,
-              //                   color:
-              //                       state != OrderState.Abandoned
-              //                           ? Theme.of(context).colorScheme.tertiary
-              //                           : Theme.of(
-              //                             context,
-              //                           ).colorScheme.inverseSurface,
-              //                 ),
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-              Container(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TabBar(
-                      labelStyle: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      controller: _tabController,
-                      labelColor: Theme.of(context).colorScheme.tertiaryFixed,
-                      unselectedLabelColor:
-                          Theme.of(context).colorScheme.secondaryFixed,
-                      indicatorColor:
-                          Theme.of(context).colorScheme.tertiaryFixed,
-                      tabs: const [
-                        Tab(text: 'Todas'),
-                        Tab(text: 'Pendentes'),
-                        Tab(text: 'Enviadas'),
-                        Tab(text: 'Entregues'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(12),
-                itemCount: filteredOrders.length,
-                itemBuilder: (context, index) {
-                  final Order order = filteredOrders[index];
-                  final ordersAds =
-                      order.ordersItems
-                          .map(
-                            (ad) => allAds.firstWhere(
-                              (a) => a.id == ad.productAdId,
-                            ),
-                          )
-                          .toList()
-                          .cast<ProductAd>();
-
-                  return OrderCard(order: order, ads: ordersAds);
-                },
-              ),
-            ],
+        return StreamBuilder<List<Order>>(
+          stream: _authNotifier.consumerOrdersStream(
+            _authNotifier.currentUser!.id,
           ),
+          builder: (context, ordersSnapshot) {
+            if (ordersSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final orders = ordersSnapshot.data ?? [];
+
+            if (orders.isEmpty) {
+              return const Center(
+                child: Text("Não tem encomendas efetuadas ainda..."),
+              );
+            }
+
+            final filteredOrders =
+                orders
+                    .where(
+                      (order) =>
+                          _selectedState == null ||
+                          order.state == _selectedState,
+                    )
+                    .toList();
+
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildTabBar(context),
+                  _buildOrdersList(filteredOrders, allAds),
+                ],
+              ),
+            );
+          },
         );
+      },
+    );
+  }
+
+  Widget _buildTabBar(BuildContext context) {
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: TabBar(
+        controller: _tabController,
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        labelColor: Theme.of(context).colorScheme.tertiaryFixed,
+        unselectedLabelColor: Theme.of(context).colorScheme.secondaryFixed,
+        indicatorColor: Theme.of(context).colorScheme.tertiaryFixed,
+        tabs: const [
+          Tab(text: 'Todas'),
+          Tab(text: 'Pendentes'),
+          Tab(text: 'Enviadas'),
+          Tab(text: 'Pronta para recolha'),
+          Tab(text: 'Entregues'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrdersList(List<Order> orders, List<ProductAd> allAds) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(12),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        final order = orders[index];
+        final ordersAds =
+            order.ordersItems
+                .map(
+                  (orderItem) => allAds.firstWhereOrNull(
+                    (ad) => ad.id == orderItem.productAdId,
+                  ),
+                )
+                .whereType<ProductAd>()
+                .toList();
+
+        return OrderCard(order: order, ads: ordersAds);
       },
     );
   }

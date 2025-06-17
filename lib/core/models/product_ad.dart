@@ -124,7 +124,7 @@ class ProductAd {
       'keywords': keywords,
       'viewsByUserDateTime':
           viewsByUserDateTime?.map((v) => v.toJson()).toList(),
-      'adReviews': adReviews ?? [],
+      'adReviews': adReviews?.map((r) => r.toJson()).toList(),
     };
   }
 
@@ -171,7 +171,12 @@ class ProductAd {
               : null,
       keywords:
           json['keywords'] != null ? List<String>.from(json['keywords']) : null,
-      adReviews: json['adReviews'] ?? [],
+      adReviews:
+          json['adReviews'] != null
+              ? (json['adReviews'] as List)
+                  .map((e) => Review.fromJson(e))
+                  .toList()
+              : [],
     );
   }
 

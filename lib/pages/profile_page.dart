@@ -3,6 +3,7 @@ import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
@@ -862,7 +863,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           borderRadius: BorderRadius.circular(
                                             8,
                                           ),
-                                          child: Image.asset(
+                                          child: Image.network(
                                             matchedProductAd!
                                                 .product
                                                 .imageUrls
@@ -879,7 +880,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                "${matchedProductAd.product.name} e +${order.ordersItems.length - 1}itens",
+                                                "${(order.ordersItems.length > 1) ? "${matchedProductAd.product.name} e +${order.ordersItems.length - 1} items" : "${matchedProductAd.product.name}"}",
                                                 style: const TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold,
@@ -888,7 +889,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                               Text(
-                                                'Quantidade: ${matchedProductAd.product.unit == "kg" ? order.ordersItems.first.qty.toStringAsFixed(2) : order.ordersItems.first.qty.toStringAsFixed(0)} ${matchedProductAd.product.unit}',
+                                                'Quantidade: ${matchedProductAd.product.unit == "kg" ? order.ordersItems.first.qty.toStringAsFixed(2) : order.ordersItems.first.qty.toStringAsFixed(0)} ${matchedProductAd.product.unit.toDisplayString()}',
                                                 style: TextStyle(
                                                   fontSize: 13,
                                                   color:

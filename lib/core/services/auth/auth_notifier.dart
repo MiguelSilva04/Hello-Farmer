@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/shopping_cart.dart';
-
 import '../../../components/producer/manageSection/manageProductsSection.dart';
 import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
@@ -157,6 +156,27 @@ class AuthNotifier extends ChangeNotifier {
     store.productsAds ??= [];
     store.productsAds!.add(ad);
     notifyListeners();
+  }
+
+  Future<void> submitNewReview(
+    String adId,
+    double rating,
+    String description,
+  ) async {
+    Store? curStore = producerUsers
+        .expand((producer) => producer.stores)
+        .firstWhereOrNull(
+          (store) => store.productsAds?.any((ad) => ad.id == adId) ?? false,
+        );
+
+    final review = await AuthService().submitNewReview(
+      curStore!.id,
+      adId,
+      rating,
+      description,
+      currentUser!.id,
+    );
+    curStore.storeReviews!.add(review);
     notifyListeners();
   }
 

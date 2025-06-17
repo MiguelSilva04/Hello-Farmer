@@ -28,7 +28,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
   }
 
@@ -151,9 +151,9 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
         Container(
           color: Theme.of(context).colorScheme.surface,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TabBar(
+                isScrollable: true,
                 labelStyle: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -167,6 +167,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                   Tab(text: 'Todas'),
                   Tab(text: 'Pendentes'),
                   Tab(text: 'Enviadas'),
+                  Tab(text: 'Prontas para recolha'),
                   Tab(text: 'Entregues'),
                 ],
               ),
@@ -182,6 +183,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                 Center(child: getAllFilter()),
                 Center(child: getAllFilter(OrderState.Pending)),
                 Center(child: getAllFilter(OrderState.Sent)),
+                Center(child: getAllFilter(OrderState.Ready)),
                 Center(child: getAllFilter(OrderState.Delivered)),
               ],
             ),

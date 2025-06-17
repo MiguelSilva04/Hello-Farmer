@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'basket.dart';
+import 'notification.dart';
 import 'order.dart';
 import 'product_ad.dart';
 import 'review.dart';
@@ -65,6 +66,7 @@ class Store {
   List<DeliveryMethod> preferredDeliveryMethod;
   List<Basket>? baskets;
   List<UserView>? viewsByUserDateTime;
+  List<NotificationItem>? notifications = [];
 
   Store({
     required this.id,
@@ -84,6 +86,7 @@ class Store {
     required this.preferredDeliveryMethod,
     this.baskets,
     this.viewsByUserDateTime,
+    this.notifications,
   });
 
   void set setPreferredDeliveryMethod(
@@ -160,6 +163,12 @@ class Store {
           json['deliveryMethods'] != null
               ? (json['deliveryMethods'] as List)
                   .map((x) => DeliveryMethodExtension.fromString(x))
+                  .toList()
+              : [],
+      notifications:
+          json['notifications'] != null
+              ? (json['notifications'] as List)
+                  .map((x) => NotificationItem.fromJson(x))
                   .toList()
               : [],
     );

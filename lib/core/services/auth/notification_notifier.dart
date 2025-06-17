@@ -5,11 +5,15 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:harvestly/core/models/consumer_user.dart';
+import 'package:harvestly/core/models/producer_user.dart';
 
 import '../../models/app_user.dart';
 import '../../models/notification.dart';
+import 'auth_notifier.dart';
 
 class NotificationNotifier extends ChangeNotifier {
+  late AuthNotifier authNotifier;
   final List<NotificationItem> _notifications = [];
   StreamSubscription? _notificationsSubscription;
 
@@ -18,8 +22,13 @@ class NotificationNotifier extends ChangeNotifier {
 
   List<NotificationItem> get notifications => List.unmodifiable(_notifications);
 
-  NotificationNotifier() {
+  NotificationNotifier(this.authNotifier) {
     _initializeLocalNotifications();
+  }
+
+  void updateAuthNotifier(AuthNotifier newNotifier) {
+    authNotifier = newNotifier;
+    notifyListeners();
   }
 
   Future<void> _initializeLocalNotifications() async {
@@ -37,29 +46,38 @@ class NotificationNotifier extends ChangeNotifier {
         isProducer ? 'stores/$id/notifications' : 'users/$id/notifications';
 
     _notificationsSubscription?.cancel();
-
     _notificationsSubscription = FirebaseFirestore.instance
         .collection(collectionPath)
         .orderBy('dateTime', descending: true)
         .snapshots()
-        .listen(
-          (snapshot) {
-            _notifications.clear();
-            try {
-              _notifications.addAll(
-                snapshot.docs.map(
-                  (doc) => NotificationItem.fromJson(doc.data()),
-                ),
-              );
-              notifyListeners();
-            } catch (e) {
-              print('Erro ao converter notificação: $e');
+        .listen((snapshot) {
+          _notifications.clear();
+          try {
+            final list =
+                snapshot.docs
+                    .map((doc) => NotificationItem.fromJson(doc.data()))
+                    .toList();
+            _notifications.addAll(list);
+
+            final _currentUser = authNotifier.currentUser;
+            if (_currentUser == null) return;
+
+            if (_currentUser.isProducer) {
+              final producer = _currentUser as ProducerUser;
+              if (producer.stores.isEmpty) return;
+              final store = producer.stores[authNotifier.selectedStoreIndex];
+              store.notifications?.addAll(list);
+            } else {
+              final consumer = _currentUser as ConsumerUser;
+              consumer.notifications?.addAll(list);
             }
-          },
-          onError: (error) {
-            print('Erro no listen das notificações: $error');
-          },
-        );
+
+            notifyListeners();
+            authNotifier.notifyListeners();
+          } catch (e) {
+            print('Erro ao converter notificação: $e');
+          }
+        });
   }
 
   Future<void> setupFCM({required String id, required bool isProducer}) async {
@@ -253,7 +271,6 @@ class NotificationNotifier extends ChangeNotifier {
     }
   }
 
-  // Métodos públicos para notificações específicas continuam iguais, só passam para _createAndSendNotification
   Future<void> addOrderPlacedNotification(AppUser consumer, String storeId) =>
       _createAndSendNotification(
         userId: storeId,

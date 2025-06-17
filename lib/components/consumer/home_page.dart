@@ -67,23 +67,17 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthNotifier>(
-      builder: (context, authNotifier, child) {
-        final producers = authNotifier.producerUsers;
-
-        if (producers.isEmpty) {
+    return StreamBuilder<List<ProductAd>>(
+      stream: authNotifier.getAllProductAdsStream(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        final producers = authNotifier.producerUsers;
 
-        final recommendedAds =
-            producers
-                .expand((producer) => producer.stores)
-                .expand((store) => store.productsAds ?? [])
-                .toList();
+        final allAds = snapshot.data!;
         final seenIds = <String>{};
-        final uniqueAds =
-            recommendedAds.where((ad) => seenIds.add(ad.id)).toList();
-
+        final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
         final top5Ads = uniqueAds.take(5).toList();
         final nearbyProducers = producers.take(5).toList();
 

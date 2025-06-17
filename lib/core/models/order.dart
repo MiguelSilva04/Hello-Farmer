@@ -103,6 +103,10 @@ class Order {
     );
   }
 
+  factory Order.fromMap(Map<String, dynamic> map) {
+    return Order.fromJson(map);
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

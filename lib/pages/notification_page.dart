@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
@@ -5,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/models/notification.dart';
 
+import '../core/models/consumer_user.dart';
 import '../utils/user_store_helper.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -17,9 +20,22 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
-    final notificationProvider = Provider.of<NotificationNotifier>(context);
-    final notifications = notificationProvider.notifications;
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final user = authNotifier.currentUser!;
+    final notificationProvider = Provider.of<NotificationNotifier>(context);
+    final currentNotifications =
+        user.isProducer
+            ? (user as ProducerUser)
+                .stores[authNotifier.selectedStoreIndex]
+                .notifications
+            : (user as ConsumerUser).notifications;
+    final userNotificationIds =
+        currentNotifications?.map((n) => n.id).toSet() ?? {};
+
+    final notifications =
+        notificationProvider.notifications
+            .where((n) => userNotificationIds.contains(n.id))
+            .toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Notificações')),
@@ -131,10 +147,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   String _formatDate(DateTime dt) {
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final date = DateTime(dt.year, dt.month, dt.day);
+
     final hour = dt.hour.toString().padLeft(2, '0');
     final minute = dt.minute.toString().padLeft(2, '0');
-    return "$day/$month às $hour:$minute";
+
+    if (date == today) {
+      return "Hoje às $hour:$minute";
+    } else if (date == yesterday) {
+      return "Ontem às $hour:$minute";
+    } else {
+      final day = dt.day.toString().padLeft(2, '0');
+      final month = dt.month.toString().padLeft(2, '0');
+      return "$day/$month às $hour:$minute";
+    }
   }
 }

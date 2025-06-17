@@ -47,7 +47,12 @@ void main() async {
         ChangeNotifierProvider(create: (_) => StoreService.instance),
         ChangeNotifierProvider(create: (_) => PreferencesNotifier()),
         ChangeNotifierProvider(create: (_) => SearchNotifier()),
-        ChangeNotifierProvider(create: (_) => NotificationNotifier()),
+        ChangeNotifierProvider(
+          create:
+              (context) => NotificationNotifier(
+                Provider.of<AuthNotifier>(context, listen: false),
+              ),
+        ),
       ],
       child: const MyApp(),
     ),

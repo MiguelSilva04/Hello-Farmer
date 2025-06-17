@@ -23,11 +23,13 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
   }
 
   late final TabController _tabController;
+  late AuthNotifier authNotifier;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    authNotifier = Provider.of<AuthNotifier>(context, listen: false);
   }
 
   @override
@@ -36,95 +38,106 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
     super.dispose();
   }
 
-  Widget getAllFilter([state]) {
+  Widget getAllFilter([OrderState? stateFilter]) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Consumer<AuthNotifier>(
-        builder: (context, auth, _) {
-          final store =
-              (auth.currentUser as ProducerUser).stores[auth
-                  .selectedStoreIndex];
-          final orders = store.orders ?? [];
-          final ordersFiltered =
-              state == null
-                  ? orders
-                  : orders.where((order) => order.state == state).toList();
-
-          if (auth.currentUser == null ||
-              !(auth.currentUser is ProducerUser) ||
-              (auth.currentUser as ProducerUser).stores.isEmpty ||
-              store.orders == null) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-            );
+      child: StreamBuilder<List<Order>>(
+        stream: authNotifier.storeOrdersStream(
+          (authNotifier.currentUser as ProducerUser)
+              .stores[authNotifier.selectedStoreIndex]
+              .id,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Sem encomendas ainda."));
+          }
+
+          final orders = snapshot.data!;
+          final filteredOrders =
+              stateFilter == null
+                  ? orders
+                  : orders
+                      .where((order) => order.state == stateFilter)
+                      .toList();
+
           return ListView.builder(
-            itemCount: ordersFiltered.length,
-            itemBuilder:
-                (context, index) => Card(
-                  child: ListTile(
-                    onTap: () {
-                      final consumer =
-                          auth.allUsers
-                              .where(
-                                (u) => u.id == ordersFiltered[index].consumerId,
-                              )
-                              .first;
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (ctx) => OrderDetailsPage(
-                                order: ordersFiltered[index],
-                                producer: (auth.currentUser as ProducerUser),
-                                consumer: (consumer as ConsumerUser),
-                              ),
+            itemCount: filteredOrders.length,
+            itemBuilder: (context, index) {
+              final order = filteredOrders[index];
+              final consumer =
+                  authNotifier.allUsers
+                          .where((u) => u.id == order.consumerId)
+                          .first
+                      as ConsumerUser;
+
+              return Card(
+                child: ListTile(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder:
+                            (ctx) => OrderDetailsPage(
+                              order: order,
+                              producer:
+                                  (authNotifier.currentUser as ProducerUser),
+                              consumer: consumer,
+                            ),
+                      ),
+                    );
+                  },
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Pedido",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            " #${order.id}",
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ),
-                      );
-                    },
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              "Pedido #${ordersFiltered[index].id}",
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.tertiary,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          child: AutoSizeText(
+                            order.state.toDisplayString(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.tertiary,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            child: AutoSizeText(
-                              ordersFiltered[index].state.toDisplayString(),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    subtitle: Text(
-                      "Data da Encomenda: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].createdAt)}\n${"Data de Entrega Prevista: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(ordersFiltered[index].deliveryDate)}"}\nMorada: ${ordersFiltered[index].address}",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    isThreeLine: true,
+                      ),
+                    ],
                   ),
+                  subtitle: Text(
+                    "Data da Encomenda: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(order.createdAt)}\n"
+                    "Data de Entrega Prevista: ${DateFormat('d \'de\' MMMM \'de\' y', 'pt_PT').format(order.deliveryDate)}\n"
+                    "Morada: ${order.address}",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  isThreeLine: true,
                 ),
+              );
+            },
           );
         },
       ),
@@ -135,23 +148,11 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Custom tab bar (pode estar onde quiseres)
         Container(
           color: Theme.of(context).colorScheme.surface,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 16),
-              //   child: Text(
-              //     "As minhas vendas",
-              //     style: TextStyle(
-              //       fontSize: 30,
-              //       fontWeight: FontWeight.w600,
-              //       color: Theme.of(context).colorScheme.secondary,
-              //     ),
-              //   ),
-              // ),
               TabBar(
                 labelStyle: TextStyle(
                   fontSize: 14,

@@ -10,7 +10,7 @@ import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
-
+import 'package:collection/collection.dart';
 import '../../core/models/app_user.dart';
 import '../../core/models/consumer_user.dart';
 import '../../core/services/auth/auth_notifier.dart';
@@ -192,357 +192,385 @@ class OrderDetailsPage extends StatelessWidget {
       );
     }
 
-    final currentUser = authNotifier.currentUser!;
-    final date = DateFormat.yMMMEd('pt_PT').format(order.deliveryDate);
-    final products = order.ordersItems;
-    final deliveryMethod = order.deliveryMethod!.toDisplayString();
     return Scaffold(
       appBar: AppBar(title: const Text("Encomenda")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Row(
+        child: SingleChildScrollView(
+          child: StreamBuilder<Order>(
+            stream: authNotifier.orderStream(order.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData) {
+                return const Center(child: Text("Encomenda não encontrada"));
+              }
+              final curOrder = snapshot.data!;
+
+              final date = DateFormat.yMMMEd(
+                'pt_PT',
+              ).format(curOrder.deliveryDate);
+              final products = curOrder.ordersItems;
+              final deliveryMethod = curOrder.deliveryMethod!.toDisplayString();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.calendar_today, size: 25),
-                      const SizedBox(width: 8),
                       Expanded(
-                        child: Column(
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (order.state == OrderState.Delivered) ...[
-                              AutoSizeText(
-                                "Data da entrega: ",
-                                style: const TextStyle(fontSize: 15),
-                                maxLines: 1,
-                                minFontSize: 10,
+                            const Icon(Icons.calendar_today, size: 25),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (order.state == OrderState.Delivered) ...[
+                                    AutoSizeText(
+                                      "Data da entrega: ",
+                                      style: const TextStyle(fontSize: 15),
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                    ),
+                                    AutoSizeText(
+                                      date,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                    ),
+                                  ],
+                                  if ((order.state == OrderState.Pending ||
+                                      order.state == OrderState.Sent)) ...[
+                                    AutoSizeText(
+                                      "Entrega prevista para: ",
+                                      style: const TextStyle(fontSize: 15),
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                    ),
+                                    AutoSizeText(
+                                      date,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                    ),
+                                  ],
+                                  if (order.state == OrderState.Abandoned) ...[
+                                    AutoSizeText(
+                                      "Abandonada desde: ",
+                                      style: const TextStyle(fontSize: 15),
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                    ),
+                                    AutoSizeText(
+                                      DateFormat.yMMMd(
+                                        'pt_PT',
+                                      ).format(curOrder.deliveryDate),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                      maxLines: 1,
+                                      minFontSize: 10,
+                                    ),
+                                  ],
+                                ],
                               ),
-                              AutoSizeText(
-                                date,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                minFontSize: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.inventory, size: 25),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AutoSizeText(
+                                    "Encomenda Nº ",
+                                    style: const TextStyle(fontSize: 15),
+                                    maxLines: 1,
+                                    minFontSize: 10,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  AutoSizeText(
+                                    "${curOrder.id}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                    maxLines: 1,
+                                    minFontSize: 10,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                            ],
-                            if ((order.state == OrderState.Pending ||
-                                order.state == OrderState.Sent)) ...[
-                              AutoSizeText(
-                                "Entrega prevista para: ",
-                                style: const TextStyle(fontSize: 15),
-                                maxLines: 1,
-                                minFontSize: 10,
-                              ),
-                              AutoSizeText(
-                                date,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                minFontSize: 10,
-                              ),
-                            ],
-                            if (order.deliveryDate.isAfter(DateTime.now()) &&
-                                order.state == OrderState.Sent) ...[
-                              AutoSizeText(
-                                "Abandonada desde: ",
-                                style: const TextStyle(fontSize: 15),
-                                maxLines: 1,
-                                minFontSize: 10,
-                              ),
-                              AutoSizeText(
-                                DateFormat.yMMMd(
-                                  'pt_PT',
-                                ).format(order.deliveryDate),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
-                                maxLines: 1,
-                                minFontSize: 10,
-                              ),
-                            ],
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Row(
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.inventory, size: 25),
+                      const Icon(Icons.home, size: 25),
                       const SizedBox(width: 8),
-                      Expanded(
+                      Flexible(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            AutoSizeText(
-                              "Encomenda Nº ",
-                              style: const TextStyle(fontSize: 15),
-                              maxLines: 1,
-                              minFontSize: 10,
+                            Text(
+                              "Morada de entrega: ",
+                              style: TextStyle(fontSize: 15),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            AutoSizeText(
-                              "${order.id}",
+                            Text(
+                              curOrder.address,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
                               ),
-                              maxLines: 1,
-                              minFontSize: 10,
                               overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.home, size: 25),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                  Column(
                     children: [
-                      Text(
-                        "Morada de entrega: ",
-                        style: TextStyle(fontSize: 15),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        order.address,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
+                      if (!authNotifier.currentUser!.isProducer)
+                        buildUserContactSection(
+                          context: context,
+                          displayedUser: producer,
+                          title: "Banca Vendedora",
+                          subtitle:
+                              producer
+                                  .stores[authNotifier.selectedStoreIndex]
+                                  .city,
+                          isProducerSide: true,
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                      if (authNotifier.currentUser!.isProducer)
+                        buildUserContactSection(
+                          context: context,
+                          displayedUser: consumer!,
+                          title: "Comprador",
+                          subtitle: consumer!.city,
+                          isProducerSide: false,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text("Valor: ", style: const TextStyle(fontSize: 16)),
+                      Text(
+                        "${curOrder.totalPrice.toStringAsFixed(2)} €",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            Column(
-              children: [
-                if (!currentUser.isProducer)
-                  buildUserContactSection(
-                    context: context,
-                    displayedUser: producer,
-                    title: "Banca Vendedora",
-                    subtitle:
-                        producer.stores[authNotifier.selectedStoreIndex].city,
-                    isProducerSide: true,
-                  ),
-                if (currentUser.isProducer)
-                  buildUserContactSection(
-                    context: context,
-                    displayedUser: consumer!,
-                    title: "Comprador",
-                    subtitle: consumer!.city,
-                    isProducerSide: false,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text("Valor: ", style: const TextStyle(fontSize: 16)),
-                Text(
-                  "${order.totalPrice.toStringAsFixed(2)} €",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text.rich(
-              TextSpan(
-                text: "Entrega: ",
-                style: TextStyle(fontSize: 16),
-                children: [
-                  TextSpan(
-                    text: deliveryMethod,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            const Text(
-              "Consultar estado",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 16),
-            OrderTimeline(order: order),
-
-            const Divider(),
-            const Text(
-              "Produtos Encomendados",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: ListView.separated(
-                itemCount: products.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final item = products[index];
-                  final ad =
-                      AuthService().users
-                              .whereType<ProducerUser>()
-                              .expand((p) {
-                                if (p.stores.isNotEmpty) {
-                                  return p
-                                          .stores[Provider.of<AuthNotifier>(
-                                            context,
-                                            listen: false,
-                                          ).selectedStoreIndex]
-                                          .productsAds ??
-                                      [];
-                                } else {
-                                  return [];
-                                }
-                              })
-                              .firstWhere(
-                                (ad) => ad.id == item.productAdId,
-                                orElse:
-                                    () =>
-                                        throw Exception(
-                                          "ProductAd não encontrado.",
-                                        ),
-                              )
-                          as ProductAd;
-
-                  final product = ad.product;
-                  final quantityText =
-                      product.unit == Unit.KG
-                          ? "${item.qty} ${product.unit.toDisplayString()}"
-                          : "x${item.qty.toStringAsFixed(0)}";
-
-                  return Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 8),
+                  Text.rich(
+                    TextSpan(
+                      text: "Entrega: ",
+                      style: TextStyle(fontSize: 16),
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            product.imageUrls.first,
-                            height: 80,
-                            width: 80,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "$quantityText ${product.name}",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "${product.price.toStringAsFixed(2)}€/${product.unit.toDisplayString()}",
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.secondaryFixed,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              if (!currentUser.isProducer)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextButton.icon(
-                                      onPressed: () {},
-                                      icon: const Icon(
-                                        Icons.shopping_cart_checkout,
-                                      ),
-                                      label: const Text("Comprar novamente"),
-                                    ),
-                                  ],
-                                ),
-                            ],
+                        TextSpan(
+                          text: deliveryMethod,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
                       ],
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
+                  const SizedBox(height: 16),
 
-            const SizedBox(height: 16),
+                  const Text(
+                    "Consultar estado",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 5),
+                  OrderTimeline(order: curOrder),
 
-            const Text(
-              "Para mais detalhes sobre a entrega, contacta o vendedor.",
-              style: TextStyle(fontSize: 12),
-            ),
-            Center(
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  foregroundColor: Theme.of(context).colorScheme.secondary,
-                ),
-                onPressed:
-                    () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder:
-                            (ctx) => InvoicePageConsumer(
-                              order: order,
-                              producer: producer,
+                  const Divider(),
+                  const Text(
+                    "Produtos Encomendados",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Column(
+                    children: [
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: products.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final item = products[index];
+                          final ad =
+                              AuthService().users
+                                      .whereType<ProducerUser>()
+                                      .expand((p) {
+                                        if (p.stores.isNotEmpty) {
+                                          return p
+                                                  .stores[Provider.of<
+                                                    AuthNotifier
+                                                  >(
+                                                    context,
+                                                    listen: false,
+                                                  ).selectedStoreIndex]
+                                                  .productsAds ??
+                                              [];
+                                        } else {
+                                          return [];
+                                        }
+                                      })
+                                      .firstWhere(
+                                        (ad) => ad.id == item.productAdId,
+                                        orElse:
+                                            () =>
+                                                throw Exception(
+                                                  "ProductAd não encontrado.",
+                                                ),
+                                      )
+                                  as ProductAd;
+
+                          final product = ad.product;
+                          final quantityText =
+                              product.unit == Unit.KG
+                                  ? "${item.qty} ${product.unit.toDisplayString()}"
+                                  : "x${item.qty.toStringAsFixed(0)}";
+
+                          return Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    product.imageUrls.first,
+                                    height: 80,
+                                    width: 80,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "$quantityText ${product.name}",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "${product.price.toStringAsFixed(2)}€/${product.unit.toDisplayString()}",
+                                        style: TextStyle(
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.secondaryFixed,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      if (!authNotifier.currentUser!.isProducer)
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            TextButton.icon(
+                                              onPressed: () {},
+                                              icon: const Icon(
+                                                Icons.shopping_cart_checkout,
+                                              ),
+                                              label: const Text(
+                                                "Comprar novamente",
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    "Para mais detalhes sobre a entrega, contacta o vendedor.",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  Center(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                      ),
+                      onPressed:
+                          () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (ctx) => InvoicePageConsumer(
+                                    order: order,
+                                    producer: producer,
+                                  ),
+                            ),
+                          ),
+                      icon: Icon(
+                        Icons.receipt,
+                        size: 30,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      label: const Text(
+                        "Consultar fatura",
+                        style: TextStyle(fontSize: 20),
                       ),
                     ),
-                icon: Icon(
-                  Icons.receipt,
-                  size: 30,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-                label: const Text(
-                  "Consultar fatura",
-                  style: TextStyle(fontSize: 20),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -593,124 +621,133 @@ class _OrderTimelineState extends State<OrderTimeline> {
           listen: false,
         ).currentUser!.isProducer;
     final canAdvance = isProducer && currentStep < steps.length - 1;
-
-    return Row(
-      children: [
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.13,
-          width: MediaQuery.of(context).size.width * (canAdvance ? 0.5 : 0.7),
-          child: TimelineTheme(
-            data: TimelineThemeData(
-              direction: Axis.vertical,
-              nodePosition: 0.5,
-              connectorTheme: ConnectorThemeData(
-                color: Colors.grey.shade300,
-                thickness: 4.0,
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * ((canAdvance) ? 0.30 : 0.25),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: TimelineTheme(
+              data: TimelineThemeData(
+                direction: Axis.vertical,
+                nodePosition: 0.3,
+                connectorTheme: ConnectorThemeData(
+                  color: Colors.grey.shade300,
+                  thickness: 4.0,
+                ),
+                indicatorTheme: const IndicatorThemeData(size: 30),
               ),
-              indicatorTheme: const IndicatorThemeData(size: 20.0),
-            ),
-            child: FixedTimeline.tileBuilder(
-              builder: TimelineTileBuilder.connected(
-                connectionDirection: ConnectionDirection.after,
-                itemCount: steps.length,
-                contentsBuilder: (context, index) {
-                  final isActive = index <= currentStep;
-                  return SizedBox(
-                    width:
-                        (MediaQuery.of(context).size.width * 0.7) /
-                        steps.length,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
+              child: FixedTimeline.tileBuilder(
+                builder: TimelineTileBuilder.connected(
+                  connectionDirection: ConnectionDirection.after,
+                  itemExtent: 70,
+                  itemCount: steps.length,
+                  contentsBuilder: (context, index) {
+                    final isActive = index <= currentStep;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 5, left: 8),
                       child: Text(
                         steps[index].toDisplayString(),
-                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight:
-                              isActive ? FontWeight.bold : FontWeight.normal,
+                              isActive ? FontWeight.w600 : FontWeight.normal,
                           color:
                               isActive
                                   ? Theme.of(context).colorScheme.primary
-                                  : Colors.grey,
-                          fontSize: 14,
+                                  : Colors.grey.shade600,
+                          fontSize: 16,
                         ),
                       ),
-                    ),
-                  );
-                },
-                indicatorBuilder: (context, index) {
-                  final isActive = index <= currentStep;
-                  return DotIndicator(
-                    size: 20,
-                    color:
-                        isActive
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey,
-                    child:
-                        isActive
-                            ? const Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 12,
-                            )
-                            : null,
-                  );
-                },
-                connectorBuilder: (context, index, _) {
-                  final isActive = index < currentStep;
-                  return SolidLineConnector(
-                    color:
-                        isActive
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey.shade300,
-                  );
-                },
+                    );
+                  },
+                  indicatorBuilder: (context, index) {
+                    final isActive = index <= currentStep;
+                    return DotIndicator(
+                      size: 24,
+                      color:
+                          isActive
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey.shade400,
+                      child:
+                          isActive
+                              ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 14,
+                              )
+                              : null,
+                    );
+                  },
+                  connectorBuilder: (context, index, _) {
+                    final isActive = index < currentStep;
+                    return SolidLineConnector(
+                      color:
+                          isActive
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.grey.shade300,
+                    );
+                  },
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 10),
-        if (canAdvance)
-          (_isLoading)
-              ? const Center(child: CircularProgressIndicator())
-              : Expanded(
-                child: ElevatedButton.icon(
-                  iconAlignment: IconAlignment.end,
-                  onPressed:
-                      () => showDialog(
-                        context: context,
-                        builder:
-                            (ctx) => AlertDialog(
-                              title: const Text("Aviso"),
-                              content: const Text(
-                                "Pretende avançar o estado da encomenda?",
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text("Não"),
+          if (canAdvance) ...[
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.6,
+              height: MediaQuery.of(context).size.height * 0.05,
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 6,
+                          shadowColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.4),
+                        ),
+                        icon: const Icon(Icons.next_plan_rounded, size: 28),
+                        label: const Text(
+                          "Próximo passo",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder:
+                                (ctx) => AlertDialog(
+                                  title: const Text("Aviso"),
+                                  content: const Text(
+                                    "Pretende avançar o estado da encomenda?",
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(ctx).pop(),
+                                      child: const Text("Não"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        setState(() => currentStep += 1);
+                                        await updateOrderState();
+                                        Navigator.of(ctx).pop();
+                                      },
+                                      child: const Text("Sim"),
+                                    ),
+                                  ],
                                 ),
-                                TextButton(
-                                  onPressed: () async {
-                                    setState(() => currentStep += 1);
-                                    await updateOrderState();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text("Sim"),
-                                ),
-                              ],
-                            ),
+                          );
+                        },
                       ),
-                  icon: const Icon(Icons.next_plan_rounded, size: 30),
-                  label: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 2),
-                    child: Text(
-                      "Próximo passo",
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ),
-              ),
-      ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ),
     );
   }
 }

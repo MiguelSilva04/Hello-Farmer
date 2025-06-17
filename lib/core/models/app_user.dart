@@ -17,7 +17,6 @@ abstract class AppUser {
   String? dateOfBirth;
   bool isProducer;
   String? iban;
-  List<NotificationItem>? notifications = null;
   String? token;
 
   AppUser({

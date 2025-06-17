@@ -348,7 +348,18 @@ class _MainMenuState extends State<MainMenu>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Badge.count(
-                                count: user.notifications?.length ?? 0,
+                                count:
+                                    user.isProducer
+                                        ? (user as ProducerUser)
+                                                .stores[authProvider
+                                                    .selectedStoreIndex]
+                                                .notifications
+                                                ?.length ??
+                                            0
+                                        : (user as ConsumerUser)
+                                                .notifications
+                                                ?.length ??
+                                            0,
                                 child: Icon(
                                   Icons.notifications_none_rounded,
                                   color:

@@ -25,54 +25,46 @@ class _OrdersPageState extends State<OrdersPage> {
   void initState() {
     super.initState();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final users = authNotifier.allUsers;
     currentUserId = authNotifier.currentUser?.id;
-
-    allAds =
-        users
-            .whereType<ProducerUser>()
-            .where((p) => p.stores.isNotEmpty)
-            .expand(
-              (p) =>
-                  p.stores[authNotifier.selectedStoreIndex].productsAds ?? [],
-            )
-            .toList()
-            .cast<ProductAd>();
-
-    orders =
-        users
-            .whereType<ProducerUser>()
-            .where((p) => p.stores.isNotEmpty && p.stores.isNotEmpty)
-            .expand(
-              (p) =>
-                  p
-                      .stores[Provider.of<AuthNotifier>(
-                        context,
-                        listen: false,
-                      ).selectedStoreIndex]
-                      .orders ??
-                  [],
-            )
-            .where(
-              (order) =>
-                  (state == null || order.state == state) &&
-                  order.consumerId == currentUserId,
-            )
-            .fold<Map<String, Order>>({}, (map, order) {
-              map[order.id] = order;
-              return map;
-            })
-            .values
-            .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredOrders =
-        orders.where((order) => state == null || order.state == state).toList();
-    return orders.length == 0
-        ? Center(child: Text("Não tem encomendas efetuadas ainda..."))
-        : SingleChildScrollView(
+    return StreamBuilder<List<Order>>(
+      stream: authNotifier.consumerOrdersStream(authNotifier.currentUser!.id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(
+            child: Text("Não tem encomendas efetuadas ainda..."),
+          );
+        }
+
+        final orders =
+            snapshot.data!
+                .where((o) => state == null || o.state == state)
+                .toList();
+        final filteredOrders =
+            orders
+                .where((order) => state == null || order.state == state)
+                .toList();
+
+        final allAds =
+            authNotifier.allUsers
+                .whereType<ProducerUser>()
+                .where((p) => p.stores.isNotEmpty)
+                .expand(
+                  (p) =>
+                      p.stores[authNotifier.selectedStoreIndex].productsAds ??
+                      [],
+                )
+                .toList()
+                .cast<ProductAd>();
+
+        return SingleChildScrollView(
           child: Column(
             children: [
               Padding(
@@ -265,6 +257,8 @@ class _OrdersPageState extends State<OrdersPage> {
             ],
           ),
         );
+      },
+    );
   }
 }
 

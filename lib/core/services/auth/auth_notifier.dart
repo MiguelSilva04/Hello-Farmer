@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/app_user.dart';
@@ -57,6 +55,67 @@ class AuthNotifier extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Stream<List<ProductAd>> getAllProductAdsStream() {
+    final storeCollection = fireStore.collection('stores');
+
+    return storeCollection.snapshots().asyncMap((storeSnapshot) async {
+      final List<Future<List<ProductAd>>> adsFutures = [];
+
+      for (var storeDoc in storeSnapshot.docs) {
+        final productAdsRef = storeDoc.reference.collection('ads');
+
+        final adsFuture = productAdsRef.snapshots().first.then((adsSnapshot) {
+          return adsSnapshot.docs
+              .map((doc) => ProductAd.fromJson(doc.data()))
+              .toList();
+        });
+
+        adsFutures.add(adsFuture);
+      }
+
+      final allAdsLists = await Future.wait(adsFutures);
+      return allAdsLists.expand((ads) => ads).toList();
+    });
+  }
+
+  Stream<Order> orderStream(String orderId) {
+    return fireStore
+        .collection('orders')
+        .doc(orderId)
+        .snapshots()
+        .map((docSnap) => Order.fromMap(docSnap.data()!));
+  }
+
+  Stream<List<Order>> consumerOrdersStream(String consumerId) {
+    return fireStore
+        .collection('orders')
+        .where('consumerId', isEqualTo: consumerId)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id;
+                return Order.fromJson(data);
+              }).toList(),
+        );
+  }
+
+  Stream<List<Order>> storeOrdersStream(String storeId) {
+    return fireStore
+        .collection('orders')
+        .where('storeId', isEqualTo: storeId)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) {
+                final data = doc.data();
+                data['id'] = doc.id;
+                return Order.fromJson(data);
+              }).toList(),
+        );
   }
 
   ProductRegist? getExistingProduct(ShoppingCart? cart, String productId) {
@@ -237,8 +296,6 @@ class AuthNotifier extends ChangeNotifier {
     if (_currentUser is ConsumerUser) {
       await _loadShoppingCart();
     }
-
-    _initFCMToken();
 
     notifyListeners();
 
@@ -466,39 +523,6 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _initFCMToken() async {
-    final fcm = FirebaseMessaging.instance;
-
-    Future<void> _saveToken(String token) async {
-      final user = _currentUser;
-
-      if (user == null) return;
-
-      final firestore = cf.FirebaseFirestore.instance;
-
-      if (user.isProducer && (user as ProducerUser).stores.isNotEmpty) {
-        final storeId = user.stores[selectedStoreIndex].id;
-
-        await firestore.collection('stores').doc(storeId).update({
-          'token': token,
-        });
-      } else {
-        await firestore.collection('users').doc(user.id).update({
-          'token': token,
-        });
-      }
-    }
-
-    final token = await fcm.getToken();
-    if (token != null) {
-      await _saveToken(token);
-    }
-
-    fcm.onTokenRefresh.listen((newToken) async {
-      await _saveToken(newToken);
-    });
-  }
-
   Future<void> createOrder({
     required String consumerId,
     required String storeId,
@@ -532,7 +556,6 @@ class AuthNotifier extends ChangeNotifier {
 
     await docRef.set(orderData);
 
-    // Atualizar o stock dos produtos comprados
     for (final item in cartItems) {
       final productId = item['productId'] as String;
       final quantityOrdered = item['quantity'] as double;
@@ -559,7 +582,6 @@ class AuthNotifier extends ChangeNotifier {
       });
     }
 
-    // Limpar o carrinho no Firestore
     final shoppingCartQuery =
         await fireStore
             .collection('shoppingCarts')
@@ -570,7 +592,6 @@ class AuthNotifier extends ChangeNotifier {
       await doc.reference.delete();
     }
 
-    // Limpar o carrinho local
     final shoppingCart = (_currentUser as ConsumerUser).shoppingCart;
     shoppingCart?.productsQty?.clear();
     shoppingCart?.totalPrice = 0;

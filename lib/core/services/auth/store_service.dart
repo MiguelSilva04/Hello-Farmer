@@ -27,15 +27,17 @@ class StoreService with ChangeNotifier {
 
       final store = Store.fromJson({...storeData, 'id': storeId});
 
-      final adsSnapshot = await firestore
-          .collection('stores')
-          .doc(storeId)
-          .collection('ads')
-          .get();
+      final adsSnapshot =
+          await firestore
+              .collection('stores')
+              .doc(storeId)
+              .collection('ads')
+              .get();
 
-      final ads = adsSnapshot.docs.map((adDoc) {
-        return ProductAd.fromJson(adDoc.data());
-      }).toList();
+      final ads =
+          adsSnapshot.docs.map((adDoc) {
+            return ProductAd.fromJson(adDoc.data());
+          }).toList();
 
       store.productsAds = ads;
 
@@ -46,13 +48,20 @@ class StoreService with ChangeNotifier {
   }
 
   List<Store> getStoresByOwner(String ownerId) {
-    final stores = _allStores.where((store) => store.ownerId == ownerId).toList();
+    final stores =
+        _allStores.where((store) => store.ownerId == ownerId).toList();
 
     for (final store in stores) {
       if (store.orders == null) {
         listenToOrdersForStore(store);
       }
     }
+
+    List<int> idsList = [];
+    for (int i = 0; i < stores.length; i++) {
+      idsList.add(i);
+    }
+
 
     return stores;
   }
@@ -63,11 +72,12 @@ class StoreService with ChangeNotifier {
         .where('storeId', isEqualTo: store.id)
         .snapshots()
         .listen((snapshot) {
-      store.orders = snapshot.docs
-          .map((doc) => Order.fromJson({...doc.data(), 'id': doc.id}))
-          .toList();
-      notifyListeners();
-    });
+          store.orders =
+              snapshot.docs
+                  .map((doc) => Order.fromJson({...doc.data(), 'id': doc.id}))
+                  .toList();
+          notifyListeners();
+        });
   }
 
   Future<void> updateStoreData({
@@ -101,13 +111,17 @@ class StoreService with ChangeNotifier {
   }
 
   Future<String> updateProfileImage(File file, String storeId) async {
-    final ref = FirebaseStorage.instance.ref().child('stores/$storeId/profile.jpg');
+    final ref = FirebaseStorage.instance.ref().child(
+      'stores/$storeId/profile.jpg',
+    );
     await ref.putFile(file);
     return await ref.getDownloadURL();
   }
 
   Future<String> updateBackgroundImage(File file, String storeId) async {
-    final ref = FirebaseStorage.instance.ref().child('stores/$storeId/background.jpg');
+    final ref = FirebaseStorage.instance.ref().child(
+      'stores/$storeId/background.jpg',
+    );
     await ref.putFile(file);
     return await ref.getDownloadURL();
   }

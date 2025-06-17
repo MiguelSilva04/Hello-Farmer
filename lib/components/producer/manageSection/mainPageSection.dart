@@ -49,9 +49,10 @@ class _MainPageSectionState extends State<MainPageSection> {
   void initState() {
     super.initState();
     authProvider = Provider.of<AuthNotifier>(context, listen: false);
+    print((authProvider.currentUser as ProducerUser).stores);
     store =
         (authProvider.currentUser as ProducerUser).stores[authProvider
-            .selectedStoreIndex];
+            .selectedStoreIndex!];
 
     nameController = TextEditingController(text: store.name ?? '');
     sloganController = TextEditingController(text: store.slogan ?? '');
@@ -489,7 +490,7 @@ class _MainPageSectionState extends State<MainPageSection> {
                       builder: (context, auth, _) {
                         final store =
                             (auth.currentUser as ProducerUser).stores[auth
-                                .selectedStoreIndex];
+                                .selectedStoreIndex!];
                         final ads = store.productsAds ?? [];
 
                         return Column(

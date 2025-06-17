@@ -23,7 +23,7 @@ class _BasketSectionState extends State<BasketSection> {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .baskets ??
         [];
     Basket? _editingBasket = null;
@@ -168,7 +168,7 @@ class BasketCard extends StatelessWidget {
 
               for (final user in AuthService().users) {
                 if (user is ProducerUser &&
-                    selectedStoreIndex < user.stores.length) {
+                    selectedStoreIndex! < user.stores.length) {
                   final ads = user.stores[selectedStoreIndex].productsAds ?? [];
                   for (final ad in ads) {
                     if (ad.id == productId) {
@@ -529,7 +529,7 @@ class _BasketEditAddPageState extends State<BasketEditAddPage> {
                                 .stores[Provider.of<AuthNotifier>(
                                   context,
                                   listen: false,
-                                ).selectedStoreIndex]
+                                ).selectedStoreIndex!]
                                 .productsAds ??
                             []) {
                       if (ad.product.id == productId) {

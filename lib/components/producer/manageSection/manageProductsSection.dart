@@ -30,7 +30,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
     final producer = AuthService().currentUser! as ProducerUser;
     final storeIndex =
         Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
-    _products = producer.stores[storeIndex].productsAds ?? [];
+    _products = producer.stores[storeIndex!].productsAds ?? [];
 
     _mode =
         (currentIndex == 4)
@@ -133,7 +133,7 @@ class _ManageProductsSectionState extends State<ManageProductsSection> {
               );
               final storeId =
                   (authNotifier.currentUser as ProducerUser)
-                      .stores[authNotifier.selectedStoreIndex]
+                      .stores[authNotifier.selectedStoreIndex!]
                       .id;
 
               return Column(

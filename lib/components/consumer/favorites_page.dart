@@ -41,7 +41,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     final allAds = AuthService().users
     .whereType<ProducerUser>()
     .expand((producer) {
-      if (producer.stores.isNotEmpty && selectedIndex < producer.stores.length) {
+      if (producer.stores.isNotEmpty && selectedIndex! < producer.stores.length) {
         return producer.stores[selectedIndex].productsAds ?? [];
       } else {
         return <ProductAd>[];
@@ -172,7 +172,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                         .stores[Provider.of<AuthNotifier>(
                                           context,
                                           listen: false,
-                                        ).selectedStoreIndex]
+                                        ).selectedStoreIndex!]
                                         .productsAds
                                         ?.any((a) => a.id == ad.id) ??
                                     false,

@@ -40,7 +40,7 @@ class _BillingSectionState extends State<BillingSection> {
     _selectedRange = _getRangeFromDate(provider.billingFromDate);
     _orders =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex]
+            .stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex!]
             .orders ??
         [];
   }
@@ -65,7 +65,7 @@ class _BillingSectionState extends State<BillingSection> {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .createdAt;
     if (date.isAtSameMomentAs(createdAt!)) return DateRangeOption.none;
     if (date.isAtSameMomentAs(
@@ -110,7 +110,7 @@ class _BillingSectionState extends State<BillingSection> {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .createdAt) {
       return _orders
           .where((order) => order.state == OrderState.Delivered)
@@ -180,7 +180,7 @@ class _BillingSectionState extends State<BillingSection> {
                 .stores[Provider.of<AuthNotifier>(
                   context,
                   listen: false,
-                ).selectedStoreIndex]
+                ).selectedStoreIndex!]
                 .createdAt!,
           );
       }
@@ -256,7 +256,7 @@ class _BillingSectionState extends State<BillingSection> {
                                     .stores[Provider.of<AuthNotifier>(
                                       context,
                                       listen: false,
-                                    ).selectedStoreIndex]
+                                    ).selectedStoreIndex!]
                                     .createdAt
                             ? DateFormat.yMMMd().format(
                               Provider.of<ManageSectionNotifier>(

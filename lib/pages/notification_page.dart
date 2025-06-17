@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:harvestly/core/models/producer_user.dart';
@@ -26,7 +25,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final currentNotifications =
         user.isProducer
             ? (user as ProducerUser)
-                .stores[authNotifier.selectedStoreIndex]
+                .stores[authNotifier.selectedStoreIndex!]
                 .notifications
             : (user as ConsumerUser).notifications;
     final userNotificationIds =
@@ -73,7 +72,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     ? authNotifier.currentUser!.id
                                     : (authNotifier.currentUser!
                                             as ProducerUser)
-                                        .stores[authNotifier.selectedStoreIndex]
+                                        .stores[authNotifier.selectedStoreIndex!]
                                         .id,
                           );
                         },

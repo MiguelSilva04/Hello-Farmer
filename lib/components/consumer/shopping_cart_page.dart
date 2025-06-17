@@ -630,7 +630,7 @@ class ProductAdFinder {
               .stores[Provider.of<AuthNotifier>(
                 context,
                 listen: false,
-              ).selectedStoreIndex]
+              ).selectedStoreIndex!]
               .productsAds
               ?.firstWhereOrNull((ad) => ad.id == adId);
           if (productAd != null) {
@@ -650,14 +650,14 @@ class ProductAdFinder {
               .stores[Provider.of<AuthNotifier>(
                 context,
                 listen: false,
-              ).selectedStoreIndex]
+              ).selectedStoreIndex!]
               .productsAds
               ?.firstWhere((ad) => ad.id == adId);
           if (productAd != null) {
             return user.stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex];
+            ).selectedStoreIndex!];
           }
         } catch (_) {}
       }

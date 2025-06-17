@@ -26,7 +26,7 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .orders;
 
     final now = DateTime.now();

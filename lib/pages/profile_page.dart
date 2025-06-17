@@ -652,36 +652,35 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 10),
           Text("🏪 Bancas", style: TextStyle(fontSize: 20)),
           const SizedBox(height: 5),
-          InkWell(
-            onTap:
-                () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder:
-                        (ctx) => StorePage(
-                          store: (user as ProducerUser).stores.first,
+          ...(user as ProducerUser).stores
+              .map(
+                (store) => InkWell(
+                  onTap:
+                      () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => StorePage(store: store),
                         ),
+                      ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        children: [
+                          Text(store.name!, style: TextStyle(fontSize: 18)),
+                          Text(
+                            " 📍 ${store.city!}",
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          Icon(Icons.keyboard_arrow_right_outlined),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      (user as ProducerUser).stores.first.name!,
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    Text(
-                      " 📍 ${(user as ProducerUser).stores.first.city!}",
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 10),
-                Icon(Icons.keyboard_arrow_right_outlined),
-              ],
-            ),
-          ),
+              )
+              .toList(),
         ],
         const SizedBox(height: 10),
 

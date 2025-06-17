@@ -512,7 +512,7 @@ class AuthService {
     }
   }
 
-  Future<void> addStore({
+  Future<Store> addStore({
     required String name,
     required String subName,
     required String description,
@@ -537,6 +537,7 @@ class AuthService {
       final bgRef = _storage.ref().child('stores/$storeId/background.jpg');
       final bgUploadTask = await bgRef.putFile(backgroundImageFile);
       final backgroundImageUrl = await bgUploadTask.ref.getDownloadURL();
+      final dateTime = Timestamp.now();
 
       await _firestore.collection('stores').doc(storeId).set({
         'id': storeId,
@@ -554,10 +555,28 @@ class AuthService {
           'latitude': coordinates.latitude,
           'longitude': coordinates.longitude,
         },
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt': dateTime,
+      });
+      final store = Store.fromJson({
+        'id': storeId,
+        'ownerId': currentUser!.id,
+        'name': name,
+        'subName': subName,
+        'description': description,
+        'city': city,
+        'municipality': municipality,
+        'address': address,
+        'imageUrl': imageUrl,
+        'backgroundImageUrl': backgroundImageUrl,
+        'deliveryMethods': deliveryMethods,
+        'coordinates': {
+          'latitude': coordinates.latitude,
+          'longitude': coordinates.longitude,
+        },
+        'createdAt': dateTime.toDate(),
       });
 
-      print("Store criada com sucesso!");
+      return store;
     } catch (e) {
       print("Erro ao criar store: $e");
       rethrow;

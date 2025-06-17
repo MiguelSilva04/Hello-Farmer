@@ -54,7 +54,7 @@ class SellPageState extends State<SellPage> {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .preferredDeliveryMethod
             .map((p) => p.toDisplayString())
             .toList();
@@ -121,7 +121,7 @@ class SellPageState extends State<SellPage> {
               .stores[Provider.of<AuthNotifier>(
             context,
             listen: false,
-          ).selectedStoreIndex];
+          ).selectedStoreIndex!];
 
       List<File> imageFiles =
           images.whereType<FileImage>().map((image) => image.file).toList();
@@ -509,7 +509,7 @@ class SellPageState extends State<SellPage> {
         Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
     final user = AuthService().currentUser! as ProducerUser;
 
-    if (user.stores.isEmpty || selectedStoreIndex >= user.stores.length) {
+    if (user.stores.isEmpty || selectedStoreIndex! >= user.stores.length) {
       return Container();
     }
 
@@ -920,7 +920,7 @@ class SellPageState extends State<SellPage> {
                           .stores[Provider.of<AuthNotifier>(
                             context,
                             listen: false,
-                          ).selectedStoreIndex]
+                          ).selectedStoreIndex!]
                           .municipality,
                   enabled: false,
                   maxLength: 20,

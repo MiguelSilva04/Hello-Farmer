@@ -48,7 +48,7 @@ class AnalysisReportsSection extends StatelessWidget {
             .stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).selectedStoreIndex];
+        ).selectedStoreIndex!];
     final orders = curUserStore.orders ?? [];
     final productAds = curUserStore.productsAds!;
     final todosProdutos = <Product>[];
@@ -307,14 +307,14 @@ class AnalysisReportsSection extends StatelessWidget {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .productsAds!;
     final orders =
         (AuthService().currentUser! as ProducerUser)
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .orders ??
         [];
 
@@ -340,7 +340,7 @@ class AnalysisReportsSection extends StatelessWidget {
                   .stores[Provider.of<AuthNotifier>(
                     context,
                     listen: false,
-                  ).selectedStoreIndex]
+                  ).selectedStoreIndex!]
                   .productsAds!
                   .where((pr) => pr.id == p.productAdId)
                   .first;

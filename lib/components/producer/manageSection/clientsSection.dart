@@ -29,7 +29,7 @@ class _ClientsSectionState extends State<ClientsSection> {
         currentUser.stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).selectedStoreIndex];
+        ).selectedStoreIndex!];
 
     _orders = selectedStore.orders ?? [];
 

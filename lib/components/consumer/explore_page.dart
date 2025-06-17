@@ -117,11 +117,11 @@ class _ExplorePageState extends State<ExplorePage> {
             .where(
               (producer) =>
                   producer.stores.isNotEmpty &&
-                  selectedIndex < producer.stores.length &&
+                  selectedIndex! < producer.stores.length &&
                   (producer.stores[selectedIndex].productsAds?.isNotEmpty ??
                       false),
             )
-            .expand((producer) => producer.stores[selectedIndex].productsAds!)
+            .expand((producer) => producer.stores[selectedIndex!].productsAds!)
             .toList();
 
     final List<ProductAd> matching = [];
@@ -154,7 +154,7 @@ class _ExplorePageState extends State<ExplorePage> {
       try {
         producer = authNotifier.allUsers.whereType<ProducerUser>().firstWhere(
           (p) =>
-              p.stores.length > selectedIndex &&
+              p.stores.length > selectedIndex! &&
               (p.stores[selectedIndex].productsAds?.any((a) => a.id == ad.id) ??
                   false),
         );
@@ -164,7 +164,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
       final cityMatch =
           _selectedCity.trim().isEmpty ||
-          (producer?.stores[selectedIndex].city?.trim().toLowerCase() ==
+          (producer?.stores[selectedIndex!].city?.trim().toLowerCase() ==
               _selectedCity.trim().toLowerCase());
 
       final priceMatch =
@@ -694,13 +694,13 @@ class _ExplorePageState extends State<ExplorePage> {
                       .whereType<ProducerUser>()
                       .where(
                         (producer) =>
-                            producer.stores.length > selectedIndex &&
+                            producer.stores.length > selectedIndex! &&
                             producer.stores[selectedIndex].city
                                     ?.toLowerCase()
                                     .trim() ==
                                 _selectedCity.toLowerCase().trim(),
                       )
-                      .expand((p) => p.stores[selectedIndex].productsAds ?? [])
+                      .expand((p) => p.stores[selectedIndex!].productsAds ?? [])
                       .where((ad) => ad.product.category == c.name)
                       .length;
               return GestureDetector(

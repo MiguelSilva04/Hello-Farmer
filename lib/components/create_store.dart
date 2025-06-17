@@ -4,16 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:harvestly/core/models/store.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class CreateStore extends StatefulWidget {
   bool? isFirstTime;
-  CreateStore({super.key, this.isFirstTime});
+  Function()? onClick;
+  CreateStore({super.key, this.isFirstTime, this.onClick});
 
   @override
   State<CreateStore> createState() => _CreateStoreState();
@@ -53,6 +57,11 @@ class _CreateStoreState extends State<CreateStore> {
   }
 
   Future<void> submitStore() async {
+    final notificationNotifier = Provider.of<NotificationNotifier>(
+      context,
+      listen: false,
+    );
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     setState(() {
       _isLoading = true;
     });
@@ -109,7 +118,7 @@ class _CreateStoreState extends State<CreateStore> {
     }
 
     try {
-      await AuthService().addStore(
+      final store = await AuthService().addStore(
         name: nameController.text.trim(),
         subName: sloganController.text.trim(),
         description: descriptionController.text.trim(),
@@ -125,6 +134,13 @@ class _CreateStoreState extends State<CreateStore> {
 
       if (widget.isFirstTime != true) {
         Navigator.pop(context);
+        Navigator.pop(context);
+        notificationNotifier.setupFCM(id: store.id, isProducer: true);
+      } else {
+        authNotifier.addStore(store);
+        await authNotifier.saveSelectedStoreIndex(0);
+        authNotifier.setLocalSelectedStoreIndex(0);
+        await notificationNotifier.setupFCM(id: store.id, isProducer: true);
       }
     } catch (e) {
       print(e);
@@ -271,7 +287,10 @@ class _CreateStoreState extends State<CreateStore> {
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       foregroundColor: Theme.of(context).colorScheme.secondary,
                     ),
-                    onPressed: submitStore,
+                    onPressed: () {
+                      submitStore();
+                      if (widget.onClick != null) widget.onClick!();
+                    },
                     child: Text("Criar Banca"),
                   ),
                 ),

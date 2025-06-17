@@ -17,7 +17,7 @@ class AbandonedOrdersPage extends StatelessWidget {
             .stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).selectedStoreIndex];
+        ).selectedStoreIndex!];
     final orders = currentStore.orders ?? [];
 
     final abandonedOrders =

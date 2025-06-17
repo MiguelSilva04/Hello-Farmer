@@ -33,7 +33,7 @@ class InvoicePage extends StatelessWidget {
             .stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).selectedStoreIndex];
+        ).selectedStoreIndex!];
     final currencyFormatter = NumberFormat.currency(
       locale: 'pt_PT',
       symbol: '€',

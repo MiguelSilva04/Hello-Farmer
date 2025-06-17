@@ -19,7 +19,7 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .orders ??
         [];
     List<Map<String, dynamic>> _calculateChannelData(List<Order> orders) {
@@ -28,7 +28,7 @@ class AnalysisDeliveryMethodSection extends StatelessWidget {
               .stores[Provider.of<AuthNotifier>(
             context,
             listen: false,
-          ).selectedStoreIndex];
+          ).selectedStoreIndex!];
       final List<Order> orders = currentStore.orders ?? [];
       final deliveryMethods = [
         {

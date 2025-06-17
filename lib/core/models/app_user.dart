@@ -1,4 +1,3 @@
-import 'package:harvestly/core/models/notification.dart';
 
 abstract class AppUser {
   final String id;

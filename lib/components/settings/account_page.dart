@@ -48,7 +48,7 @@ class AccountPage extends StatelessWidget {
               id:
                   user.isProducer
                       ? (user as ProducerUser)
-                          .stores[authNotifier.selectedStoreIndex]
+                          .stores[authNotifier.selectedStoreIndex!]
                           .id
                       : user.id,
               isProducer: user.isProducer,

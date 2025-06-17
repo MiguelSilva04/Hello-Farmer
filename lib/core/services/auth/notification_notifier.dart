@@ -65,7 +65,7 @@ class NotificationNotifier extends ChangeNotifier {
             if (_currentUser.isProducer) {
               final producer = _currentUser as ProducerUser;
               if (producer.stores.isEmpty) return;
-              final store = producer.stores[authNotifier.selectedStoreIndex];
+              final store = producer.stores[authNotifier.selectedStoreIndex!];
               store.notifications?.addAll(list);
             } else {
               final consumer = _currentUser as ConsumerUser;

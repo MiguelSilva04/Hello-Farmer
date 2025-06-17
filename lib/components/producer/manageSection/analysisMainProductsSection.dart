@@ -170,7 +170,7 @@ class AnalysisMainProductsSection extends StatelessWidget {
               .stores[Provider.of<AuthNotifier>(
             context,
             listen: false,
-          ).selectedStoreIndex];
+          ).selectedStoreIndex!];
       final orders = currentStore.orders ?? [];
       final Map<String, ProductStats> statsMap = {};
 

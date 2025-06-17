@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/models/app_user.dart';
 import '../core/services/chat/chat_list_notifier.dart';
-import '../utils/app_routes.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});

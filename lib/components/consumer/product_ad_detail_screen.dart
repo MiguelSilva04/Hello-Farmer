@@ -77,7 +77,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
         widget.producer.stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).selectedStoreIndex];
+        ).selectedStoreIndex!];
 
     final keywordMap = {for (var k in Keywords.keywords) k.name: k.icon};
 

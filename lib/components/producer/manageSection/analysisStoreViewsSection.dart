@@ -58,7 +58,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
             .stores[Provider.of<AuthNotifier>(
           context,
           listen: false,
-        ).selectedStoreIndex];
+        ).selectedStoreIndex!];
 
     final filteredViews = _filterViewsByPeriod(
       currentStore.viewsByUserDateTime ?? [],

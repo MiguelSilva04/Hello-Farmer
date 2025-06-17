@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/shopping_cart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../components/producer/manageSection/manageProductsSection.dart';
 import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
@@ -15,23 +16,28 @@ import 'package:collection/collection.dart';
 
 class AuthNotifier extends ChangeNotifier {
   AppUser? _currentUser;
-  int _selectedStoreIndex = 0;
+  int? _selectedStoreIndex = null;
   bool _isOrdersLoading = false;
   List<AppUser> _allUsers = [];
   List<AppUser> get allUsers => _allUsers;
   AppUser? get currentUser => _currentUser;
   bool get isProducer => _currentUser is ProducerUser;
-  int get selectedStoreIndex => _selectedStoreIndex;
+  int? get selectedStoreIndex => _selectedStoreIndex;
   List<Store> get stores =>
       isProducer ? (currentUser as ProducerUser).stores : [];
   Store? get selectedStore =>
-      isProducer && stores.isNotEmpty ? stores[_selectedStoreIndex] : null;
+      isProducer && stores.isNotEmpty ? stores[_selectedStoreIndex!] : null;
 
   List<ProducerUser> get producerUsers =>
       _allUsers.whereType<ProducerUser>().toList();
 
   final fireStore = cf.FirebaseFirestore.instance;
   bool get isOrdersLoading => _isOrdersLoading;
+
+  void setLocalSelectedStoreIndex(int? index) {
+    _selectedStoreIndex = index;
+    notifyListeners();
+  }
 
   Future<void> loadAllUsers() async {
     final userSnapshot = await fireStore.collection('users').get();
@@ -61,6 +67,12 @@ class AuthNotifier extends ChangeNotifier {
       _selectedStoreIndex = index;
       notifyListeners();
     }
+  }
+
+  void addStore(store) {
+    (currentUser! as ProducerUser).stores.add(store);
+    stores.add(store);
+    notifyListeners();
   }
 
   Stream<List<ProductAd>> getAllProductAdsStream() {
@@ -318,6 +330,8 @@ class AuthNotifier extends ChangeNotifier {
 
     if (_currentUser is ProducerUser) {
       await _loadProducerStoresAndAds();
+      final prefs = await SharedPreferences.getInstance();
+      setSelectedStoreIndex(prefs.getInt("selectedStoreIndex")!);
     }
 
     if (_currentUser is ConsumerUser) {
@@ -327,6 +341,12 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
 
     return _currentUser!;
+  }
+
+  Future<void> saveSelectedStoreIndex(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('selectedStoreIndex', index);
+    setSelectedStoreIndex(prefs.getInt("selectedStoreIndex")!);
   }
 
   Future<void> _loadShoppingCart() async {
@@ -640,14 +660,14 @@ class AuthNotifier extends ChangeNotifier {
         .collection('ads')
         .doc(productAdId);
     await docRef.delete();
-    (currentUser as ProducerUser).stores[selectedStoreIndex].productsAds!
+    (currentUser as ProducerUser).stores[selectedStoreIndex!].productsAds!
         .removeWhere((ad) => ad.id == productAdId);
     notifyListeners();
   }
 
   Future<void> changeOrderState(String orderId, OrderState state) async {
     await AuthService().changeOrderState(orderId, state);
-    (currentUser as ProducerUser).stores[selectedStoreIndex].orders!
+    (currentUser as ProducerUser).stores[selectedStoreIndex!].orders!
         .where((o) => o.id == orderId)
         .first
         .changeState(state);

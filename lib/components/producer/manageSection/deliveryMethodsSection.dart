@@ -23,7 +23,7 @@ class _DeliveryMethodsSectionState extends State<DeliveryMethodsSection> {
             .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex]
+            ).selectedStoreIndex!]
             .preferredDeliveryMethod;
 
     final List<Map<IconData, DeliveryMethod>> deliveryMethodsList = [

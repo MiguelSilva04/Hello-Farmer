@@ -25,7 +25,7 @@ class InvoicePageConsumer extends StatelessWidget {
     final selectedStoreIndex =
         Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
-      final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(
+      final ad = producer.stores[selectedStoreIndex!].productsAds!.firstWhere(
         (ad) => ad.id == item.productAdId,
       );
       final product = ad.product;
@@ -69,7 +69,7 @@ class InvoicePageConsumer extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    producer.stores[selectedStoreIndex].name ?? 'N/A',
+                    producer.stores[selectedStoreIndex!].name ?? 'N/A',
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],
@@ -381,7 +381,7 @@ class InvoicePageConsumer extends StatelessWidget {
         Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
 
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
-      final ad = producer.stores[selectedStoreIndex].productsAds!.firstWhere(
+      final ad = producer.stores[selectedStoreIndex!].productsAds!.firstWhere(
         (ad) => ad.id == item.productAdId,
       );
       final product = ad.product;
@@ -411,7 +411,7 @@ class InvoicePageConsumer extends StatelessWidget {
                     "Vendedor: ${producer.firstName} ${producer.lastName}",
                   ),
                   pw.Text(
-                    "Banca: ${producer.stores[selectedStoreIndex].name ?? 'N/A'}",
+                    "Banca: ${producer.stores[selectedStoreIndex!].name ?? 'N/A'}",
                   ),
                   pw.Text("Encomenda Nº: ${order.id}"),
                   pw.SizedBox(height: 16),

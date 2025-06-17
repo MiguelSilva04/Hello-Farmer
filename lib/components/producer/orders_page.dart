@@ -42,7 +42,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
   Widget getAllFilter([OrderState? stateFilter]) {
     final storeId =
         (authNotifier.currentUser as ProducerUser)
-            .stores[authNotifier.selectedStoreIndex]
+            .stores[authNotifier.selectedStoreIndex!]
             .id;
 
     return Padding(
@@ -59,7 +59,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
               color: Theme.of(context).colorScheme.secondary,
               onRefresh: () async {
                 final store = StoreService.instance
-                    .getStoresByOwner(authNotifier.currentUser!.id!)
+                    .getStoresByOwner(authNotifier.currentUser!.id)
                     .firstWhere((s) => s.id == storeId);
                 StoreService.instance.listenToOrdersForStore(store);
               },

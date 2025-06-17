@@ -28,7 +28,7 @@ class OffersPage extends StatelessWidget {
                           .stores[Provider.of<AuthNotifier>(
                             context,
                             listen: false,
-                          ).selectedStoreIndex]
+                          ).selectedStoreIndex!]
                           .productsAds ??
                       [],
                 )
@@ -40,7 +40,7 @@ class OffersPage extends StatelessWidget {
                       .stores[Provider.of<AuthNotifier>(
                         context,
                         listen: false,
-                      ).selectedStoreIndex]
+                      ).selectedStoreIndex!]
                       .productsAds
                       ?.any((prodAd) => prodAd.id == ad.id) ??
                   false,

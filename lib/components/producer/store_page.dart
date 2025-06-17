@@ -149,7 +149,7 @@ class _StorePageState extends State<StorePage> {
                 .stores[Provider.of<AuthNotifier>(
               context,
               listen: false,
-            ).selectedStoreIndex];
+            ).selectedStoreIndex!];
   }
 
   @override
@@ -229,17 +229,18 @@ class _StorePageState extends State<StorePage> {
                                           ),
                                         );
                                       }).toList(),
-                                  onChanged: (value) {
+                                  onChanged: (value) async {
                                     if (value != null) {
                                       final index = currentProducerUser!.stores
                                           .indexWhere(
                                             (store) => store.name == value,
                                           );
+                                      print(index);
                                       if (index != -1) {
-                                        Provider.of<AuthNotifier>(
+                                        await Provider.of<AuthNotifier>(
                                           context,
                                           listen: false,
-                                        ).setSelectedStoreIndex(index);
+                                        ).saveSelectedStoreIndex(index);
                                         setState(() {
                                           myStore =
                                               currentProducerUser!
@@ -877,9 +878,7 @@ class _StorePageState extends State<StorePage> {
       print('Editar: ${productAd.id}');
     }
 
-    void _onDelete(BuildContext context) {
-      
-    }
+    void _onDelete(BuildContext context) {}
 
     return InkWell(
       onTap:

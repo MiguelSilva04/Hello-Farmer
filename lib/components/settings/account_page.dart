@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/auth/notification_notifier.dart';
+import 'package:harvestly/core/services/auth/store_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
+import 'package:harvestly/pages/welcome_screen.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/producer_user.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
@@ -33,44 +35,45 @@ class AccountPage extends StatelessWidget {
           ),
     );
 
-    if (shouldLogout == true) {
-      final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-      final user = authNotifier.currentUser;
+    if (shouldLogout != true) return;
 
-      if (user != null) {
-        final notificationNotifier = Provider.of<NotificationNotifier>(
-          context,
-          listen: false,
-        );
+    // ✅ Fecha logo o diálogo (já foi fechado no onPressed)
+    // Agora executa o logout e limpezas
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final user = authNotifier.currentUser;
 
-        await notificationNotifier
-            .removeToken(
-              id:
-                  user.isProducer
-                      ? (user as ProducerUser)
-                          .stores[authNotifier.selectedStoreIndex!]
-                          .id
-                      : user.id,
-              isProducer: user.isProducer,
-            )
-            .then((_) {
-              Provider.of<BottomNavigationNotifier>(
-                context,
-                listen: false,
-              ).setIndex(0);
+    if (user != null) {
+      final notificationNotifier = Provider.of<NotificationNotifier>(
+        context,
+        listen: false,
+      );
 
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                context.read<ChatListNotifier>().clearChats();
-                await AuthService().logout();
+      await notificationNotifier.removeToken(
+        id:
+            user.isProducer
+                ? (user as ProducerUser)
+                    .stores[authNotifier.selectedStoreIndex!]
+                    .id
+                : user.id,
+        isProducer: user.isProducer,
+      );
 
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  AppRoutes.AUTH_OR_APP_PAGE,
-                  (route) => false,
-                );
-              });
-              Navigator.of(context).pop();
-            });
-      }
+      Provider.of<BottomNavigationNotifier>(context, listen: false).setIndex(0);
+
+      await notificationNotifier.logoutCleanup(
+        userId: user.id,
+        isProducer: user.isProducer,
+      );
+
+      await Provider.of<StoreService>(context, listen: false).clearStores();
+      context.read<ChatListNotifier>().clearChats();
+      authNotifier.setSelectedStoreIndex(0);
+
+      // ✅ Agora faz logout - isto emite null no Stream<AppUser?>
+      await AuthService().logout();
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.WELCOME_SCREEN, (route) => false);
     }
   }
 

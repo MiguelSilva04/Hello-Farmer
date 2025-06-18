@@ -153,148 +153,162 @@ class _CreateStoreState extends State<CreateStore> {
 
   @override
   Widget build(BuildContext context) {
-    final content = SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                "Criação de Banca",
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
-              ),
-            ),
-            if (widget.isFirstTime == true) ...[
-              const SizedBox(height: 10),
-              Text(
-                "Ainda não tem nenhuma banca criada, preencha os dados abaixo para começar a usar a aplicação!",
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            const SizedBox(height: 20),
-            _buildTextField("Nome", nameController, validator: true),
-            _buildTextField("Slogan", sloganController),
-            _buildTextField(
-              "Descrição",
-              descriptionController,
-              maxLines: 3,
-              validator: true,
-            ),
-            _buildTextField(
-              "Cidade",
-              cityController,
-              validator: true,
-              enabled: false,
-            ),
-            _buildTextField(
-              "Município",
-              municipalityController,
-              validator: true,
-              enabled: false,
-            ),
-            _buildTextField(
-              "Morada",
-              addressController,
-              validator: true,
-              enabled: false,
-            ),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.map),
-              label: const Text("Selecionar Localização no Mapa"),
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => MapPageProducer(
-                          onLocationSelected: (position, placemark) {
-                            setState(() {
-                              coordinates = position;
-                              addressController.text = placemark.street ?? '';
-                              cityController.text = placemark.locality ?? '';
-                              municipalityController.text =
-                                  placemark.subAdministrativeArea ?? '';
-                            });
-                          },
-                        ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "Foto da banca:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _imageFile != null
-                ? Image.file(_imageFile!, height: 150)
-                : Text("Nenhuma imagem selecionada."),
-            if (_imageFile == null)
-              TextButton.icon(
-                onPressed: () => _pickImage(isBackground: false),
-                icon: Icon(Icons.image),
-                label: Text("Selecionar imagem principal"),
-              ),
-            const SizedBox(height: 16),
-            Text(
-              "Foto de fundo:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            _backgroundImageFile != null
-                ? Image.file(_backgroundImageFile!, height: 150)
-                : Text("Nenhuma imagem selecionada."),
-            if (_backgroundImageFile == null)
-              TextButton.icon(
-                onPressed: () => _pickImage(isBackground: true),
-                icon: Icon(Icons.image_outlined),
-                label: Text("Selecionar imagem de fundo"),
-              ),
-            const SizedBox(height: 20),
-            Text(
-              "Métodos de entrega preferidos:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Column(
-              children:
-                  allDeliveryMethods.map((method) {
-                    final selected = selectedDeliveryMethods.contains(method);
-                    return CheckboxListTile(
-                      title: Text(method.toDisplayString()),
-                      value: selected,
-                      onChanged: (val) {
-                        setState(() {
-                          if (val == true) {
-                            selectedDeliveryMethods.add(method);
-                          } else {
-                            selectedDeliveryMethods.remove(method);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
-            ),
-            const SizedBox(height: 20),
-            _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      foregroundColor: Theme.of(context).colorScheme.secondary,
-                    ),
-                    onPressed: () {
-                      submitStore();
-                      if (widget.onClick != null) widget.onClick!();
-                    },
-                    child: Text("Criar Banca"),
-                  ),
+    final content = Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: !widget.isFirstTime!,
+        title: Image.asset("assets/images/logo_android2.png", height: 50),
+        centerTitle: false,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  "Criação de Banca",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
                 ),
-          ],
+              ),
+              if (widget.isFirstTime == true) ...[
+                const SizedBox(height: 10),
+                Text(
+                  "Ainda não tem nenhuma banca criada, preencha os dados abaixo para começar a usar a aplicação!",
+                  style: TextStyle(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 20),
+              _buildTextField(
+                "Nome",
+                nameController,
+                validator: true,
+                maxLength: 20,
+              ),
+              _buildTextField("Slogan", sloganController, maxLength: 50),
+              _buildTextField(
+                "Descrição",
+                descriptionController,
+                maxLines: 3,
+                validator: true,
+                maxLength: 1000,
+              ),
+              _buildTextField(
+                "Cidade",
+                cityController,
+                validator: true,
+                enabled: false,
+              ),
+              _buildTextField(
+                "Município",
+                municipalityController,
+                validator: true,
+                enabled: false,
+              ),
+              _buildTextField(
+                "Morada",
+                addressController,
+                validator: true,
+                enabled: false,
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.map),
+                label: const Text("Selecionar Localização no Mapa"),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => MapPageProducer(
+                            onLocationSelected: (position, placemark) {
+                              setState(() {
+                                coordinates = position;
+                                addressController.text = placemark.street ?? '';
+                                cityController.text = placemark.locality ?? '';
+                                municipalityController.text =
+                                    placemark.subAdministrativeArea ?? '';
+                              });
+                            },
+                          ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              Text(
+                "Foto da banca:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              _imageFile != null
+                  ? Image.file(_imageFile!, height: 150)
+                  : Text("Nenhuma imagem selecionada."),
+              if (_imageFile == null)
+                TextButton.icon(
+                  onPressed: () => _pickImage(isBackground: false),
+                  icon: Icon(Icons.image),
+                  label: Text("Selecionar imagem principal"),
+                ),
+              const SizedBox(height: 16),
+              Text(
+                "Foto de fundo:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              _backgroundImageFile != null
+                  ? Image.file(_backgroundImageFile!, height: 150)
+                  : Text("Nenhuma imagem selecionada."),
+              if (_backgroundImageFile == null)
+                TextButton.icon(
+                  onPressed: () => _pickImage(isBackground: true),
+                  icon: Icon(Icons.image_outlined),
+                  label: Text("Selecionar imagem de fundo"),
+                ),
+              const SizedBox(height: 20),
+              Text(
+                "Métodos de entrega preferidos:",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Column(
+                children:
+                    allDeliveryMethods.map((method) {
+                      final selected = selectedDeliveryMethods.contains(method);
+                      return CheckboxListTile(
+                        title: Text(method.toDisplayString()),
+                        value: selected,
+                        onChanged: (val) {
+                          setState(() {
+                            if (val == true) {
+                              selectedDeliveryMethods.add(method);
+                            } else {
+                              selectedDeliveryMethods.remove(method);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+              ),
+              const SizedBox(height: 20),
+              _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                      ),
+                      onPressed: () {
+                        submitStore();
+                        if (widget.onClick != null) widget.onClick!();
+                      },
+                      child: Text("Criar Banca"),
+                    ),
+                  ),
+            ],
+          ),
         ),
       ),
     );
@@ -314,6 +328,7 @@ class _CreateStoreState extends State<CreateStore> {
     TextEditingController controller, {
     bool validator = false,
     int maxLines = 1,
+    int? maxLength,
     bool? enabled,
   }) {
     return Padding(
@@ -322,6 +337,7 @@ class _CreateStoreState extends State<CreateStore> {
         controller: controller,
         enabled: enabled,
         maxLines: maxLines,
+        maxLength: maxLength,
         decoration: InputDecoration(labelText: label),
         validator:
             validator

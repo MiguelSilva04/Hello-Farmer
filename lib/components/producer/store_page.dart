@@ -138,18 +138,16 @@ class _StorePageState extends State<StorePage> {
   @override
   void initState() {
     super.initState();
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     currentProducerUser =
         widget.store == null
-            ? (AuthService().currentUser! as ProducerUser)
+            ? (authNotifier.currentUser! as ProducerUser)
             : null;
     myStore =
         widget.store != null
             ? widget.store!
-            : (AuthService().currentUser! as ProducerUser)
-                .stores[Provider.of<AuthNotifier>(
-              context,
-              listen: false,
-            ).selectedStoreIndex!];
+            : (authNotifier.currentUser! as ProducerUser).stores[authNotifier
+                .selectedStoreIndex!];
   }
 
   @override

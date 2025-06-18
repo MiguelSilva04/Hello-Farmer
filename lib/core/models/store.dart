@@ -130,7 +130,7 @@ class Store {
               ? (json['createdAt'] as cf.Timestamp).toDate()
               : json['createdAt'],
       name: json['name'] ?? '',
-      slogan: json['slogan'] ?? '',
+      slogan: json['subName'] ?? '',
       description: json['description'] ?? '',
       city: json['city'] ?? '',
       address: json['address'] ?? '',

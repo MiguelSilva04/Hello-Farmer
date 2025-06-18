@@ -10,8 +10,9 @@ import 'package:harvestly/components/producer/manageSection/clientsSection.dart'
 import 'package:harvestly/components/producer/manageSection/basketSection.dart';
 import 'package:harvestly/components/producer/manageSection/abandonedOrdersSection.dart';
 import 'package:harvestly/components/producer/manageSection/deliveryMethodsSection.dart';
-import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:provider/provider.dart';
+import '../../core/models/app_user.dart';
 import '../../core/services/other/manage_section_notifier.dart';
 import 'manageSection/mainPageSection.dart';
 import 'manageSection/mainSectionManage.dart';
@@ -23,10 +24,11 @@ class ManagePage extends StatefulWidget {
 }
 
 class _ManagePageState extends State<ManagePage> {
-  final user = AuthService().currentUser;
+  late AppUser user;
 
   @override
   Widget build(BuildContext context) {
+    user = Provider.of<AuthNotifier>(context, listen: false).currentUser!;
     final List<String> sectionNames = [
       "Gestão",
       "Página Principal",
@@ -36,15 +38,12 @@ class _ManagePageState extends State<ManagePage> {
       "Gestão de Preços",
       "Cabazes",
       "Clientes",
-      "Análise de dados > Relatórios",
-      "Análise de dados > Por Canal de Venda",
-      "Análise de dados > Principais Produtos",
-      "Análise de dados > Visitas à Banca",
-      "Análise de dados > Finanças",
-      "Canais de Venda",
-      "Anúncios",
-      "Destaques de Anúncios",
+      "Relatórios",
+      "Por Canal de Venda",
+      "Principais Produtos",
+      "Visitas à Banca",
       "Finanças",
+      "Canais de Venda",
     ];
 
     final List<Widget> sections = [

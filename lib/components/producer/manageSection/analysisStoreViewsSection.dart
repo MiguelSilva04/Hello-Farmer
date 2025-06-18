@@ -268,7 +268,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                           children: [
                             ListTile(
                               leading: CircleAvatar(
-                                backgroundImage: AssetImage(
+                                backgroundImage: NetworkImage(
                                   product.product.imageUrls.first,
                                 ),
                               ),

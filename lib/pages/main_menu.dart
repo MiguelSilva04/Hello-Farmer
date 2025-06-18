@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
-import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/producer_user.dart';
@@ -48,18 +47,18 @@ class _MainMenuState extends State<MainMenu>
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
   late AppUser user;
-  late AuthNotifier authProvider;
+  late AuthNotifier authNotifier;
   String _searchQuery = "";
   Timer? _debounce;
-  bool _hasStore = false;
-  late Future<AppUser> _initFuture;
+  // bool _hasStore = false;
+  // late Future<AppUser> _initFuture;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    authProvider = Provider.of<AuthNotifier>(context, listen: false);
-    _initFuture = _initializeApp();
-    _hasStore = authProvider.selectedStoreIndex != null;
+    authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    _initializeApp();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -79,46 +78,73 @@ class _MainMenuState extends State<MainMenu>
   }
 
   Future<AppUser> _initializeApp() async {
+    setState(() {
+      _isLoading = true;
+    });
     print("User a carregar...");
-    final user = await authProvider.loadUser();
+    user = await authNotifier.loadUser();
     print("User carregado!");
+    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
+
+    print("A carregar a selectedStoreIndex");
+    await authNotifier.updateSelectedStoreIndex();
+    print("selectedStoreIndex carregada: ${authNotifier.selectedStoreIndex}");
+    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
     print("Lojas a carregar...");
     final storeService = Provider.of<StoreService>(context, listen: false);
+    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
     await storeService.loadStores();
-    print("User carregado!");
+    print("Lojas carregadas!");
+    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
     print("Users a carregar!");
-    await authProvider.loadAllUsers();
+    await authNotifier.loadAllUsers();
     print("Users carregados!");
+    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
+    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
     final notificationNotifier = Provider.of<NotificationNotifier>(
       context,
       listen: false,
     );
 
-    if (_hasStore)
-      if (user.isProducer) {
-        final selectedStoreId =
-            (user as ProducerUser).stores[authProvider.selectedStoreIndex!].id;
+    print("A carregar notificacoes e token");
+    if (user.isProducer) {
+      final selectedStoreId =
+          (authNotifier.currentUser as ProducerUser)
+              .stores[authNotifier.selectedStoreIndex!]
+              .id;
+      print(selectedStoreId);
 
-        await notificationNotifier.setupFCM(
-          id: selectedStoreId,
-          isProducer: true,
-        );
+      await notificationNotifier.setupFCM(
+        id: selectedStoreId,
+        isProducer: true,
+      );
+      print("Token carregado!");
+      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
-        notificationNotifier.listenToNotifications(
-          id: selectedStoreId,
-          isProducer: true,
-        );
-      } else {
-        await notificationNotifier.setupFCM(id: user.id, isProducer: false);
+      notificationNotifier.listenToNotifications(
+        id: selectedStoreId,
+        isProducer: true,
+      );
+      print("Notificacoes Carregadas!");
+      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
+    } else {
+      await notificationNotifier.setupFCM(
+        id: (authNotifier.currentUser as ProducerUser).id,
+        isProducer: false,
+      );
+      print("Token carregado!");
+      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
-        notificationNotifier.listenToNotifications(
-          id: user.id,
-          isProducer: false,
-        );
-      }
+      notificationNotifier.listenToNotifications(
+        id: (authNotifier.currentUser as ProducerUser).id,
+        isProducer: false,
+      );
+      print("Notificacoes Carregadas!");
+      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
+    }
     print("Tokens e notificacoes carregados!");
 
     print("Chats e conversas a carregar !");
@@ -139,7 +165,13 @@ class _MainMenuState extends State<MainMenu>
       });
     }
     print("Chats e conversas carregados!");
+    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
+    print((user as ProducerUser).stores.length);
+
+    setState(() {
+      _isLoading = false;
+    });
     return user;
   }
 
@@ -195,14 +227,9 @@ class _MainMenuState extends State<MainMenu>
       OffersPage(),
     ];
 
-    return FutureBuilder(
-      future: _initFuture,
-      builder: (ctx, snapshot) {
-        if (!snapshot.hasData) return LoadingPage();
-
-        final user = snapshot.data!;
-        _profileImageUrl = user.imageUrl;
-        return Scaffold(
+    return _isLoading
+        ? const LoadingPage()
+        : Scaffold(
           appBar: AppBar(
             centerTitle: false,
             title: Row(
@@ -230,7 +257,7 @@ class _MainMenuState extends State<MainMenu>
               ],
             ),
             actions: [
-              if ((user.isProducer && _hasStore) || (!user.isProducer)) ...[
+              if ((user.isProducer) || (!user.isProducer)) ...[
                 AnimatedSwitcher(
                   duration: Duration(milliseconds: 300),
                   child:
@@ -290,7 +317,7 @@ class _MainMenuState extends State<MainMenu>
                   icon:
                       user.imageUrl.isNotEmpty
                           ? CircleAvatar(
-                            backgroundImage: NetworkImage(_profileImageUrl),
+                            backgroundImage: NetworkImage(user.imageUrl),
                           )
                           : const Icon(Icons.account_circle),
                   onSelected: (value) async {
@@ -365,7 +392,7 @@ class _MainMenuState extends State<MainMenu>
                                   count:
                                       user.isProducer
                                           ? (user as ProducerUser)
-                                                  .stores[authProvider
+                                                  .stores[authNotifier
                                                       .selectedStoreIndex!]
                                                   .notifications
                                                   ?.length ??
@@ -424,65 +451,63 @@ class _MainMenuState extends State<MainMenu>
                 ),
               ],
 
-              if (_hasStore)
-                Consumer<AuthNotifier>(
-                  builder: (context, userProvider, _) {
-                    final user = userProvider.currentUser;
-                    if (user == null) return SizedBox.shrink();
-                    if (!user.isProducer) {
-                      return InkWell(
-                        onTap:
-                            () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (ctx) => ShoppingCartPage(),
-                              ),
-                            ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Badge.count(
-                            count:
-                                (user as ConsumerUser)
-                                    .shoppingCart
-                                    ?.productsQty
-                                    ?.length ??
-                                0,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Icon(Icons.shopping_cart_rounded),
+              Consumer<AuthNotifier>(
+                builder: (context, userProvider, _) {
+                  final user = userProvider.currentUser;
+                  if (user == null) return SizedBox.shrink();
+                  if (!user.isProducer) {
+                    return InkWell(
+                      onTap:
+                          () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => ShoppingCartPage(),
                             ),
                           ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Badge.count(
+                          count:
+                              (user as ConsumerUser)
+                                  .shoppingCart
+                                  ?.productsQty
+                                  ?.length ??
+                              0,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Icon(Icons.shopping_cart_rounded),
+                          ),
                         ),
-                      );
-                    }
-                    if (user.isProducer && _hasStore)
-                      return Consumer<NotificationNotifier>(
-                        builder: (context, notificationProvider, _) {
-                          final count =
-                              notificationProvider.notifications.length;
+                      ),
+                    );
+                  }
+                  if (user.isProducer)
+                    return Consumer<NotificationNotifier>(
+                      builder: (context, notificationProvider, _) {
+                        final count = notificationProvider.notifications.length;
 
-                          return InkWell(
-                            onTap:
-                                () => Navigator.of(
-                                  context,
-                                ).pushNamed(AppRoutes.NOTIFICATION_PAGE),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Badge.count(
-                                count: count,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                  ),
-                                  child: Icon(Icons.notifications),
+                        return InkWell(
+                          onTap:
+                              () => Navigator.of(
+                                context,
+                              ).pushNamed(AppRoutes.NOTIFICATION_PAGE),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Badge.count(
+                              count: count,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
                                 ),
+                                child: Icon(Icons.notifications),
                               ),
                             ),
-                          );
-                        },
-                      );
-                    return Container();
-                  },
-                ),
+                          ),
+                        );
+                      },
+                    );
+                  return Container();
+                },
+              ),
             ],
           ),
           body: FadeTransition(
@@ -504,21 +529,10 @@ class _MainMenuState extends State<MainMenu>
                       },
                     )
                     : Consumer<AuthNotifier>(
-                      builder: (context, authProvider, _) {
-                        final user = authProvider.currentUser;
+                      builder: (context, authNotifier, _) {
+                        final user = authNotifier.currentUser;
                         // final selectedStoreIndex =
-                        //     authProvider.selectedStoreIndex;
-
-                        if (user is ProducerUser && !_hasStore) {
-                          return CreateStore(
-                            isFirstTime: true,
-                            onClick:
-                                () => setState(() {
-                                  _hasStore = true;
-                                  _initFuture = _initializeApp();
-                                }),
-                          );
-                        }
+                        //     authNotifier.selectedStoreIndex;
 
                         return user is ProducerUser
                             ? _producerPages[Provider.of<
@@ -533,7 +547,7 @@ class _MainMenuState extends State<MainMenu>
 
           bottomNavigationBar:
               Provider.of<BottomNavigationNotifier>(context).currentIndex < 5 &&
-                      (user.isProducer && _hasStore)
+                      (user.isProducer)
                   ? BottomNavigationBar(
                     selectedItemColor:
                         Theme.of(context).bottomAppBarTheme.color,
@@ -618,7 +632,5 @@ class _MainMenuState extends State<MainMenu>
                   )
                   : null,
         );
-      },
-    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/store_service.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
@@ -6,6 +7,7 @@ import 'package:harvestly/core/services/other/search_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:harvestly/pages/auth_page.dart';
 import 'package:harvestly/pages/profile_page.dart';
+import 'package:harvestly/pages/welcome_screen.dart';
 import '../pages/chat_page.dart';
 import '../pages/chat_settings_page.dart';
 import '../pages/main_menu.dart';
@@ -177,6 +179,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         AppRoutes.AUTH_OR_APP_PAGE: (ctx) => AuthOrAppPage(),
+        AppRoutes.WELCOME_SCREEN: (ctx) => WelcomeScreen(),
         AppRoutes.AUTH_PAGE: (ctx) => AuthPage(),
         AppRoutes.MAIN_MENU: (ctx) => MainMenu(),
         AppRoutes.CHAT_PAGE: (ctx) => ChatPage(),
@@ -187,6 +190,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.PROFILE_PAGE: (ctx) => ProfilePage(),
         AppRoutes.FAVORITES_PAGE: (ctx) => FavoritesPage(),
         AppRoutes.STORE_PAGE: (ctx) => StorePage(),
+        AppRoutes.OFFERS_PAGE: (ctx) => OffersPage(),
       },
     );
   }

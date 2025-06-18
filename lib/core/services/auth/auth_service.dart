@@ -18,11 +18,24 @@ import '../../models/store.dart';
 import '../chat/chat_list_notifier.dart';
 
 class AuthService {
+  static final AuthService _instance = AuthService._internal();
+  factory AuthService() => _instance;
+  AuthService._internal() {
+    listenToUserChanges();
+  }
   static bool? _isLoggingIn;
   static bool? _isProducer;
   static AppUser? _currentUser;
   static final List<AppUser> _users = [];
   static StreamSubscription? _userChangesSubscription;
+  static List<Store> _myStores = [];
+  static StreamSubscription? _storesSubscription;
+  static final _myStoresController = StreamController<List<Store>>.broadcast();
+  Stream<List<Store>> get myStoresStream => _myStoresController.stream;
+  List<Store> get myStores => _myStores;
+  final StreamController<AppUser?> _userController =
+      StreamController.broadcast();
+  Stream<AppUser?> get userChanges => _userController.stream;
   static final _userStream = Stream<AppUser?>.multi((controller) async {
     final authChanges = FirebaseAuth.instance.authStateChanges();
 
@@ -40,7 +53,29 @@ class AuthService {
         if (doc.exists) {
           final data = doc.data()!;
           if (data['isProducer'] == true) {
-            _currentUser = ProducerUser.fromJson({...data, 'id': user.uid});
+            final producer = ProducerUser.fromJson({...data, 'id': user.uid});
+
+            final storeSnapshot =
+                await FirebaseFirestore.instance
+                    .collection('stores')
+                    .where('ownerId', isEqualTo: user.uid)
+                    .get();
+
+            producer.stores.clear();
+            for (var doc in storeSnapshot.docs) {
+              final data = doc.data();
+              final store = Store.fromJson({
+                ...data,
+                'id': doc.id,
+                if (data['createdAt'] is Timestamp)
+                  'createdAt': (data['createdAt'] as Timestamp).toDate(),
+                if (data['updatedAt'] is Timestamp)
+                  'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+              });
+              producer.stores.add(store);
+            }
+
+            _currentUser = producer;
           } else {
             _currentUser = ConsumerUser.fromJson({...data, 'id': user.uid});
           }
@@ -53,11 +88,33 @@ class AuthService {
     }
   });
 
-  static Store? _myStore;
+  void listenToMyStores() {
+    if (_currentUser is ProducerUser) {
+      _storesSubscription?.cancel();
+      _storesSubscription = FirebaseFirestore.instance
+          .collection('stores')
+          .where('ownerId', isEqualTo: _currentUser!.id)
+          .snapshots()
+          .listen((snapshot) {
+            _myStores =
+                snapshot.docs.map((doc) {
+                  final data = doc.data();
+                  return Store.fromJson({
+                    ...data,
+                    'id': doc.id,
+                    if (data['createdAt'] is Timestamp)
+                      'createdAt': (data['createdAt'] as Timestamp).toDate(),
+                    if (data['updatedAt'] is Timestamp)
+                      'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+                  });
+                }).toList();
 
-  AuthService() {
-    listenToUserChanges();
+            _myStoresController.add(_myStores);
+          });
+    }
   }
+
+  static Store? _myStore;
 
   Future<AppUser?> initializeAndGetUser() async {
     final user = await getCurrentUser();
@@ -102,55 +159,62 @@ class AuthService {
   }
 
   void listenToUserChanges() {
-    _userChangesSubscription = FirebaseFirestore.instance
-        .collection('users')
-        .snapshots()
-        .listen((snapshot) async {
-          _users.clear();
-          for (var doc in snapshot.docs) {
-            final data = doc.data();
-            final id = doc.id;
-
-            AppUser user;
-            if (data['isProducer'] == true) {
-              user = ProducerUser.fromJson({...data, 'id': id});
-            } else {
-              user = ConsumerUser.fromJson({...data, 'id': id});
-            }
-
-            _users.add(user);
-
-            if (_currentUser != null && _currentUser!.id == id) {
-              _currentUser = user;
-
-              if (_currentUser is ProducerUser) {
-                _listenToMyStores(_currentUser!.id);
-              }
-            }
-          }
-        });
-  }
-
-  void _listenToMyStores(String userId) {
-    FirebaseFirestore.instance.collection('stores').snapshots().listen((
-      snapshot,
-    ) {
-      (_currentUser as ProducerUser).stores.clear();
-
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        if (data['ownerId'] == userId) {
-          final store = Store.fromJson({
-            ...data,
-            'id': doc.id,
-            if (data['createdAt'] is Timestamp)
-              'createdAt': (data['createdAt'] as Timestamp).toDate(),
-            if (data['updatedAt'] is Timestamp)
-              'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
-          });
-          (_currentUser as ProducerUser).stores.add(store);
-        }
+    _userChangesSubscription?.cancel();
+    _userChangesSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      firebaseUser,
+    ) async {
+      if (firebaseUser == null) {
+        _currentUser = null;
+        _userController.add(null);
+        return;
       }
+
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+        if (data['isProducer'] == true) {
+          final producer = ProducerUser.fromJson({
+            ...data,
+            'id': firebaseUser.uid,
+          });
+
+          final storeSnapshot =
+              await FirebaseFirestore.instance
+                  .collection('stores')
+                  .where('ownerId', isEqualTo: firebaseUser.uid)
+                  .get();
+
+          producer.stores.clear();
+          for (var doc in storeSnapshot.docs) {
+            final data = doc.data();
+            final store = Store.fromJson({
+              ...data,
+              'id': doc.id,
+              if (data['createdAt'] is Timestamp)
+                'createdAt': (data['createdAt'] as Timestamp).toDate(),
+              if (data['updatedAt'] is Timestamp)
+                'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+            });
+            producer.stores.add(store);
+          }
+
+          _currentUser = producer;
+        } else {
+          _currentUser = ConsumerUser.fromJson({
+            ...data,
+            'id': firebaseUser.uid,
+          });
+        }
+      } else {
+        _currentUser = _toAppUser(firebaseUser);
+      }
+
+      _userController.add(_currentUser); // ✅ Atualiza o StreamBuilder
     });
   }
 
@@ -166,10 +230,6 @@ class AuthService {
 
   AppUser? get currentUser {
     return _currentUser;
-  }
-
-  Stream<AppUser?> get userChanges {
-    return _userStream;
   }
 
   Future<void> signup(
@@ -268,15 +328,29 @@ class AuthService {
   Future<void> logout() async {
     if (_currentUser == null) return;
 
+    // 1️⃣ Cancela subscriptions relacionados ao utilizador
     await _userChangesSubscription?.cancel();
     _userChangesSubscription = null;
 
-    final auth = FirebaseAuth.instance;
+    await _storesSubscription?.cancel();
+    _storesSubscription = null;
 
+    await _myStoresController
+        .close(); // Para garantir que o StreamController não gera problemas
+    // Se precisares do StreamController após novo login, recria-o no início da sessão
+
+    // Se tiveres notificationNotifier, cancela aqui também:
+    // notificationNotifier.cancelSubscriptions();
+
+    // 2️⃣ Limpa o estado local
     _currentUser = null;
     _users.clear();
+    _myStores = [];
+    _isLoggingIn = null;
+    _isProducer = null;
 
-    await auth.signOut();
+    // 3️⃣ Faz signOut do FirebaseAuth
+    await FirebaseAuth.instance.signOut();
   }
 
   Future<void> recoverPassword(String email) async {

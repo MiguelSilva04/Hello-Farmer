@@ -39,6 +39,12 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateSelectedStoreIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    _selectedStoreIndex = prefs.getInt("selectedStoreIndex");
+    notifyListeners();
+  }
+
   Future<void> loadAllUsers() async {
     final userSnapshot = await fireStore.collection('users').get();
 
@@ -326,7 +332,7 @@ class AuthNotifier extends ChangeNotifier {
   Future<AppUser> loadUser() async {
     _currentUser = await AuthService().getCurrentUser();
 
-    StoreService.instance.loadStores();
+    await StoreService.instance.loadStores();
 
     if (_currentUser is ProducerUser) {
       await _loadProducerStoresAndAds();

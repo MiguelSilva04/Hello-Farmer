@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +12,7 @@ class StoreService with ChangeNotifier {
   StoreService._privateConstructor();
 
   static final StoreService instance = StoreService._privateConstructor();
+  final Map<String, StreamSubscription> _orderSubscriptions = {};
 
   final List<Store> _allStores = [];
   final firestore = cf.FirebaseFirestore.instance;
@@ -47,6 +49,19 @@ class StoreService with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> cancelAllOrderSubscriptions() async {
+    for (var sub in _orderSubscriptions.values) {
+      await sub.cancel();
+    }
+    _orderSubscriptions.clear();
+  }
+
+  Future<void> clearStores() async {
+    await cancelAllOrderSubscriptions();
+    _allStores.clear();
+    notifyListeners();
+  }
+
   List<Store> getStoresByOwner(String ownerId) {
     final stores =
         _allStores.where((store) => store.ownerId == ownerId).toList();
@@ -62,12 +77,11 @@ class StoreService with ChangeNotifier {
       idsList.add(i);
     }
 
-
     return stores;
   }
 
   void listenToOrdersForStore(Store store) {
-    firestore
+    final sub = firestore
         .collection('orders')
         .where('storeId', isEqualTo: store.id)
         .snapshots()
@@ -78,6 +92,8 @@ class StoreService with ChangeNotifier {
                   .toList();
           notifyListeners();
         });
+
+    _orderSubscriptions[store.id] = sub;
   }
 
   Future<void> updateStoreData({

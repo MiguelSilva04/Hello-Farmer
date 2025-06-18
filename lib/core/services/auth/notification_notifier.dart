@@ -99,6 +99,14 @@ class NotificationNotifier extends ChangeNotifier {
     });
   }
 
+  Future<void> logoutCleanup({
+    required String userId,
+    required bool isProducer,
+  }) async {
+    _notificationsSubscription?.cancel();
+    clear();
+  }
+
   Future<void> _saveToken({
     required String id,
     required bool isProducer,

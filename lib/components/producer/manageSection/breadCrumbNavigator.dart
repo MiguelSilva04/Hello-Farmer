@@ -32,7 +32,7 @@ class BreadcrumbNavigation extends StatelessWidget {
                         child: AutoSizeText(
                           item.label,
                           maxLines: 1,
-                          minFontSize: 14,
+                          minFontSize: 20,
                           overflow: TextOverflow.ellipsis,
                           maxFontSize: isLast ? 22 : 20,
                           style: TextStyle(

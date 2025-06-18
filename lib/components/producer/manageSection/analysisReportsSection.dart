@@ -419,7 +419,7 @@ class AnalysisReportsSection extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  "${stat['days']! == "355 dias" ? "-" : stat['days']!}",
+                  "${stat['days']! == "355 dias" ? " " : stat['days']!}",
                 ),
               ),
             ],

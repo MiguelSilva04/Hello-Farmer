@@ -40,7 +40,10 @@ class _BillingSectionState extends State<BillingSection> {
     _selectedRange = _getRangeFromDate(provider.billingFromDate);
     _orders =
         (AuthService().currentUser! as ProducerUser)
-            .stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex!]
+            .stores[Provider.of<AuthNotifier>(
+              context,
+              listen: false,
+            ).selectedStoreIndex!]
             .orders ??
         [];
   }
@@ -313,7 +316,7 @@ class _BillingSectionState extends State<BillingSection> {
                         child: ListTile(
                           title: Text('Encomenda ${order.id}'),
                           subtitle: Text(
-                            'Data: ${DateFormat.yMMMd().format(order.deliveryDate)}\nEstado: ${order.state.name}',
+                            'Data: ${DateFormat.yMMMd().format(order.deliveryDate)}\nEstado: ${order.state.toDisplayString()}',
                             style: TextStyle(
                               color:
                                   Theme.of(context).colorScheme.inversePrimary,

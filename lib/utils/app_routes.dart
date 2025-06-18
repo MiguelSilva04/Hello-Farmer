@@ -1,5 +1,6 @@
 class AppRoutes {
   static const AUTH_OR_APP_PAGE = '/';
+  static const WELCOME_SCREEN = '/welcome-screen';
   static const AUTH_PAGE = '/auth-page';
   static const MAIN_MENU = '/main-menu';
   static const CHAT_PAGE = '/chat-page';
@@ -10,4 +11,5 @@ class AppRoutes {
   static const PROFILE_PAGE = '/profile-page';
   static const FAVORITES_PAGE = '/favorites-page';
   static const STORE_PAGE = '/store-page';
+  static const OFFERS_PAGE = '/offers-page';
 }

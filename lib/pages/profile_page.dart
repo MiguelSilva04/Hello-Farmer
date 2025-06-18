@@ -844,7 +844,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         final producerName =
                             '${producerUser!.firstName} ${producerUser.lastName}';
                         final producerImage = producerUser.imageUrl;
-
                         return Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Column(
@@ -858,58 +857,61 @@ class _ProfilePageState extends State<ProfilePage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
+                                        if (matchedProductAd != null) ...[
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            child: Image.network(
+                                              matchedProductAd
+                                                  .product
+                                                  .imageUrls
+                                                  .first,
+                                              width: 70,
+                                              height: 70,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
-                                          child: Image.network(
-                                            matchedProductAd!
-                                                .product
-                                                .imageUrls
-                                                .first,
-                                            width: 70,
-                                            height: 70,
-                                            fit: BoxFit.cover,
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "${(order.ordersItems.length > 1) ? "${matchedProductAd!.product.name} e +${order.ordersItems.length - 1} items" : "${matchedProductAd.product.name}"}",
+                                                  style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                                Text(
+                                                  'Quantidade: ${matchedProductAd.product.unit == "kg" ? order.ordersItems.first.qty.toStringAsFixed(2) : order.ordersItems.first.qty.toStringAsFixed(0)} ${matchedProductAd.product.unit.toDisplayString()}',
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    color:
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .tertiaryFixed,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '${order.totalPrice.toStringAsFixed(2)}€',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color:
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .tertiaryFixed,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${(order.ordersItems.length > 1) ? "${matchedProductAd.product.name} e +${order.ordersItems.length - 1} items" : "${matchedProductAd.product.name}"}",
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              Text(
-                                                'Quantidade: ${matchedProductAd.product.unit == "kg" ? order.ordersItems.first.qty.toStringAsFixed(2) : order.ordersItems.first.qty.toStringAsFixed(0)} ${matchedProductAd.product.unit.toDisplayString()}',
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  color:
-                                                      Theme.of(context)
-                                                          .colorScheme
-                                                          .tertiaryFixed,
-                                                ),
-                                              ),
-                                              Text(
-                                                '${order.totalPrice.toStringAsFixed(2)}€',
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color:
-                                                      Theme.of(context)
-                                                          .colorScheme
-                                                          .tertiaryFixed,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                        ],
                                       ],
                                     ),
                                   ),

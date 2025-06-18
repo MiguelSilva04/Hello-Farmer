@@ -427,7 +427,14 @@ class AuthNotifier extends ChangeNotifier {
     if (_currentUser is ProducerUser) {
       await _loadProducerStoresAndAds();
       final prefs = await SharedPreferences.getInstance();
-      setSelectedStoreIndex(prefs.getInt("selectedStoreIndex")!);
+      final storedIndex = prefs.getInt("selectedStoreIndex");
+
+      if (storedIndex != null && storedIndex >= 0 && storedIndex < (currentUser as ProducerUser).stores.length) {
+        setSelectedStoreIndex(storedIndex);
+      } else if ((currentUser as ProducerUser).stores.isNotEmpty) {
+        setSelectedStoreIndex(0);
+        await saveSelectedStoreIndex(0);
+      }
     }
 
     if (_currentUser is ConsumerUser) {

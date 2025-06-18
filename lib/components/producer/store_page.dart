@@ -3,6 +3,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:harvestly/components/consumer/map_page.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/components/create_store.dart';
+import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:intl/intl.dart';
@@ -912,7 +913,10 @@ class _StorePageState extends State<StorePage> {
                       fontSize: 18,
                     ),
                   ),
-                  Text(productAd.price, style: TextStyle(fontSize: 16)),
+                  Text(
+                    "${productAd.price}€/${productAd.product.unit.toDisplayString()}",
+                    style: TextStyle(fontSize: 16),
+                  ),
                   Text(
                     productAd.product.category,
                     style: TextStyle(fontSize: 16),

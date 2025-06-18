@@ -112,6 +112,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   void initState() {
     super.initState();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    reviews = widget.ad.adReviews ?? [];
     checkIfUserReviewed();
     getStoreAd();
   }

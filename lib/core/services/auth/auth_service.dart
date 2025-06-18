@@ -713,6 +713,7 @@ class AuthService {
     double rating,
     String description,
     String reviewerId,
+    String? replyTo
   ) async {
     final docRef =
         FirebaseFirestore.instance
@@ -730,6 +731,7 @@ class AuthService {
       'reviewerId': currentUser!.id,
       'rating': rating,
       'description': description,
+      'replyTo': replyTo,
     });
     return Review(
       id: docRef.id,
@@ -737,6 +739,7 @@ class AuthService {
       description: description,
       rating: rating,
       reviewerId: reviewerId,
+      replyTo: replyTo,
     );
   }
 

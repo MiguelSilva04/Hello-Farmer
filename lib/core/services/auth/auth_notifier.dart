@@ -275,6 +275,7 @@ class AuthNotifier extends ChangeNotifier {
     String adId,
     double rating,
     String description,
+    String? replyTo
   ) async {
     Store? curStore = producerUsers
         .expand((producer) => producer.stores)
@@ -288,6 +289,7 @@ class AuthNotifier extends ChangeNotifier {
       rating,
       description,
       currentUser!.id,
+      replyTo
     );
     curStore.storeReviews!.add(review);
     notifyListeners();

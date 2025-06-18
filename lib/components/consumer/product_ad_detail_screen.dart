@@ -41,6 +41,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   late AuthNotifier authNotifier;
   late Store curStore;
   late List<Review> reviews;
+  String? replyToUserId;
 
   double get rating {
     if (reviews.isEmpty) return 0.0;
@@ -187,6 +188,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
           widget.ad.id,
           _rating,
           reviewController.text,
+          replyToUserId,
         );
       } catch (e) {
         print("Erro $e");
@@ -739,8 +741,13 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   InkWell(
-                                    onTap:
-                                        () => print("Respondido com sucesso!"),
+                                    onTap: () {
+                                      setState(() {
+                                        replyToUserId = reviews[i].reviewerId;
+                                        print(reviews[i].reviewerId);
+                                        print(replyToUserId);
+                                      });
+                                    },
                                     child: Text(
                                       "Responder",
                                       style: TextStyle(
@@ -769,6 +776,86 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                 ],
                               ),
                             ),
+                          if (replyToUserId == reviews[i].id)
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Responder ao comentário de:"),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      TextFormField(
+                                        controller: reviewController,
+                                        decoration: InputDecoration(
+                                          labelText: 'Comentário',
+                                          hintText:
+                                              'Escreve o teu comentário...',
+                                          border: const OutlineInputBorder(),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.secondaryFixed,
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.surface,
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                          alignLabelWithHint: true,
+                                        ),
+                                        maxLines: null,
+                                        minLines: 4,
+                                        keyboardType: TextInputType.multiline,
+                                      ),
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.close),
+                                            onPressed: () {
+                                              setState(() {
+                                                replyToUserId = null;
+                                              });
+                                            },
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 15,
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                (_isLoading)
+                                                    ? Center(
+                                                      child:
+                                                          CircularProgressIndicator(),
+                                                    )
+                                                    : ElevatedButton(
+                                                      onPressed:
+                                                          () => submitReview(),
+                                                      child: Text("Publicar"),
+                                                    ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                         ],
                       ),
                       const Divider(),
@@ -776,7 +863,8 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                   );
                 },
               ),
-              if (!hasReviewed) ...[
+              if (!hasReviewed &&
+                  authNotifier.currentUser!.id != widget.producer.id) ...[
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(

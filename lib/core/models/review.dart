@@ -5,12 +5,14 @@ class Review {
 
   final String id;
   String? reviewerId;
+  String? replyTo;
   double? rating;
   String? description;
   DateTime? dateTime;
 
   Review({
     String? id,
+    this.replyTo,
     this.reviewerId,
     this.rating,
     this.description,
@@ -21,6 +23,7 @@ class Review {
     return Review(
       id: json['id'] ?? '',
       reviewerId: json['reviewerId'] ?? '',
+      replyTo: json['replyTo'] ?? '',
       description: json['description'] ?? '',
       rating: (json['rating'] ?? 0).toDouble(),
       dateTime:
@@ -39,6 +42,7 @@ class Review {
       'rating': rating,
       'description': description,
       'dateTime': dateTime?.toIso8601String(),
+      'replyTo': replyTo
     };
   }
 }

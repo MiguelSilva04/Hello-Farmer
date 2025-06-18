@@ -683,8 +683,6 @@ class _ExplorePageState extends State<ExplorePage> {
                   authNotifier.producerUsers
                       .expand((producer) => producer.stores)
                       .where((store) {
-                        // print(_selectedCity.toLowerCase());
-                        // print(store.city!.toLowerCase());
                         return store.city!.toLowerCase().trim() ==
                             _selectedCity.toLowerCase().trim();
                       })

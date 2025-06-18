@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Review {
   static int _idCounter = 0;
 
@@ -22,8 +24,10 @@ class Review {
       description: json['description'] ?? '',
       rating: (json['rating'] ?? 0).toDouble(),
       dateTime:
-          json['dateTime'] != null
-              ? DateTime.parse(json['dateTime'])
+          json['createdAt'] != null
+              ? (json['createdAt'] is Timestamp
+                  ? (json['createdAt'] as Timestamp).toDate()
+                  : DateTime.parse(json['createdAt']))
               : DateTime.now(),
     );
   }

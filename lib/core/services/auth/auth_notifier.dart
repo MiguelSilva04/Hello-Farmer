@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cf;
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../components/producer/manageSection/manageProductsSection.dart';
 import '../../models/consumer_user.dart';
 import '../../models/producer_user.dart';
+import '../../models/review.dart';
 import '../../models/store.dart';
 import '../../models/order.dart';
 import 'auth_service.dart';
@@ -27,6 +29,10 @@ class AuthNotifier extends ChangeNotifier {
       isProducer ? (currentUser as ProducerUser).stores : [];
   Store? get selectedStore =>
       isProducer && stores.isNotEmpty ? stores[_selectedStoreIndex!] : null;
+  final StreamController<List<ProductAd>> _productAdsController =
+      StreamController<List<ProductAd>>.broadcast();
+
+  Stream<List<ProductAd>> get productAdsStream => _productAdsController.stream;
 
   List<ProducerUser> get producerUsers =>
       _allUsers.whereType<ProducerUser>().toList();
@@ -81,6 +87,19 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<Review>> getReviewsForAd(String storeId, String adId) async {
+    final snapshot =
+        await fireStore
+            .collection('stores')
+            .doc(storeId)
+            .collection('ads')
+            .doc(adId)
+            .collection('reviews')
+            .get();
+
+    return snapshot.docs.map((doc) => Review.fromJson(doc.data())).toList();
+  }
+
   Stream<List<ProductAd>> getAllProductAdsStream() {
     final storeCollection = fireStore.collection('stores');
 
@@ -90,10 +109,32 @@ class AuthNotifier extends ChangeNotifier {
       for (var storeDoc in storeSnapshot.docs) {
         final productAdsRef = storeDoc.reference.collection('ads');
 
-        final adsFuture = productAdsRef.snapshots().first.then((adsSnapshot) {
-          return adsSnapshot.docs
-              .map((doc) => ProductAd.fromJson(doc.data()))
-              .toList();
+        final adsFuture = productAdsRef.snapshots().first.then((
+          adsSnapshot,
+        ) async {
+          final List<ProductAd> productAds = [];
+
+          for (var adDoc in adsSnapshot.docs) {
+            try {
+              final adData = adDoc.data();
+              final ProductAd ad = ProductAd.fromJson(adData);
+
+              final reviewsSnapshot =
+                  await adDoc.reference.collection('reviews').get();
+
+              final reviews =
+                  reviewsSnapshot.docs
+                      .map((reviewDoc) => Review.fromJson(reviewDoc.data()))
+                      .toList();
+
+              ad.adReviews = reviews;
+              productAds.add(ad);
+            } catch (e) {
+              print("Erro ao carregar anúncio ou reviews: $e");
+            }
+          }
+
+          return productAds;
         });
 
         adsFutures.add(adsFuture);
@@ -102,6 +143,53 @@ class AuthNotifier extends ChangeNotifier {
       final allAdsLists = await Future.wait(adsFutures);
       return allAdsLists.expand((ads) => ads).toList();
     });
+  }
+
+  Future<List<ProductAd>> fetchAllProductAdsOnce() async {
+    final storeCollection = fireStore.collection('stores');
+    final storeSnapshot = await storeCollection.get();
+
+    final List<Future<List<ProductAd>>> adsFutures = [];
+
+    for (var storeDoc in storeSnapshot.docs) {
+      final productAdsRef = storeDoc.reference.collection('ads');
+
+      final adsFuture = productAdsRef.get().then((adsSnapshot) async {
+        final List<ProductAd> productAds = [];
+
+        for (var adDoc in adsSnapshot.docs) {
+          try {
+            final adData = adDoc.data();
+            final ProductAd ad = ProductAd.fromJson(adData);
+
+            final reviewsSnapshot =
+                await adDoc.reference.collection('reviews').get();
+
+            final reviews =
+                reviewsSnapshot.docs
+                    .map((reviewDoc) => Review.fromJson(reviewDoc.data()))
+                    .toList();
+
+            ad.adReviews = reviews;
+            productAds.add(ad);
+          } catch (e) {
+            print("Erro ao carregar anúncio ou reviews: $e");
+          }
+        }
+
+        return productAds;
+      });
+
+      adsFutures.add(adsFuture);
+    }
+
+    final allAdsLists = await Future.wait(adsFutures);
+    return allAdsLists.expand((ads) => ads).toList();
+  }
+
+  Future<void> refreshProductAds() async {
+    final ads = await fetchAllProductAdsOnce();
+    _productAdsController.add(ads);
   }
 
   Stream<Order> orderStream(String orderId) {

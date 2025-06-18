@@ -42,7 +42,7 @@ class AuthOrAppPage extends StatelessWidget {
           return StreamBuilder<List<Store>>(
             stream: authService.myStoresStream,
             builder: (ctx, storesSnapshot) {
-                  if (storesSnapshot.connectionState == ConnectionState.waiting) {
+              if (storesSnapshot.connectionState == ConnectionState.waiting) {
                 return const LoadingPage();
               }
 

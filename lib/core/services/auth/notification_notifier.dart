@@ -124,8 +124,6 @@ class NotificationNotifier extends ChangeNotifier {
     required String id,
     required bool isProducer,
   }) async {
-    print(id);
-    print(isProducer);
     final messaging = FirebaseMessaging.instance;
     final token = await messaging.getToken();
     if (token != null) {

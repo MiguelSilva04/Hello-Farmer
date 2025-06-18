@@ -67,95 +67,99 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<ProductAd>>(
-      stream: authNotifier.getAllProductAdsStream(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final producers = authNotifier.producerUsers;
+    return RefreshIndicator(
+      color: Theme.of(context).colorScheme.secondary,
+      onRefresh: () => context.read<AuthNotifier>().refreshProductAds(),
+      child: StreamBuilder<List<ProductAd>>(
+        stream: context.watch<AuthNotifier>().getAllProductAdsStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final producers = authNotifier.producerUsers;
 
-        final allAds = snapshot.data!;
-        final seenIds = <String>{};
-        final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
-        final top5Ads = uniqueAds.take(5).toList();
-        final nearbyProducers = producers.take(5).toList();
+          final allAds = snapshot.data!;
+          final seenIds = <String>{};
+          final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
+          final top5Ads = uniqueAds.take(5).toList();
+          final nearbyProducers = producers.take(5).toList();
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'Olá, $userName!',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'Descobre os melhores produtos frescos na tua zona!',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _buildPromotionsBanner(),
-              const SizedBox(height: 16),
-              _buildCategories(),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: const Text(
-                  'Recomendados para ti',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 110,
-                child: Padding(
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: top5Ads.length,
-                    itemBuilder: (context, index) {
-                      final ad = top5Ads[index];
-                      return _buildProductItem(ad);
-                    },
+                  child: Text(
+                    'Olá, $userName!',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'Produtores perto de ti',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 8),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(
+                    'Descobre os melhores produtos frescos na tua zona!',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              if (authNotifier.selectedStoreIndex != null)
+                const SizedBox(height: 16),
+
+                _buildPromotionsBanner(),
+                const SizedBox(height: 16),
+                _buildCategories(),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: const Text(
+                    'Recomendados para ti',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 SizedBox(
-                  height: 120,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: nearbyProducers.length,
-                    itemBuilder: (context, index) {
-                      return _buildProducerItem(nearbyProducers[index]);
-                    },
+                  height: 110,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: top5Ads.length,
+                      itemBuilder: (context, index) {
+                        final ad = top5Ads[index];
+                        return _buildProductItem(ad);
+                      },
+                    ),
                   ),
                 ),
-            ],
-          ),
-        );
-      },
+                const SizedBox(height: 24),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(
+                    'Produtores perto de ti',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (authNotifier.selectedStoreIndex != null)
+                  SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: nearbyProducers.length,
+                      itemBuilder: (context, index) {
+                        return _buildProducerItem(nearbyProducers[index]);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -305,52 +309,49 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   Widget _buildProducerItem(ProducerUser user) {
     final storeIndex =
         Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
-      final userStore =
-          storeIndex! < user.stores.length ? user.stores[storeIndex] : null;
-      return InkWell(
-        onTap:
-            () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (ctx) => ProfilePage(user))),
-        child: Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundImage:
-                    user.imageUrl.isNotEmpty
-                        ? NetworkImage(user.imageUrl)
-                        : const AssetImage('assets/images/default_user.png')
-                            as ImageProvider,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '${user.firstName} ${user.lastName}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+    final userStore =
+        storeIndex! < user.stores.length ? user.stores[storeIndex] : null;
+    return InkWell(
+      onTap:
+          () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (ctx) => ProfilePage(user))),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16.0),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage:
+                  user.imageUrl.isNotEmpty
+                      ? NetworkImage(user.imageUrl)
+                      : const AssetImage('assets/images/default_user.png')
+                          as ImageProvider,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${user.firstName} ${user.lastName}',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              user.city ?? 'Cidade desconhecida',
+              style: const TextStyle(fontSize: 10),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(user.rating.toString(), style: TextStyle(fontSize: 10)),
+                const Icon(Icons.star, size: 12, color: Colors.amber),
+                Text(
+                  '(${userStore?.storeReviews?.length ?? 0})',
+                  style: const TextStyle(fontSize: 10),
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
-              Text(
-                user.city ?? 'Cidade desconhecida',
-                style: const TextStyle(fontSize: 10),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(user.rating.toString(), style: TextStyle(fontSize: 10)),
-                  const Icon(Icons.star, size: 12, color: Colors.amber),
-                  Text(
-                    '(${userStore?.storeReviews?.length ?? 0})',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                ],
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 }

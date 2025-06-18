@@ -158,37 +158,6 @@ class _ProducerHomePageState extends State<ProducerHomePage> {
               ),
             ],
           ),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     IconButton(
-          //       icon: const Icon(Icons.arrow_back),
-          //       onPressed: () {
-          //         print(
-          //           _pageController.page != null && _pageController.page! > 0,
-          //         );
-          //         _pageController.previousPage(
-          //           duration: const Duration(milliseconds: 300),
-          //           curve: Curves.easeInOut,
-          //         );
-          //       },
-          //     ),
-          //     IconButton(
-          //       icon: const Icon(Icons.arrow_forward),
-          //       onPressed: () {
-          //         print(
-          //           _pageController.page != null &&
-          //               _pageController.page! <
-          //                   (recomendationsList.length / 3).ceil() - 1,
-          //         );
-          //         _pageController.nextPage(
-          //           duration: const Duration(milliseconds: 300),
-          //           curve: Curves.easeInOut,
-          //         );
-          //       },
-          //     ),
-          //   ],
-          // ),
           const SizedBox(height: 10),
           Column(
             children: [

@@ -12,6 +12,7 @@ import '../core/services/auth/auth_service.dart';
 import '../exceptions/auth_exception.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/app_routes.dart';
 import 'birth_picker.dart';
 import 'country_state_picker.dart';
 
@@ -242,7 +243,7 @@ class _AuthFormState extends State<AuthForm> {
           countryValue,
           cityValue,
           municipalityValue,
-          []
+          [],
         );
       } else if (_isRecovery) {
         await AuthService().recoverPassword(_formData.recoverPasswordEmail);
@@ -302,7 +303,10 @@ class _AuthFormState extends State<AuthForm> {
     if (!hasError &&
         (_formData.isLogin || _formData.isSignup) &&
         !_isRecovery) {
-      if (mounted) Navigator.of(context).pop();
+      if (mounted)
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.MAIN_MENU, (route) => false);
     }
   }
 

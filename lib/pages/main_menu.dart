@@ -43,7 +43,6 @@ class MainMenu extends StatefulWidget {
 class _MainMenuState extends State<MainMenu>
     with SingleTickerProviderStateMixin {
   bool _isSearching = false;
-  String _profileImageUrl = "";
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
   late AppUser user;
@@ -84,25 +83,19 @@ class _MainMenuState extends State<MainMenu>
     print("User a carregar...");
     user = await authNotifier.loadUser();
     print("User carregado!");
-    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
     print("A carregar a selectedStoreIndex");
     await authNotifier.updateSelectedStoreIndex();
     print("selectedStoreIndex carregada: ${authNotifier.selectedStoreIndex}");
-    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
     print("Lojas a carregar...");
     final storeService = Provider.of<StoreService>(context, listen: false);
-    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
     await storeService.loadStores();
     print("Lojas carregadas!");
-    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
     print("Users a carregar!");
     await authNotifier.loadAllUsers();
     print("Users carregados!");
-    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
-    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
     final notificationNotifier = Provider.of<NotificationNotifier>(
       context,
@@ -110,6 +103,7 @@ class _MainMenuState extends State<MainMenu>
     );
 
     print("A carregar notificacoes e token");
+    print(user.isProducer);
     if (user.isProducer) {
       final selectedStoreId =
           (authNotifier.currentUser as ProducerUser)
@@ -122,28 +116,24 @@ class _MainMenuState extends State<MainMenu>
         isProducer: true,
       );
       print("Token carregado!");
-      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
       notificationNotifier.listenToNotifications(
         id: selectedStoreId,
         isProducer: true,
       );
       print("Notificacoes Carregadas!");
-      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
     } else {
       await notificationNotifier.setupFCM(
-        id: (authNotifier.currentUser as ProducerUser).id,
+        id: authNotifier.currentUser!.id,
         isProducer: false,
       );
       print("Token carregado!");
-      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
 
       notificationNotifier.listenToNotifications(
-        id: (authNotifier.currentUser as ProducerUser).id,
+        id: authNotifier.currentUser!.id,
         isProducer: false,
       );
       print("Notificacoes Carregadas!");
-      print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
     }
     print("Tokens e notificacoes carregados!");
 
@@ -165,9 +155,6 @@ class _MainMenuState extends State<MainMenu>
       });
     }
     print("Chats e conversas carregados!");
-    print("Stores: ${(authNotifier.currentUser as ProducerUser).stores}");
-
-    print((user as ProducerUser).stores.length);
 
     setState(() {
       _isLoading = false;
@@ -531,8 +518,6 @@ class _MainMenuState extends State<MainMenu>
                     : Consumer<AuthNotifier>(
                       builder: (context, authNotifier, _) {
                         final user = authNotifier.currentUser;
-                        // final selectedStoreIndex =
-                        //     authNotifier.selectedStoreIndex;
 
                         return user is ProducerUser
                             ? _producerPages[Provider.of<
@@ -546,8 +531,7 @@ class _MainMenuState extends State<MainMenu>
           ),
 
           bottomNavigationBar:
-              Provider.of<BottomNavigationNotifier>(context).currentIndex < 5 &&
-                      (user.isProducer)
+              Provider.of<BottomNavigationNotifier>(context).currentIndex < 5
                   ? BottomNavigationBar(
                     selectedItemColor:
                         Theme.of(context).bottomAppBarTheme.color,
@@ -584,7 +568,7 @@ class _MainMenuState extends State<MainMenu>
                       }
                     },
                     items:
-                        (user as ProducerUser).stores.isNotEmpty
+                        user.isProducer
                             ? const [
                               BottomNavigationBarItem(
                                 icon: Icon(Icons.home),

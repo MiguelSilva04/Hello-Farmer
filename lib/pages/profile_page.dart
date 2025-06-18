@@ -879,7 +879,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  "${(order.ordersItems.length > 1) ? "${matchedProductAd!.product.name} e +${order.ordersItems.length - 1} items" : "${matchedProductAd.product.name}"}",
+                                                  "${(order.ordersItems.length > 1) ? "${matchedProductAd.product.name} e +${order.ordersItems.length - 1} items" : "${matchedProductAd.product.name}"}",
                                                   style: const TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,

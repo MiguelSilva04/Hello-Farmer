@@ -1,6 +1,5 @@
 import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/core/models/app_user.dart';
-import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/notification/chat_notification_service.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/pages/loading_page.dart';
@@ -43,7 +42,7 @@ class AuthOrAppPage extends StatelessWidget {
           return StreamBuilder<List<Store>>(
             stream: authService.myStoresStream,
             builder: (ctx, storesSnapshot) {
-              if (storesSnapshot.connectionState == ConnectionState.waiting) {
+                  if (storesSnapshot.connectionState == ConnectionState.waiting) {
                 return const LoadingPage();
               }
 
@@ -56,7 +55,7 @@ class AuthOrAppPage extends StatelessWidget {
             },
           );
         } else {
-          return MainMenu(); // ou outro destino para consumidores
+          return MainMenu();
         }
       },
     );

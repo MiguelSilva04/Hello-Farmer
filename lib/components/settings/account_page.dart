@@ -4,7 +4,6 @@ import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/services/auth/store_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
-import 'package:harvestly/pages/welcome_screen.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/producer_user.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
@@ -37,8 +36,6 @@ class AccountPage extends StatelessWidget {
 
     if (shouldLogout != true) return;
 
-    // ✅ Fecha logo o diálogo (já foi fechado no onPressed)
-    // Agora executa o logout e limpezas
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final user = authNotifier.currentUser;
 
@@ -69,7 +66,6 @@ class AccountPage extends StatelessWidget {
       context.read<ChatListNotifier>().clearChats();
       authNotifier.setSelectedStoreIndex(0);
 
-      // ✅ Agora faz logout - isto emite null no Stream<AppUser?>
       await AuthService().logout();
       Navigator.of(
         context,

@@ -214,7 +214,7 @@ class AuthService {
         _currentUser = _toAppUser(firebaseUser);
       }
 
-      _userController.add(_currentUser); // ✅ Atualiza o StreamBuilder
+      _userController.add(_currentUser);
     });
   }
 
@@ -327,8 +327,6 @@ class AuthService {
 
   Future<void> logout() async {
     if (_currentUser == null) return;
-
-    // 1️⃣ Cancela subscriptions relacionados ao utilizador
     await _userChangesSubscription?.cancel();
     _userChangesSubscription = null;
 
@@ -336,20 +334,14 @@ class AuthService {
     _storesSubscription = null;
 
     await _myStoresController
-        .close(); // Para garantir que o StreamController não gera problemas
-    // Se precisares do StreamController após novo login, recria-o no início da sessão
+        .close();
 
-    // Se tiveres notificationNotifier, cancela aqui também:
-    // notificationNotifier.cancelSubscriptions();
-
-    // 2️⃣ Limpa o estado local
     _currentUser = null;
     _users.clear();
     _myStores = [];
     _isLoggingIn = null;
     _isProducer = null;
 
-    // 3️⃣ Faz signOut do FirebaseAuth
     await FirebaseAuth.instance.signOut();
   }
 

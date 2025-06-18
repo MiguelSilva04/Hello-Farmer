@@ -65,6 +65,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.ad.adReviews!.length);
     final currentUser = AuthService().currentUser!;
     final otherUser = widget.producer;
     final alreadyExists = verifyIfAlreadyExistsConversation(

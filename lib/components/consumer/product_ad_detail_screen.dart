@@ -726,40 +726,49 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                               ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: 12,
-                              left: 12,
-                              right: 12,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                InkWell(
-                                  onTap: () => print("Respondido com sucesso!"),
-                                  child: Text(
-                                    "Responder",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
+                          if (authNotifier.currentUser!.id ==
+                              widget.producer.id)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 12,
+                                left: 12,
+                                right: 12,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  InkWell(
+                                    onTap:
+                                        () => print("Respondido com sucesso!"),
+                                    child: Text(
+                                      "Responder",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.surface,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                InkWell(
-                                  onTap: () => print("Reportado com sucesso!"),
-                                  child: Text(
-                                    "Reportar",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
+                                  InkWell(
+                                    onTap:
+                                        () => print("Reportado com sucesso!"),
+                                    child: Text(
+                                      "Reportar",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.surface,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
                         ],
                       ),
                       const Divider(),

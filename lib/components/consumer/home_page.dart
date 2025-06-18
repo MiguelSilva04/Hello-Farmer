@@ -10,6 +10,7 @@ import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/categories.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/producer_user.dart';
+import '../../core/models/store.dart';
 
 class ConsumerHomePage extends StatefulWidget {
   const ConsumerHomePage({super.key});
@@ -65,6 +66,73 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
     });
   }
 
+  List<Map<String, dynamic>> getNearbyStores() {
+    final currentUser = authNotifier.currentUser;
+    if (currentUser == null || currentUser.city == null) return [];
+
+    final userCity = currentUser.city!.toLowerCase().trim();
+
+    final List<Map<String, dynamic>> nearbyStores = [];
+
+    for (final producer in authNotifier.producerUsers) {
+      for (final store in producer.stores) {
+        if ((store.city ?? '').toLowerCase().trim() == userCity) {
+          nearbyStores.add({'producer': producer, 'store': store});
+        }
+      }
+    }
+
+    return nearbyStores.take(5).toList(); // Mostra no máx 5
+  }
+
+  Widget _buildStoreItem(ProducerUser user, Store store) {
+    return InkWell(
+      onTap:
+          () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (ctx) => ProfilePage(user))),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 16.0),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage:
+                  user.imageUrl.isNotEmpty
+                      ? NetworkImage(user.imageUrl)
+                      : const AssetImage('assets/images/default_user.png')
+                          as ImageProvider,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${user.firstName} ${user.lastName}',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              store.city ?? 'Cidade desconhecida',
+              style: const TextStyle(fontSize: 10),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  user.rating.toString(),
+                  style: const TextStyle(fontSize: 10),
+                ),
+                const Icon(Icons.star, size: 12, color: Colors.amber),
+                Text(
+                  '(${store.storeReviews?.length ?? 0})',
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -76,13 +144,11 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          final producers = authNotifier.producerUsers;
 
           final allAds = snapshot.data!;
           final seenIds = <String>{};
           final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
           final top5Ads = uniqueAds.take(5).toList();
-          final nearbyProducers = producers.take(5).toList();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -139,22 +205,29 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   child: Text(
-                    'Produtores perto de ti',
+                    'Produtores com bancas perto de ti',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 12),
-                if (authNotifier.selectedStoreIndex != null)
-                  SizedBox(
-                    height: 120,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: nearbyProducers.length,
-                      itemBuilder: (context, index) {
-                        return _buildProducerItem(nearbyProducers[index]);
-                      },
-                    ),
+                SizedBox(
+                  height: 120,
+                  child: Builder(
+                    builder: (context) {
+                      final nearbyStores = getNearbyStores();
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: nearbyStores.length,
+                        itemBuilder: (context, index) {
+                          final producer =
+                              nearbyStores[index]['producer'] as ProducerUser;
+                          final store = nearbyStores[index]['store'] as Store;
+                          return _buildStoreItem(producer, store);
+                        },
+                      );
+                    },
                   ),
+                ),
               ],
             ),
           );
@@ -299,55 +372,6 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 12),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProducerItem(ProducerUser user) {
-    final storeIndex =
-        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
-    final userStore =
-        storeIndex! < user.stores.length ? user.stores[storeIndex] : null;
-    return InkWell(
-      onTap:
-          () => Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (ctx) => ProfilePage(user))),
-      child: Padding(
-        padding: const EdgeInsets.only(right: 16.0),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundImage:
-                  user.imageUrl.isNotEmpty
-                      ? NetworkImage(user.imageUrl)
-                      : const AssetImage('assets/images/default_user.png')
-                          as ImageProvider,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${user.firstName} ${user.lastName}',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              user.city ?? 'Cidade desconhecida',
-              style: const TextStyle(fontSize: 10),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(user.rating.toString(), style: TextStyle(fontSize: 10)),
-                const Icon(Icons.star, size: 12, color: Colors.amber),
-                Text(
-                  '(${userStore?.storeReviews?.length ?? 0})',
-                  style: const TextStyle(fontSize: 10),
-                ),
-              ],
             ),
           ],
         ),

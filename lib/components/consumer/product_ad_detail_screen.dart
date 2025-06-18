@@ -5,7 +5,6 @@ import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/store.dart';
-import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:intl/intl.dart';

@@ -84,10 +84,11 @@ class _MainMenuState extends State<MainMenu>
     user = await authNotifier.loadUser();
     print("User carregado!");
 
-    print("A carregar a selectedStoreIndex");
-    await authNotifier.updateSelectedStoreIndex();
-    print("selectedStoreIndex carregada: ${authNotifier.selectedStoreIndex}");
-
+    if (user.isProducer) {
+      print("A carregar a selectedStoreIndex");
+      await authNotifier.updateSelectedStoreIndex();
+      print("selectedStoreIndex carregada: ${authNotifier.selectedStoreIndex}");
+    }
     print("Lojas a carregar...");
     final storeService = Provider.of<StoreService>(context, listen: false);
     await storeService.loadStores();
@@ -103,13 +104,11 @@ class _MainMenuState extends State<MainMenu>
     );
 
     print("A carregar notificacoes e token");
-    print(user.isProducer);
     if (user.isProducer) {
       final selectedStoreId =
           (authNotifier.currentUser as ProducerUser)
               .stores[authNotifier.selectedStoreIndex!]
               .id;
-      print(selectedStoreId);
 
       await notificationNotifier.setupFCM(
         id: selectedStoreId,
@@ -377,17 +376,10 @@ class _MainMenuState extends State<MainMenu>
                               children: [
                                 Badge.count(
                                   count:
-                                      user.isProducer
-                                          ? (user as ProducerUser)
-                                                  .stores[authNotifier
-                                                      .selectedStoreIndex!]
-                                                  .notifications
-                                                  ?.length ??
-                                              0
-                                          : (user as ConsumerUser)
-                                                  .notifications
-                                                  ?.length ??
-                                              0,
+                                      (user as ConsumerUser)
+                                          .notifications
+                                          ?.length ??
+                                      0,
                                   child: Icon(
                                     Icons.notifications_none_rounded,
                                     color:

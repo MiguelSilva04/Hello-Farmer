@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:harvestly/core/models/store.dart';
 import '../../models/order.dart';
 import '../../models/product_ad.dart';
+import '../../models/review.dart';
 
 class StoreService with ChangeNotifier {
   StoreService._privateConstructor();
@@ -26,7 +27,7 @@ class StoreService with ChangeNotifier {
     for (final doc in snapshot.docs) {
       final storeData = doc.data();
       final storeId = doc.id;
-      print(storeData);
+      // print(storeData);
 
       final store = Store.fromJson({...storeData, 'id': storeId});
 
@@ -37,10 +38,34 @@ class StoreService with ChangeNotifier {
               .collection('ads')
               .get();
 
-      final ads =
-          adsSnapshot.docs.map((adDoc) {
-            return ProductAd.fromJson(adDoc.data());
-          }).toList();
+      final List<ProductAd> ads = [];
+
+      for (final adDoc in adsSnapshot.docs) {
+        try {
+          final adData = adDoc.data();
+          final ad = ProductAd.fromJson(adData);
+
+          final reviewsSnapshot =
+              await firestore
+                  .collection('stores')
+                  .doc(storeId)
+                  .collection('ads')
+                  .doc(ad.id)
+                  .collection('reviews')
+                  .get();
+
+          final reviews =
+              reviewsSnapshot.docs.map((reviewDoc) {
+                final review = Review.fromJson(reviewDoc.data());
+                return review;
+              }).toList();
+
+          ad.adReviews = reviews;
+          ads.add(ad);
+        } catch (e) {
+          print('Erro ao carregar ad ou reviews: $e');
+        }
+      }
 
       store.productsAds = ads;
 

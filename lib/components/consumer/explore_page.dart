@@ -106,22 +106,15 @@ class _ExplorePageState extends State<ExplorePage> {
   }
 
   void applyFilters() {
-    print(_searchText);
     final currentSeason = calculateCurrentSeason();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final selectedIndex = authNotifier.selectedStoreIndex;
 
     final allAds =
         authNotifier.allUsers
             .whereType<ProducerUser>()
-            .where(
-              (producer) =>
-                  producer.stores.isNotEmpty &&
-                  selectedIndex! < producer.stores.length &&
-                  (producer.stores[selectedIndex].productsAds?.isNotEmpty ??
-                      false),
-            )
-            .expand((producer) => producer.stores[selectedIndex!].productsAds!)
+            .expand((producer) => producer.stores)
+            .where((store) => store.productsAds?.isNotEmpty ?? false)
+            .expand((store) => store.productsAds!)
             .toList();
 
     final List<ProductAd> matching = [];
@@ -153,10 +146,9 @@ class _ExplorePageState extends State<ExplorePage> {
       ProducerUser? producer;
       try {
         producer = authNotifier.allUsers.whereType<ProducerUser>().firstWhere(
-          (p) =>
-              p.stores.length > selectedIndex! &&
-              (p.stores[selectedIndex].productsAds?.any((a) => a.id == ad.id) ??
-                  false),
+          (p) => p.stores.any(
+            (store) => store.productsAds?.any((a) => a.id == ad.id) ?? false,
+          ),
         );
       } catch (_) {
         producer = null;
@@ -164,8 +156,12 @@ class _ExplorePageState extends State<ExplorePage> {
 
       final cityMatch =
           _selectedCity.trim().isEmpty ||
-          (producer?.stores[selectedIndex!].city?.trim().toLowerCase() ==
-              _selectedCity.trim().toLowerCase());
+          (producer?.stores.any(
+                (store) =>
+                    (store.city?.trim().toLowerCase() ==
+                        _selectedCity.trim().toLowerCase()),
+              ) ??
+              false);
 
       final priceMatch =
           product.price >= _minPrice && product.price <= _maxPrice;
@@ -683,24 +679,16 @@ class _ExplorePageState extends State<ExplorePage> {
             ),
             const SizedBox(height: 16),
             ...Categories.categories.map((c) {
-              final selectedIndex =
-                  Provider.of<AuthNotifier>(
-                    context,
-                    listen: false,
-                  ).selectedStoreIndex;
-
               final count =
-                  AuthService().users
-                      .whereType<ProducerUser>()
-                      .where(
-                        (producer) =>
-                            producer.stores.length > selectedIndex! &&
-                            producer.stores[selectedIndex].city
-                                    ?.toLowerCase()
-                                    .trim() ==
-                                _selectedCity.toLowerCase().trim(),
-                      )
-                      .expand((p) => p.stores[selectedIndex!].productsAds ?? [])
+                  authNotifier.producerUsers
+                      .expand((producer) => producer.stores)
+                      .where((store) {
+                        // print(_selectedCity.toLowerCase());
+                        // print(store.city!.toLowerCase());
+                        return store.city!.toLowerCase().trim() ==
+                            _selectedCity.toLowerCase().trim();
+                      })
+                      .expand((store) => store.productsAds ?? [])
                       .where((ad) => ad.product.category == c.name)
                       .length;
               return GestureDetector(

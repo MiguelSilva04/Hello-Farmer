@@ -75,7 +75,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
 
     if (userId != null) {
       setState(() {
-        hasReviewed = widget.ad.adReviews!.any((review) {
+        hasReviewed = reviews.any((review) {
           return review.reviewerId == userId;
         });
       });

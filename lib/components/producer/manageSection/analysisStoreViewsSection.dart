@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
+import '../../../core/models/user_view.dart';
 import '../../../core/services/auth/auth_notifier.dart';
 
 enum DateFilter {
@@ -66,8 +67,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
     );
 
     final int totalViews = filteredViews.length;
-    final uniqueVisitors =
-        filteredViews.map((e) => e.values.first).toSet().length;
+    final uniqueVisitors = filteredViews.map((e) => e.user).toSet().length;
 
     final filteredOrders =
         (currentStore.orders ?? []).where((o) {
@@ -340,7 +340,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
     );
   }
 
-  List<dynamic> _filterViewsByPeriod(List<dynamic> views, DateFilter period) {
+  List<UserView> _filterViewsByPeriod(List<UserView> views, DateFilter period) {
     final now = DateTime.now();
     DateTime startDate;
     DateTime endDate = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
@@ -376,23 +376,23 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
     }
 
     return views.where((view) {
-      final viewDateTime = view.keys.first as DateTime;
+      final viewDateTime = view.date;
       return !viewDateTime.isBefore(startDate) &&
           !viewDateTime.isAfter(endDate);
     }).toList();
   }
 
-  Map<DateTime, int> _groupViewsByDay(List<dynamic> views) {
+  Map<DateTime, int> _groupViewsByDay(List<UserView> views) {
     final Map<DateTime, int> grouped = {};
     for (var view in views) {
-      final date = view.keys.first as DateTime;
+      final date = view.date;
       final day = DateTime(date.year, date.month, date.day);
       grouped[day] = (grouped[day] ?? 0) + 1;
     }
     return grouped;
   }
 
-  Widget _buildLineChart(List<dynamic> viewsByUserDateTime, int totalViews) {
+  Widget _buildLineChart(List<UserView> viewsByUserDateTime, int totalViews) {
     final groupedViews = _groupViewsByDay(viewsByUserDateTime);
 
     final sortedDates = groupedViews.keys.toList()..sort();
@@ -421,8 +421,7 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
 
     if (_selectedPeriod.toDisplayString() == 'Hoje') {
       for (var view in viewsByUserDateTime) {
-        final date = view.keys.first as DateTime;
-        final hour = date.hour;
+        final hour = view.date.hour;
         groupedByHour[hour] = (groupedByHour[hour] ?? 0) + 1;
       }
       xLabels = List.generate(

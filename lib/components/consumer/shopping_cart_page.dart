@@ -49,7 +49,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     authNotifier = Provider.of(context, listen: false);
     currentUser = authNotifier.currentUser!;
     cart = (authNotifier.currentUser as ConsumerUser).shoppingCart;
-    users = AuthService().users;
+    users = authNotifier.producerUsers;
     finder = ProductAdFinder(users);
     productAdQuantities = {};
 
@@ -103,14 +103,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
 
     if (cart != null && cart!.productsQty != null)
       cart!.productsQty!.forEach((product) {
-        final productAd = finder.findProductAdById(
-          product.productAdId,
-          context,
-        );
-        final productStore = finder.findStoreByAdId(
-          product.productAdId,
-          context,
-        );
+        print(product.productAdId);
+        final productAd = finder.findProductAdById(product.productAdId);
+        final productStore = finder.findStoreByAdId(product.productAdId);
 
         if (detectedStore == null) {
           detectedStore = productStore;
@@ -622,44 +617,28 @@ class ProductAdFinder {
 
   ProductAdFinder(this.allUsers);
 
-  ProductAd? findProductAdById(String adId, BuildContext context) {
+  ProductAd? findProductAdById(String adId) {
     for (var user in allUsers) {
       if (user is ProducerUser) {
-        try {
-          final productAd = user
-              .stores[Provider.of<AuthNotifier>(
-                context,
-                listen: false,
-              ).selectedStoreIndex!]
-              .productsAds
-              ?.firstWhereOrNull((ad) => ad.id == adId);
-          if (productAd != null) {
-            return productAd;
-          }
-        } catch (_) {}
+        for (var store in user.stores) {
+          final productAd = store.productsAds?.firstWhereOrNull((ad) {
+            print(ad.id == adId);
+            return ad.id == adId;
+          });
+          if (productAd != null) return productAd;
+        }
       }
     }
     return null;
   }
 
-  Store? findStoreByAdId(String adId, BuildContext context) {
+  Store? findStoreByAdId(String adId) {
     for (var user in allUsers) {
       if (user is ProducerUser) {
-        try {
-          final productAd = user
-              .stores[Provider.of<AuthNotifier>(
-                context,
-                listen: false,
-              ).selectedStoreIndex!]
-              .productsAds
-              ?.firstWhere((ad) => ad.id == adId);
-          if (productAd != null) {
-            return user.stores[Provider.of<AuthNotifier>(
-              context,
-              listen: false,
-            ).selectedStoreIndex!];
-          }
-        } catch (_) {}
+        for (var store in user.stores) {
+          final exists = store.productsAds?.any((ad) => ad.id == adId) ?? false;
+          if (exists) return store;
+        }
       }
     }
     return null;

@@ -109,9 +109,18 @@ class _ExplorePageState extends State<ExplorePage> {
     final currentSeason = calculateCurrentSeason();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
 
+    final selectedCityLower = _selectedCity.trim().toLowerCase();
+    final filteredProducers =
+        authNotifier.producerUsers.where((producer) {
+          return _selectedCity.trim().isEmpty ||
+              producer.stores.any((store) {
+                final storeCity = store.city?.trim().toLowerCase() ?? '';
+                return storeCity == selectedCityLower;
+              });
+        }).toList();
+
     final allAds =
-        authNotifier.allUsers
-            .whereType<ProducerUser>()
+        filteredProducers
             .expand((producer) => producer.stores)
             .where((store) => store.productsAds?.isNotEmpty ?? false)
             .expand((store) => store.productsAds!)
@@ -136,37 +145,16 @@ class _ExplorePageState extends State<ExplorePage> {
           (product.season == currentSeason || product.season == Season.ALL);
 
       final keywordMatch =
-          _selectedKeyword == null
-              ? true
-              : (ad.keywords
-                      ?.map((k) => k.toLowerCase())
-                      .contains(_selectedKeyword!.toLowerCase()) ??
-                  false);
-
-      ProducerUser? producer;
-      try {
-        producer = authNotifier.allUsers.whereType<ProducerUser>().firstWhere(
-          (p) => p.stores.any(
-            (store) => store.productsAds?.any((a) => a.id == ad.id) ?? false,
-          ),
-        );
-      } catch (_) {
-        producer = null;
-      }
-
-      final cityMatch =
-          _selectedCity.trim().isEmpty ||
-          (producer?.stores.any(
-                (store) =>
-                    (store.city?.trim().toLowerCase() ==
-                        _selectedCity.trim().toLowerCase()),
-              ) ??
+          _selectedKeyword == null ||
+          (ad.keywords
+                  ?.map((k) => k.toLowerCase())
+                  .contains(_selectedKeyword!.toLowerCase()) ??
               false);
 
       final priceMatch =
           product.price >= _minPrice && product.price <= _maxPrice;
 
-      final matchesAllFilters = keywordMatch && cityMatch && priceMatch;
+      final matchesAllFilters = keywordMatch && priceMatch;
 
       if (nameMatch && matchesAllFilters) {
         matching.add(ad);
@@ -176,10 +164,35 @@ class _ExplorePageState extends State<ExplorePage> {
     }
 
     final filtered = [...matching, ...others];
-    sortProducts(filtered);
+    final refinedFiltered =
+        (_selectedCity.isNotEmpty)
+            ? filtered.where((ad) {
+              for (final user in authNotifier.allUsers) {
+                if (user is ProducerUser) {
+                  for (final store in user.stores) {
+                    print(store.city);
+                    print(_selectedCity);
+                    final matches =
+                        store.productsAds?.any((a) => a.id == ad.id) ?? false;
+                    final storeCity = store.city?.trim().toLowerCase() ?? '';
+
+                    if (matches &&
+                        (selectedCityLower.isEmpty ||
+                            storeCity == selectedCityLower)) {
+                      print("Encontrou");
+                      return true;
+                    }
+                  }
+                }
+              }
+              return false;
+            }).toList()
+            : filtered;
+
+    sortProducts(refinedFiltered);
 
     setState(() {
-      displayedAds = filtered;
+      displayedAds = refinedFiltered;
     });
   }
 
@@ -569,61 +582,85 @@ class _ExplorePageState extends State<ExplorePage> {
                                         ),
                                       ],
                                     ),
-                                    TextButton.icon(
+                                    Flexible(
+                                      child: TextButton.icon(
+                                        icon: Icon(
+                                          Icons.location_on,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.surface,
+                                        ),
+                                        label: Text(
+                                          tempCitySelected.isEmpty
+                                              ? 'Selecionar Cidade'
+                                              : tempCitySelected,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        onPressed: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return Dialog(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                child: Container(
+                                                  constraints: BoxConstraints(
+                                                    maxHeight:
+                                                        MediaQuery.of(
+                                                          context,
+                                                        ).size.height *
+                                                        0.6,
+                                                  ),
+                                                  padding: const EdgeInsets.all(
+                                                    16,
+                                                  ),
+                                                  child: Column(
+                                                    children: [
+                                                      Expanded(
+                                                        child: CountryCitySelector(
+                                                          onCitySelected: (
+                                                            city,
+                                                          ) {
+                                                            Navigator.pop(
+                                                              context,
+                                                            );
+                                                            setModalState(() {
+                                                              tempCitySelected =
+                                                                  city;
+                                                            });
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setModalState(() {
+                                          tempCitySelected = "";
+                                        });
+                                        setState(() {
+                                          _selectedCity = "";
+                                          tempCitySelected = "";
+                                          applyFilters();
+                                        });
+                                      },
                                       icon: Icon(
-                                        Icons.location_on,
+                                        Icons.clear,
                                         color:
                                             Theme.of(
                                               context,
                                             ).colorScheme.surface,
                                       ),
-                                      label: Text(
-                                        tempCitySelected.isEmpty
-                                            ? 'Selecionar Cidade'
-                                            : tempCitySelected,
-                                      ),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return Dialog(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              child: Container(
-                                                constraints: BoxConstraints(
-                                                  maxHeight:
-                                                      MediaQuery.of(
-                                                        context,
-                                                      ).size.height *
-                                                      0.6,
-                                                ),
-                                                padding: const EdgeInsets.all(
-                                                  16,
-                                                ),
-                                                child: Column(
-                                                  children: [
-                                                    Expanded(
-                                                      child: CountryCitySelector(
-                                                        onCitySelected: (city) {
-                                                          Navigator.pop(
-                                                            context,
-                                                          );
-                                                          setModalState(() {
-                                                            tempCitySelected =
-                                                                city;
-                                                          });
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
                                     ),
                                   ],
                                 ),
@@ -680,15 +717,9 @@ class _ExplorePageState extends State<ExplorePage> {
             const SizedBox(height: 16),
             ...Categories.categories.map((c) {
               final count =
-                  authNotifier.producerUsers
-                      .expand((producer) => producer.stores)
-                      .where((store) {
-                        return store.city!.toLowerCase().trim() ==
-                            _selectedCity.toLowerCase().trim();
-                      })
-                      .expand((store) => store.productsAds ?? [])
-                      .where((ad) => ad.product.category == c.name)
-                      .length;
+                  displayedAds.where((ad) {
+                    return ad.product.category == c.name;
+                  }).length;
               return GestureDetector(
                 onTap: () {
                   setState(() {

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/shopping_cart.dart';
+import 'package:harvestly/core/models/user_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../components/producer/manageSection/manageProductsSection.dart';
 import '../../models/consumer_user.dart';
@@ -275,7 +276,7 @@ class AuthNotifier extends ChangeNotifier {
     String adId,
     double rating,
     String description,
-    String? replyTo
+    String? replyTo,
   ) async {
     Store? curStore = producerUsers
         .expand((producer) => producer.stores)
@@ -289,7 +290,7 @@ class AuthNotifier extends ChangeNotifier {
       rating,
       description,
       currentUser!.id,
-      replyTo
+      replyTo,
     );
     curStore.storeReviews!.add(review);
     notifyListeners();
@@ -429,7 +430,9 @@ class AuthNotifier extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final storedIndex = prefs.getInt("selectedStoreIndex");
 
-      if (storedIndex != null && storedIndex >= 0 && storedIndex < (currentUser as ProducerUser).stores.length) {
+      if (storedIndex != null &&
+          storedIndex >= 0 &&
+          storedIndex < (currentUser as ProducerUser).stores.length) {
         setSelectedStoreIndex(storedIndex);
       } else if ((currentUser as ProducerUser).stores.isNotEmpty) {
         setSelectedStoreIndex(0);
@@ -721,7 +724,7 @@ class AuthNotifier extends ChangeNotifier {
 
         if (adSnapshot.exists) {
           final data = adSnapshot.data();
-          final currentStock = (data?['stock'] as double?) ?? 0;
+          final currentStock = (data?['stock'] as int?) ?? 0;
           final newStock = (currentStock - quantityOrdered).clamp(
             0,
             currentStock,
@@ -774,6 +777,20 @@ class AuthNotifier extends ChangeNotifier {
         .where((o) => o.id == orderId)
         .first
         .changeState(state);
+    notifyListeners();
+  }
+
+  Future<void> addStoreVisit(String storeId) async {
+    await AuthService().addStoreVisit(storeId, currentUser!.id);
+    producerUsers.forEach((p) {
+      p.stores.forEach((s) {
+        if (s.id == storeId) {
+          s.viewsByUserDateTime!.add(
+            UserView(date: DateTime.now(), user: currentUser!.id),
+          );
+        }
+      });
+    });
     notifyListeners();
   }
 }

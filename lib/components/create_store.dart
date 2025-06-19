@@ -154,11 +154,17 @@ class _CreateStoreState extends State<CreateStore> {
   @override
   Widget build(BuildContext context) {
     final content = Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: !widget.isFirstTime!,
-        title: Image.asset("assets/images/logo_android2.png", height: 50),
-        centerTitle: false,
-      ),
+      appBar:
+          widget.isFirstTime!
+              ? AppBar(
+                automaticallyImplyLeading: !widget.isFirstTime!,
+                title: Image.asset(
+                  "assets/images/logo_android2.png",
+                  height: 50,
+                ),
+                centerTitle: false,
+              )
+              : null,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(

@@ -34,169 +34,170 @@ class OrderDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final chatService = Provider.of<ChatService>(context, listen: false);
+    final store = producer.stores.where((s) => s.id == order.storeId).first;
 
     Widget buildUserContactSection({
-  required BuildContext context,
-  required AppUser displayedUser,
-  required String title,
-  required String? subtitle,
-  required bool isProducerSide,
-}) {
-  final selectedStore = displayedUser is ProducerUser
-      ? displayedUser.stores[
-          Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex!]
-      : null;
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 16),
-      Text(
-        title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-      GestureDetector(
-        onTap: () {
-          if (selectedStore != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => StorePage(store: selectedStore),
-              ),
-            );
-          }
-        },
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundImage: NetworkImage(displayedUser.imageUrl),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayedUser is ConsumerUser
-                          ? "${displayedUser.firstName} ${displayedUser.lastName}"
-                          : selectedStore?.name ?? 'Sem nome',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    if (subtitle != null)
-                      Row(
-                        children: [
-                          const Icon(Icons.pin_drop_rounded),
-                          Text(
-                            subtitle,
-                            style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .secondaryFixed,
-                              fontWeight: FontWeight.w700,
-                            ),
+      required BuildContext context,
+      required AppUser displayedUser,
+      required String title,
+      required String? subtitle,
+      required bool isProducerSide,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => StorePage(store: store)),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundImage: NetworkImage(displayedUser.imageUrl),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayedUser is ConsumerUser
+                              ? "${displayedUser.firstName} ${displayedUser.lastName}"
+                              : store.name ?? 'Sem nome',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chat),
-                tooltip: isProducerSide
-                    ? "Contactar consumidor"
-                    : "Contactar produtor",
-                onPressed: () async {
-                  final currentUser =
-                      Provider.of<AuthNotifier>(context, listen: false)
-                          .currentUser!;
-                  final otherUser = displayedUser;
-
-                  final chatList =
-                      Provider.of<ChatListNotifier>(context, listen: false)
-                          .chats;
-
-                  final alreadyExists = chatList.any(
-                    (chat) =>
-                        (chat.consumerId == currentUser.id &&
-                            chat.producerId == otherUser.id) ||
-                        (chat.producerId == currentUser.id &&
-                            chat.consumerId == otherUser.id),
-                  );
-
-                  if (alreadyExists) {
-                    final existingChat = chatList.firstWhere(
-                      (chat) =>
-                          (chat.consumerId == currentUser.id &&
-                              chat.producerId == otherUser.id) ||
-                          (chat.producerId == currentUser.id &&
-                              chat.consumerId == otherUser.id),
-                    );
-                    chatService.updateCurrentChat(existingChat);
-                    Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-                    return;
-                  }
-
-                  final _messageController = TextEditingController();
-                  final result = await showDialog<String>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text("Enviar mensagem"),
-                      content: TextField(
-                        controller: _messageController,
-                        decoration: const InputDecoration(
-                          hintText: "Escreve a tua mensagem...",
                         ),
-                        maxLines: null,
-                        autofocus: true,
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: const Text("Fechar"),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx)
-                              .pop(_messageController.text.trim()),
-                          child: const Text("Enviar"),
-                        ),
+                        if (subtitle != null)
+                          Row(
+                            children: [
+                              const Icon(Icons.pin_drop_rounded),
+                              Text(
+                                subtitle,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryFixed,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
-                  );
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chat),
+                    tooltip:
+                        isProducerSide
+                            ? "Contactar consumidor"
+                            : "Contactar produtor",
+                    onPressed: () async {
+                      final currentUser =
+                          Provider.of<AuthNotifier>(
+                            context,
+                            listen: false,
+                          ).currentUser!;
+                      final otherUser = displayedUser;
 
-                  if (result != null && result.isNotEmpty) {
-                    final newChat = await chatService.createChat(
-                      currentUser.isProducer
-                          ? otherUser.id
-                          : currentUser.id,
-                      currentUser.isProducer
-                          ? currentUser.id
-                          : otherUser.id,
-                    );
+                      final chatList =
+                          Provider.of<ChatListNotifier>(
+                            context,
+                            listen: false,
+                          ).chats;
 
-                    await chatService.save(
-                        result, currentUser, newChat.id);
+                      final alreadyExists = chatList.any(
+                        (chat) =>
+                            (chat.consumerId == currentUser.id &&
+                                chat.producerId == otherUser.id) ||
+                            (chat.producerId == currentUser.id &&
+                                chat.consumerId == otherUser.id),
+                      );
 
-                    Provider.of<ChatListNotifier>(context, listen: false)
-                        .addChat(newChat);
-                    chatService.updateCurrentChat(newChat);
-                    Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-                  }
-                },
+                      if (alreadyExists) {
+                        final existingChat = chatList.firstWhere(
+                          (chat) =>
+                              (chat.consumerId == currentUser.id &&
+                                  chat.producerId == otherUser.id) ||
+                              (chat.producerId == currentUser.id &&
+                                  chat.consumerId == otherUser.id),
+                        );
+                        chatService.updateCurrentChat(existingChat);
+                        Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+                        return;
+                      }
+
+                      final _messageController = TextEditingController();
+                      final result = await showDialog<String>(
+                        context: context,
+                        builder:
+                            (ctx) => AlertDialog(
+                              title: const Text("Enviar mensagem"),
+                              content: TextField(
+                                controller: _messageController,
+                                decoration: const InputDecoration(
+                                  hintText: "Escreve a tua mensagem...",
+                                ),
+                                maxLines: null,
+                                autofocus: true,
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(),
+                                  child: const Text("Fechar"),
+                                ),
+                                TextButton(
+                                  onPressed:
+                                      () => Navigator.of(
+                                        ctx,
+                                      ).pop(_messageController.text.trim()),
+                                  child: const Text("Enviar"),
+                                ),
+                              ],
+                            ),
+                      );
+
+                      if (result != null && result.isNotEmpty) {
+                        final newChat = await chatService.createChat(
+                          currentUser.isProducer
+                              ? otherUser.id
+                              : currentUser.id,
+                          currentUser.isProducer
+                              ? currentUser.id
+                              : otherUser.id,
+                        );
+
+                        await chatService.save(result, currentUser, newChat.id);
+
+                        Provider.of<ChatListNotifier>(
+                          context,
+                          listen: false,
+                        ).addChat(newChat);
+                        chatService.updateCurrentChat(newChat);
+                        Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+                      }
+                    },
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-      const SizedBox(height: 8),
-    ],
-  );
-}
-
+          const SizedBox(height: 8),
+        ],
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text("Encomenda")),
@@ -369,10 +370,7 @@ class OrderDetailsPage extends StatelessWidget {
                           context: context,
                           displayedUser: producer,
                           title: "Banca Vendedora",
-                          subtitle:
-                              producer
-                                  .stores[authNotifier.selectedStoreIndex!]
-                                  .city,
+                          subtitle: store.name,
                           isProducerSide: true,
                         ),
                       if (authNotifier.currentUser!.isProducer)
@@ -440,25 +438,16 @@ class OrderDetailsPage extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final item = products[index];
                           final ad =
-                              AuthService().users
-                                      .whereType<ProducerUser>()
-                                      .expand((p) {
-                                        if (p.stores.isNotEmpty) {
-                                          return p
-                                                  .stores[Provider.of<
-                                                    AuthNotifier
-                                                  >(
-                                                    context,
-                                                    listen: false,
-                                                  ).selectedStoreIndex!]
-                                                  .productsAds ??
-                                              [];
-                                        } else {
-                                          return [];
-                                        }
-                                      })
+                              authNotifier.producerUsers
+                                      .expand(
+                                        (p) => p.stores.expand(
+                                          (s) => s.productsAds ?? [],
+                                        ),
+                                      )
                                       .firstWhere(
-                                        (ad) => ad.id == item.productAdId,
+                                        (ad) {
+                                          return ad.id == item.productAdId;
+                                        },
                                         orElse:
                                             () =>
                                                 throw Exception(

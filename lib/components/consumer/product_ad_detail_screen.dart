@@ -760,8 +760,6 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                       setState(() {
                                         replyToUserId =
                                             mainReviews[i].reviewerId;
-                                        print(mainReviews[i].reviewerId);
-                                        print(replyToUserId);
                                       });
                                     },
                                     child: Text(

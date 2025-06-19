@@ -35,6 +35,7 @@ class AuthService {
   List<Store> get myStores => _myStores;
   final StreamController<AppUser?> _userController =
       StreamController.broadcast();
+  final fireStore = FirebaseFirestore.instance;
   Stream<AppUser?> get userChanges => _userController.stream;
   static final _userStream = Stream<AppUser?>.multi((controller) async {
     final authChanges = FirebaseAuth.instance.authStateChanges();
@@ -91,7 +92,7 @@ class AuthService {
   void listenToMyStores() {
     if (_currentUser is ProducerUser) {
       _storesSubscription?.cancel();
-      _storesSubscription = FirebaseFirestore.instance
+      _storesSubscription = fireStore
           .collection('stores')
           .where('ownerId', isEqualTo: _currentUser!.id)
           .snapshots()
@@ -122,7 +123,7 @@ class AuthService {
     if (user is ProducerUser) {
       final completer = Completer<void>();
 
-      FirebaseFirestore.instance
+      fireStore
           .collection('stores')
           .where('ownerId', isEqualTo: user.id)
           .get()
@@ -170,10 +171,7 @@ class AuthService {
       }
 
       final doc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(firebaseUser.uid)
-              .get();
+          await fireStore.collection('users').doc(firebaseUser.uid).get();
 
       if (doc.exists) {
         final data = doc.data()!;
@@ -184,7 +182,7 @@ class AuthService {
           });
 
           final storeSnapshot =
-              await FirebaseFirestore.instance
+              await fireStore
                   .collection('stores')
                   .where('ownerId', isEqualTo: firebaseUser.uid)
                   .get();
@@ -284,7 +282,7 @@ class AuthService {
       );
       await _saveAppUser(_currentUser!);
 
-      final store = FirebaseFirestore.instance;
+      final store = fireStore;
       final docRef = store.collection('users').doc(credential.user!.uid);
       await docRef.update({'firstName': firstName, 'lastName': lastName});
     }
@@ -362,7 +360,7 @@ class AuthService {
       await user.updatePhotoURL(profileImageUrl);
       _currentUser!.imageUrl = profileImageUrl!;
 
-      final store = FirebaseFirestore.instance;
+      final store = fireStore;
       final docRef = store.collection('users').doc(user.uid);
       await docRef.update({'imageUrl': profileImageUrl});
       return profileImageUrl;
@@ -382,7 +380,7 @@ class AuthService {
       );
       _currentUser!.backgroundUrl = backgroundImageUrl;
 
-      final store = FirebaseFirestore.instance;
+      final store = fireStore;
       final docRef = store.collection('users').doc(user.uid);
       await docRef.update({'backgroundImageUrl': backgroundImageUrl});
       return backgroundImageUrl!;
@@ -414,7 +412,7 @@ class AuthService {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final store = FirebaseFirestore.instance;
+    final store = fireStore;
     final docRef = store.collection('users').doc(user.uid);
 
     if (firstName != null) {
@@ -472,7 +470,7 @@ class AuthService {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final store = FirebaseFirestore.instance;
+    final store = fireStore;
     final docRef = store.collection('users').doc(user.uid);
 
     try {
@@ -491,7 +489,7 @@ class AuthService {
   }
 
   Future<void> _saveAppUser(AppUser user) async {
-    final store = FirebaseFirestore.instance;
+    final store = fireStore;
     final docRef = store.collection('users').doc(user.id);
 
     return docRef.set({
@@ -589,7 +587,7 @@ class AuthService {
     required List<String> deliveryMethods,
     required LatLng coordinates,
   }) async {
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final FirebaseFirestore _firestore = fireStore;
     final FirebaseStorage _storage = FirebaseStorage.instance;
     try {
       final docRef = _firestore.collection('stores').doc();
@@ -661,7 +659,7 @@ class AuthService {
     List<String> keywords,
     String? highlight,
   ) async {
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    final FirebaseFirestore _firestore = fireStore;
     final FirebaseStorage _storage = FirebaseStorage.instance;
 
     try {
@@ -715,7 +713,7 @@ class AuthService {
     String? replyTo,
   ) async {
     final docRef =
-        FirebaseFirestore.instance
+        fireStore
             .collection('stores')
             .doc(storeId)
             .collection('ads')
@@ -755,9 +753,7 @@ class AuthService {
   Future<void> changeOrderState(String orderId, OrderState state) async {
     print("Cheguei aqui");
     try {
-      final docRef = FirebaseFirestore.instance
-          .collection('orders')
-          .doc(orderId);
+      final docRef = fireStore.collection('orders').doc(orderId);
 
       await docRef.update({'status': state.toDisplayString()});
     } catch (e) {
@@ -766,10 +762,10 @@ class AuthService {
   }
 
   Future<void> addToCart(ProductAd productAd, double quantity) async {
-    final user = AuthService().currentUser;
+    final user = currentUser;
     if (user == null) return;
 
-    final cartsRef = FirebaseFirestore.instance.collection('shoppingCarts');
+    final cartsRef = fireStore.collection('shoppingCarts');
 
     final query =
         await cartsRef.where('ownerId', isEqualTo: user.id).limit(1).get();
@@ -805,5 +801,15 @@ class AuthService {
 
       await cartDocRef.update({'productsQty': products});
     }
+  }
+
+  Future<void> addStoreVisit(String storeId, String userId) async {
+    final docRef = fireStore.collection('stores').doc(storeId);
+
+    await docRef.update({
+      'viewsByUserDateTime': FieldValue.arrayUnion([
+        {DateTime.now().toIso8601String(): userId}
+      ]),
+    });
   }
 }

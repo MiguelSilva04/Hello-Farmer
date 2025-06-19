@@ -149,6 +149,13 @@ class _StorePageState extends State<StorePage> {
             ? widget.store!
             : (authNotifier.currentUser! as ProducerUser).stores[authNotifier
                 .selectedStoreIndex!];
+    if (widget.store != null) {
+      try {
+        authNotifier.addStoreVisit(widget.store!.id);
+      } catch (e) {
+        print("Ocorreu um erro em processar a visita à banca!");
+      }
+    }
   }
 
   @override

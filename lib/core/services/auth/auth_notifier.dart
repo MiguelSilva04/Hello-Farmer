@@ -813,6 +813,13 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> removeStore(String storeId) async {
+    await AuthService().removeStore(storeId);
+    (currentUser as ProducerUser).stores.removeWhere((s) => s.id == storeId);
+    saveSelectedStoreIndex(selectedStoreIndex! - 1);
+    notifyListeners();
+  }
+
   Future<void> addFavorite(String adId) async {
     if (_currentUser == null || _currentUser is! ConsumerUser) return;
 

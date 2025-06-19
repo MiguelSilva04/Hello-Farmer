@@ -142,8 +142,15 @@ class _StorePageState extends State<StorePage> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: () {
+              onPressed: () async {
+                await Provider.of<AuthNotifier>(
+                  context,
+                  listen: false,
+                ).removeStore(store.id);
                 Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Banca selecionada com sucesso!")),
+                );
               },
               child: Text(
                 "Eliminar",
@@ -163,9 +170,7 @@ class _StorePageState extends State<StorePage> {
     super.initState();
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     currentProducerUser =
-        widget.store == null
-            ? (authNotifier.currentUser! as ProducerUser)
-            : null;
+        widget.store == null ? authNotifier.currentUser as ProducerUser : null;
     myStore =
         widget.store != null
             ? widget.store!
@@ -636,12 +641,7 @@ class _StorePageState extends State<StorePage> {
   }
 
   Widget _buildReviewsSection() {
-    final users = AuthService().users.where(
-      (u) => myStore.storeReviews!.any((review) => review.reviewerId == u.id),
-    );
-
     final medianRating = myStore.averageRating;
-    print(myStore.storeReviews!.length);
 
     myStore.storeReviews!.sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
 
@@ -872,7 +872,10 @@ class _StorePageState extends State<StorePage> {
       print('Editar: ${productAd.id}');
     }
 
-    void _onDelete(BuildContext context) {}
+    void _onDelete(BuildContext context) {
+      Provider.of<BottomNavigationNotifier>(context, listen: false).setIndex(4);
+      Provider.of<ManageSectionNotifier>(context, listen: false).setIndex(1);
+    }
 
     return InkWell(
       onTap:

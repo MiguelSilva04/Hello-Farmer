@@ -803,6 +803,11 @@ class AuthService {
     }
   }
 
+  Future<void> removeStore(String storeId) async {
+    final docRef = fireStore.collection('stores').doc(storeId);
+    await docRef.delete();
+  }
+
   Future<void> addStoreVisit(String storeId, String userId) async {
     final docRef = fireStore.collection('stores').doc(storeId);
 
@@ -825,7 +830,6 @@ class AuthService {
         {DateTime.now().toIso8601String(): userId},
       ]),
     });
-    print("Visitado!");
   }
 
   Future<List<String>> getUserFavorites(String userId) async {
@@ -838,14 +842,14 @@ class AuthService {
   Future<void> addToFavorites(String userId, String productAdId) async {
     final docRef = fireStore.collection('users').doc(userId);
     await docRef.update({
-      'favorites': FieldValue.arrayUnion([productAdId])
+      'favorites': FieldValue.arrayUnion([productAdId]),
     });
   }
 
   Future<void> removeFromFavorites(String userId, String productAdId) async {
     final docRef = fireStore.collection('users').doc(userId);
     await docRef.update({
-      'favorites': FieldValue.arrayRemove([productAdId])
+      'favorites': FieldValue.arrayRemove([productAdId]),
     });
   }
 }

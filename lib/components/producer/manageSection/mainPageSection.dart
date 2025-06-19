@@ -49,7 +49,6 @@ class _MainPageSectionState extends State<MainPageSection> {
   void initState() {
     super.initState();
     authProvider = Provider.of<AuthNotifier>(context, listen: false);
-    print((authProvider.currentUser as ProducerUser).stores);
     store =
         (authProvider.currentUser as ProducerUser).stores[authProvider
             .selectedStoreIndex!];

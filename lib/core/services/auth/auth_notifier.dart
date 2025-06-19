@@ -532,7 +532,7 @@ class AuthNotifier extends ChangeNotifier {
 
     notifyListeners();
   }
-
+  
   Future<void> changeProductStockOrPrice(
     String storeId,
     ProductAd productAd,

@@ -269,47 +269,55 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
               ProductImageCarousel(imageUrls: widget.ad.product.imageUrls),
               const SizedBox(height: 5),
               Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Expanded(
-        child: Text(
-          widget.ad.product.name,
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      if (!authNotifier.currentUser!.isProducer)
-        Tooltip(
-          message: _isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
-          child: GestureDetector(
-            onTap: toggleFavorite,
-            child: AnimatedScale(
-              duration: Duration(milliseconds: 200),
-              scale: _isFavorite ? 1.3 : 1.0,
-              curve: Curves.easeInOut,
-              child: Icon(
-                _isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: _isFavorite ? Colors.redAccent : Colors.grey[600],
-                size: 32,
-                shadows: [
-                  Shadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.ad.product.name,
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (!authNotifier.currentUser!.isProducer)
+                      Tooltip(
+                        message:
+                            _isFavorite
+                                ? 'Remover dos favoritos'
+                                : 'Adicionar aos favoritos',
+                        child: GestureDetector(
+                          onTap: toggleFavorite,
+                          child: AnimatedScale(
+                            duration: Duration(milliseconds: 200),
+                            scale: _isFavorite ? 1.3 : 1.0,
+                            curve: Curves.easeInOut,
+                            child: Icon(
+                              _isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color:
+                                  _isFavorite
+                                      ? Colors.redAccent
+                                      : Colors.grey[600],
+                              size: 32,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ),
-        ),
-    ],
-  ),
-),
 
               const SizedBox(height: 8),
 

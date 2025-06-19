@@ -333,8 +333,7 @@ class AuthService {
     await _storesSubscription?.cancel();
     _storesSubscription = null;
 
-    await _myStoresController
-        .close();
+    await _myStoresController.close();
 
     _currentUser = null;
     _users.clear();
@@ -713,7 +712,7 @@ class AuthService {
     double rating,
     String description,
     String reviewerId,
-    String? replyTo
+    String? replyTo,
   ) async {
     final docRef =
         FirebaseFirestore.instance
@@ -725,14 +724,24 @@ class AuthService {
             .doc();
     final dateTimeNow = Timestamp.now();
 
-    await docRef.set({
-      'id': docRef.id,
-      'createdAt': dateTimeNow,
-      'reviewerId': currentUser!.id,
-      'rating': rating,
-      'description': description,
-      'replyTo': replyTo,
-    });
+    if (replyTo != null) {
+      await docRef.set({
+        'id': docRef.id,
+        'createdAt': dateTimeNow,
+        'reviewerId': currentUser!.id,
+        'rating': rating,
+        'description': description,
+        'replyTo': replyTo,
+      });
+    } else {
+      await docRef.set({
+        'id': docRef.id,
+        'createdAt': dateTimeNow,
+        'reviewerId': currentUser!.id,
+        'rating': rating,
+        'description': description,
+      });
+    }
     return Review(
       id: docRef.id,
       dateTime: dateTimeNow.toDate(),

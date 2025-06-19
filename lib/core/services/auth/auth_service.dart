@@ -808,9 +808,24 @@ class AuthService {
 
     await docRef.update({
       'viewsByUserDateTime': FieldValue.arrayUnion([
-        {DateTime.now().toIso8601String(): userId}
+        {DateTime.now().toIso8601String(): userId},
       ]),
     });
+  }
+
+  Future<void> addAdVisit(String storeId, String adId, String userId) async {
+    final docRef = fireStore
+        .collection('stores')
+        .doc(storeId)
+        .collection('ads')
+        .doc(adId);
+
+    await docRef.update({
+      'viewsByUserDateTime': FieldValue.arrayUnion([
+        {DateTime.now().toIso8601String(): userId},
+      ]),
+    });
+    print("Visitado!");
   }
 
   Future<List<String>> getUserFavorites(String userId) async {

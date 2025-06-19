@@ -165,10 +165,12 @@ class ProductAd {
       visibility: json['visibility'] ?? true,
       viewsByUserDateTime:
           json['viewsByUserDateTime'] != null
-              ? (json['viewsByUserDateTime'] as List)
-                  .map((item) => UserView.fromJson(item))
-                  .toList()
-              : null,
+              ? (json['viewsByUserDateTime'] as List).map((item) {
+                final key = DateTime.parse(item.keys.first);
+                final value = item.values.first;
+                return UserView(date: key, user: value);
+              }).toList()
+              : [],
       keywords:
           json['keywords'] != null ? List<String>.from(json['keywords']) : null,
       adReviews:

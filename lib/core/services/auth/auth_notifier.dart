@@ -796,6 +796,23 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> addAdVisit(String storeId, String adId) async {
+    await AuthService().addAdVisit(storeId, adId, currentUser!.id);
+    producerUsers.forEach((p) {
+      p.stores.forEach((s) {
+        if (s.productsAds!.isNotEmpty) {}
+        s.productsAds!.forEach((a) {
+          if (a.id == adId) {
+            a.viewsByUserDateTime?.add(
+              UserView(date: DateTime.now(), user: currentUser!.id),
+            );
+          }
+        });
+      });
+    });
+    notifyListeners();
+  }
+
   Future<void> addFavorite(String adId) async {
     if (_currentUser == null || _currentUser is! ConsumerUser) return;
 

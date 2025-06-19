@@ -38,6 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? cityValue;
   String? municipalityValue;
   String? _phone;
+  String? aboutMe;
 
   bool _isEditingName = false;
   bool _isEditingPassword = false;
@@ -81,6 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }
       firstName = user!.firstName;
       lastName = user!.lastName;
+      aboutMe = user!.aboutMe;
       userName = "${firstName} ${lastName}";
       countryValue = user!.country;
       cityValue = user!.city;
@@ -223,7 +225,10 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _isLoading = true);
     String? imageUrl;
     String? backgrounUrl;
-    if (!_isEditingPassword && !_isEditingName && !_isEditingEmail) {
+    if (!_isEditingPassword &&
+        !_isEditingName &&
+        !_isEditingEmail &&
+        (_profileImage != null || _backgroundImage != null)) {
       try {
         if (_profileImage != null)
           imageUrl = await AuthService().updateProfileImage(_profileImage);
@@ -245,6 +250,7 @@ class _ProfilePageState extends State<ProfilePage> {
       await AuthService().updateSingleUserField(
         firstName: firstName,
         lastName: lastName,
+        aboutMe: aboutMe,
         country: countryValue,
         city: cityValue,
         municipality: municipalityValue,
@@ -463,6 +469,15 @@ class _ProfilePageState extends State<ProfilePage> {
             }),
           ),
 
+          _buildTextField(
+            "Sobre mim",
+            user!.aboutMe ?? "",
+            (val) => setState(() {
+              aboutMe = val;
+              _dataChanged = true;
+            }),
+          ),
+
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -501,7 +516,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
 
-          // _buildTextField("Cidade", user!.city ?? ""),
           Align(
             alignment: Alignment.centerLeft,
             child: Text(

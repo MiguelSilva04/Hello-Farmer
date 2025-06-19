@@ -134,7 +134,6 @@ class _CreateStoreState extends State<CreateStore> {
 
       if (widget.isFirstTime != true) {
         Navigator.pop(context);
-        Navigator.pop(context);
         notificationNotifier.setupFCM(id: store.id, isProducer: true);
       } else {
         authNotifier.addStore(store);

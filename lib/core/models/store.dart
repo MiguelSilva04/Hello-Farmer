@@ -114,11 +114,20 @@ class Store {
 
   double get averageRating {
     if (storeReviews == null || storeReviews!.isEmpty) return 0.0;
-    final total = storeReviews!
-        .where((r) => r.rating != null)
-        .fold(0.0, (sum, r) => sum + r.rating!);
-    final count = storeReviews!.where((r) => r.rating != null).length;
-    return count == 0 ? 0.0 : total / count;
+
+    final filteredReviews =
+        storeReviews!
+            .where((r) => r.rating != null && r.replyTo == null)
+            .toList();
+
+    if (filteredReviews.isEmpty) return 0.0;
+
+    final total = filteredReviews.fold<double>(
+      0.0,
+      (sum, r) => sum + r.rating!,
+    );
+
+    return total / filteredReviews.length;
   }
 
   factory Store.fromJson(Map<String, dynamic> json) {

@@ -304,10 +304,11 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
             children: List.generate(categories.length, (index) {
               return InkWell(
                 onTap:
-                    () => Provider.of<BottomNavigationNotifier>(
+                    () {Provider.of<BottomNavigationNotifier>(
                       context,
                       listen: false,
-                    ).setIndex(2),
+                    ).setIndexAndCategory(2, categories[index]);
+                    },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: Column(

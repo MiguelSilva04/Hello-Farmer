@@ -19,7 +19,7 @@ class CountryCitySelector extends StatefulWidget {
 }
 
 class _CountryCitySelectorState extends State<CountryCitySelector> {
-  List<String> _cities = [];
+  Map<String, List<String>> _stateCitiesMap = {};
   bool _loading = true;
 
   final isoToCountryName = {
@@ -39,7 +39,9 @@ class _CountryCitySelectorState extends State<CountryCitySelector> {
 
   Future<void> loadCities() async {
     try {
-      final countryJson = await rootBundle.loadString('assets/data/country.json');
+      final countryJson = await rootBundle.loadString(
+        'assets/data/country.json',
+      );
 
       final List<dynamic> countries = jsonDecode(countryJson);
 
@@ -51,8 +53,11 @@ class _CountryCitySelectorState extends State<CountryCitySelector> {
         final userPhone = AuthService().currentUser?.phone;
         if (userPhone == null) return;
 
+        final defaultIsoCode = 'PT';
+
         final phoneInfo = await PhoneNumber.getRegionInfoFromPhoneNumber(
           userPhone,
+          defaultIsoCode,
         );
         final isoCode = phoneInfo.isoCode;
 
@@ -79,6 +84,7 @@ class _CountryCitySelectorState extends State<CountryCitySelector> {
         selectedCountryName = country['name'];
       }
 
+
       final countryData = countries.firstWhere(
         (c) => c['name'] == selectedCountryName,
         orElse: () => null,
@@ -90,21 +96,35 @@ class _CountryCitySelectorState extends State<CountryCitySelector> {
       }
 
       final List<dynamic> states = countryData['state'];
-      final Set<String> cities = {};
+      final Map<String, List<String>> map = {};
+
 
       for (final state in states) {
-        final stateName = state['name'];
-        if (stateName != null) {
-          cities.add(stateName);
-        }
+        final String? stateName = state['name'];
+        if (stateName == null) continue;
+
+        final List<dynamic>? citiesDynamic = state['city'];
+        if (citiesDynamic == null || citiesDynamic.isEmpty) continue;
+
+        final List<String> cities =
+            citiesDynamic
+                .map((cityObj) => cityObj['name']?.toString() ?? '')
+                .where((cityName) => cityName.isNotEmpty)
+                .toList();
+
+
+        map[stateName] = cities;
       }
 
       setState(() {
-        _cities = cities.toList()..sort();
+        _stateCitiesMap = map;
         _loading = false;
       });
     } catch (e) {
-      print('Erro ao carregar cidades: $e');
+      print('Erro ao carregar cidades por estado: $e');
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -114,33 +134,42 @@ class _CountryCitySelectorState extends State<CountryCitySelector> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_cities.isEmpty) {
-      return const Text("Nenhuma cidade encontrada.");
+    if (_stateCitiesMap.isEmpty) {
+      return const Center(child: Text('Nenhuma cidade encontrada.'));
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
-          'Escolher cidade',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: _cities.length,
-            separatorBuilder: (_, __) => const Divider(),
-            itemBuilder: (context, index) {
-              final city = _cities[index];
-              return ListTile(
-                title: Text(city),
-                onTap: () => widget.onCitySelected(city),
-              );
-            },
-          ),
-        ),
-      ],
+    final items = <String>[];
+    _stateCitiesMap.forEach((state, cities) {
+      for (var city in cities) {
+        items.add('$state - $city');
+      }
+    });
+
+    items.sort();
+
+    return ListView(
+      shrinkWrap: true,
+      children:
+          _stateCitiesMap.entries.map((entry) {
+            final state = entry.key;
+            final cities = entry.value;
+
+            return ExpansionTile(
+              title: Text(state),
+              children:
+                  cities
+                      .map(
+                        (city) => ListTile(
+                          title: Text(city),
+                          onTap: () {
+                            widget.onCitySelected(city);
+                            Navigator.pop(context);
+                          },
+                        ),
+                      )
+                      .toList(),
+            );
+          }).toList(),
     );
   }
 }

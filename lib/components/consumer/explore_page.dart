@@ -5,6 +5,7 @@ import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/utils/categories.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:provider/provider.dart';
@@ -396,7 +397,17 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   void initState() {
     super.initState();
-    applyFilters();
+
+    final bottomNav = Provider.of<BottomNavigationNotifier>(
+      context,
+      listen: false,
+    );
+    if (bottomNav.selectedCategory != null) {
+      _searchText = bottomNav.selectedCategory!;
+      _categoryText = bottomNav.selectedCategory!;
+      applyFilters();
+      bottomNav.setCategory(null);
+    }
   }
 
   @override
@@ -460,26 +471,35 @@ class _ExplorePageState extends State<ExplorePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Em $_selectedCity...',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 10),
-                  if (isAvailableToClear())
-                    GestureDetector(
-                      onTap: () {
-                        clearFilters();
-                      },
+              Flexible(
+                child: Row(
+                  children: [
+                    Flexible(
                       child: Text(
-                        "Limpar",
+                        'Em $_selectedCity...',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.surface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
-                ],
+                    const SizedBox(width: 10),
+                    if (isAvailableToClear())
+                      GestureDetector(
+                        onTap: () {
+                          clearFilters();
+                        },
+                        child: Text(
+                          "Limpar",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
               InkWell(
                 onTap: () {
@@ -624,9 +644,6 @@ class _ExplorePageState extends State<ExplorePage> {
                                                           onCitySelected: (
                                                             city,
                                                           ) {
-                                                            Navigator.pop(
-                                                              context,
-                                                            );
                                                             setModalState(() {
                                                               tempCitySelected =
                                                                   city;
@@ -649,8 +666,12 @@ class _ExplorePageState extends State<ExplorePage> {
                                           tempCitySelected = "";
                                         });
                                         setState(() {
-                                          _selectedCity = "";
-                                          tempCitySelected = "";
+                                          _selectedCity = AuthService()
+                                              .currentUser!
+                                              .city ?? "";
+                                          tempCitySelected = AuthService()
+                                              .currentUser!
+                                              .city ?? "";
                                           applyFilters();
                                         });
                                       },
@@ -778,7 +799,7 @@ class _ExplorePageState extends State<ExplorePage> {
       _searchText = "";
       _categoryText = '';
       _selectedKeyword = null;
-      _selectedCity = AuthService().currentUser!.city ?? "";
+      //_selectedCity = AuthService().currentUser!.city ?? "";
       searchEditingController;
       _minPrice = 0;
       _maxPrice = 30;

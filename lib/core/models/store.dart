@@ -182,4 +182,55 @@ class Store {
               : [],
     );
   }
+  factory Store.fromMap(Map<String, dynamic> map, String documentId) {
+    return Store(
+      id: documentId,
+      ownerId: map['ownerId'],
+      createdAt:
+          map['createdAt'] is cf.Timestamp
+              ? (map['createdAt'] as cf.Timestamp).toDate()
+              : map['createdAt'],
+      name: map['name'] ?? '',
+      slogan: map['subName'] ?? '',
+      description: map['description'] ?? '',
+      city: map['city'] ?? '',
+      address: map['address'] ?? '',
+      municipality: map['municipality'],
+      coordinates:
+          map['coordinates'] != null
+              ? LatLng(
+                map['coordinates']['latitude'],
+                map['coordinates']['longitude'],
+              )
+              : null,
+      imageUrl: map['imageUrl'] ?? '',
+      backgroundImageUrl: map['backgroundImageUrl'],
+      productsAds:
+          map['productsAds'] != null
+              ? List<ProductAd>.from(
+                map['productsAds'].map((x) => ProductAd.fromJson(x)),
+              )
+              : [],
+      viewsByUserDateTime:
+          map['viewsByUserDateTime'] != null
+              ? (map['viewsByUserDateTime'] as List).map((item) {
+                final key = DateTime.parse(item.keys.first);
+                final value = item.values.first;
+                return UserView(date: key, user: value);
+              }).toList()
+              : [],
+      preferredDeliveryMethod:
+          map['deliveryMethods'] != null
+              ? (map['deliveryMethods'] as List)
+                  .map((x) => DeliveryMethodExtension.fromString(x))
+                  .toList()
+              : [],
+      notifications:
+          map['notifications'] != null
+              ? (map['notifications'] as List)
+                  .map((x) => NotificationItem.fromJson(x))
+                  .toList()
+              : [],
+    );
+  }
 }

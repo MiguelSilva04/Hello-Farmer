@@ -132,14 +132,16 @@ class _CreateStoreState extends State<CreateStore> {
         coordinates: coordinates!,
       );
 
+      authNotifier.addStore(store);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final newIndex = authNotifier.stores.length - 1;
+        authNotifier.saveSelectedStoreIndex(newIndex);
+        authNotifier.setLocalSelectedStoreIndex(newIndex);
+      });
+      await notificationNotifier.setupFCM(id: store.id, isProducer: true);
       if (widget.isFirstTime != true) {
         Navigator.pop(context);
-        notificationNotifier.setupFCM(id: store.id, isProducer: true);
-      } else {
-        authNotifier.addStore(store);
-        await authNotifier.saveSelectedStoreIndex(0);
-        authNotifier.setLocalSelectedStoreIndex(0);
-        await notificationNotifier.setupFCM(id: store.id, isProducer: true);
       }
     } catch (e) {
       print(e);
@@ -250,12 +252,17 @@ class _CreateStoreState extends State<CreateStore> {
               _imageFile != null
                   ? Image.file(_imageFile!, height: 150)
                   : Text("Nenhuma imagem selecionada."),
-              if (_imageFile == null)
-                TextButton.icon(
-                  onPressed: () => _pickImage(isBackground: false),
-                  icon: Icon(Icons.image),
-                  label: Text("Selecionar imagem principal"),
-                ),
+              (_imageFile == null)
+                  ? TextButton.icon(
+                    onPressed: () => _pickImage(isBackground: false),
+                    icon: Icon(Icons.image),
+                    label: Text("Selecionar imagem principal"),
+                  )
+                  : TextButton.icon(
+                    onPressed: () => _pickImage(isBackground: false),
+                    icon: Icon(Icons.image),
+                    label: Text("Escolher outra imagem principal"),
+                  ),
               const SizedBox(height: 16),
               Text(
                 "Foto de fundo:",
@@ -265,12 +272,17 @@ class _CreateStoreState extends State<CreateStore> {
               _backgroundImageFile != null
                   ? Image.file(_backgroundImageFile!, height: 150)
                   : Text("Nenhuma imagem selecionada."),
-              if (_backgroundImageFile == null)
-                TextButton.icon(
-                  onPressed: () => _pickImage(isBackground: true),
-                  icon: Icon(Icons.image_outlined),
-                  label: Text("Selecionar imagem de fundo"),
-                ),
+              (_backgroundImageFile == null)
+                  ? TextButton.icon(
+                    onPressed: () => _pickImage(isBackground: true),
+                    icon: Icon(Icons.image_outlined),
+                    label: Text("Selecionar imagem de fundo"),
+                  )
+                  : TextButton.icon(
+                    onPressed: () => _pickImage(isBackground: true),
+                    icon: Icon(Icons.image_outlined),
+                    label: Text("Escolher outra imagem de fundo"),
+                  ),
               const SizedBox(height: 20),
               Text(
                 "Métodos de entrega preferidos:",

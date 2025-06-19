@@ -11,14 +11,109 @@ import '../../models/review.dart';
 
 class StoreService with ChangeNotifier {
   StoreService._privateConstructor();
-
   static final StoreService instance = StoreService._privateConstructor();
-  final Map<String, StreamSubscription> _orderSubscriptions = {};
 
-  final List<Store> _allStores = [];
   final firestore = cf.FirebaseFirestore.instance;
 
+  final Map<String, StreamSubscription> _orderSubscriptions = {};
+  StreamSubscription? _storeListener;
+
+  final List<Store> _allStores = [];
   List<Store> get allStores => List.unmodifiable(_allStores);
+
+  /// LIGA o listener para as lojas (com ads e reviews)
+  Future<void> startStoresListener() async {
+    _storeListener?.cancel(); // garantir que não há listener duplicado
+
+    _storeListener = firestore.collection('stores').snapshots().listen((
+      snapshot,
+    ) async {
+      _allStores.clear();
+
+      for (final doc in snapshot.docs) {
+        final storeData = doc.data();
+        final storeId = doc.id;
+
+        final store = Store.fromJson({...storeData, 'id': storeId});
+
+        // Carregar anúncios e reviews da loja
+        final adsSnapshot =
+            await firestore
+                .collection('stores')
+                .doc(storeId)
+                .collection('ads')
+                .get();
+
+        final List<ProductAd> ads = [];
+
+        for (final adDoc in adsSnapshot.docs) {
+          try {
+            final adData = adDoc.data();
+            final ad = ProductAd.fromJson(adData);
+
+            final reviewsSnapshot =
+                await firestore
+                    .collection('stores')
+                    .doc(storeId)
+                    .collection('ads')
+                    .doc(ad.id)
+                    .collection('reviews')
+                    .get();
+
+            final reviews =
+                reviewsSnapshot.docs
+                    .map((reviewDoc) => Review.fromJson(reviewDoc.data()))
+                    .toList();
+
+            ad.adReviews = reviews;
+            ads.add(ad);
+          } catch (e) {
+            print('Erro ao carregar ad ou reviews: $e');
+          }
+        }
+
+        store.productsAds = ads;
+
+        _allStores.add(store);
+        listenToOrdersForStore(store); // ativar listener de encomendas
+      }
+
+      notifyListeners();
+    });
+  }
+
+  /// DESLIGA o listener e limpa as lojas
+  Future<void> stopStoresListener() async {
+    await _storeListener?.cancel();
+    _storeListener = null;
+
+    await cancelAllOrderSubscriptions();
+    _allStores.clear();
+    notifyListeners();
+  }
+
+  Future<void> cancelAllOrderSubscriptions() async {
+    for (var sub in _orderSubscriptions.values) {
+      await sub.cancel();
+    }
+    _orderSubscriptions.clear();
+  }
+
+  void listenToOrdersForStore(Store store) {
+    final sub = firestore
+        .collection('orders')
+        .where('storeId', isEqualTo: store.id)
+        .snapshots()
+        .listen((snapshot) {
+          store.orders =
+              snapshot.docs
+                  .map((doc) => Order.fromJson({...doc.data(), 'id': doc.id}))
+                  .toList();
+          notifyListeners();
+        });
+
+    _orderSubscriptions[store.id] = sub;
+  }
 
   Future<void> loadStores() async {
     final snapshot = await firestore.collection('stores').get();
@@ -76,13 +171,6 @@ class StoreService with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> cancelAllOrderSubscriptions() async {
-    for (var sub in _orderSubscriptions.values) {
-      await sub.cancel();
-    }
-    _orderSubscriptions.clear();
-  }
-
   Future<void> clearStores() async {
     await cancelAllOrderSubscriptions();
     _allStores.clear();
@@ -105,22 +193,6 @@ class StoreService with ChangeNotifier {
     }
 
     return stores;
-  }
-
-  void listenToOrdersForStore(Store store) {
-    final sub = firestore
-        .collection('orders')
-        .where('storeId', isEqualTo: store.id)
-        .snapshots()
-        .listen((snapshot) {
-          store.orders =
-              snapshot.docs
-                  .map((doc) => Order.fromJson({...doc.data(), 'id': doc.id}))
-                  .toList();
-          notifyListeners();
-        });
-
-    _orderSubscriptions[store.id] = sub;
   }
 
   Future<void> updateStoreData({

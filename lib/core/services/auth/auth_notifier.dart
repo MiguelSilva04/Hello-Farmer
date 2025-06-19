@@ -19,7 +19,7 @@ import 'package:collection/collection.dart';
 
 class AuthNotifier extends ChangeNotifier {
   AppUser? _currentUser;
-  int? _selectedStoreIndex = null;
+  int? _selectedStoreIndex;
   bool _isOrdersLoading = false;
   List<AppUser> _allUsers = [];
   List<AppUser> get allUsers => _allUsers;
@@ -29,7 +29,10 @@ class AuthNotifier extends ChangeNotifier {
   List<Store> get stores =>
       isProducer ? (currentUser as ProducerUser).stores : [];
   Store? get selectedStore =>
-      isProducer && stores.isNotEmpty ? stores[_selectedStoreIndex!] : null;
+      isProducer && stores.isNotEmpty && _selectedStoreIndex != null
+          ? stores[_selectedStoreIndex!]
+          : null;
+
   final StreamController<List<ProductAd>> _productAdsController =
       StreamController<List<ProductAd>>.broadcast();
   List<String> favorites = [];
@@ -42,14 +45,49 @@ class AuthNotifier extends ChangeNotifier {
   final fireStore = cf.FirebaseFirestore.instance;
   bool get isOrdersLoading => _isOrdersLoading;
 
-  void setLocalSelectedStoreIndex(int? index) {
-    _selectedStoreIndex = index;
-    notifyListeners();
+  // Salvar o ID da loja em vez do índice
+  Future<void> saveSelectedStoreId(String storeId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedStoreId', storeId);
   }
 
+  // Atualiza o índice da loja com base no ID salvo
+  Future<void> updateSelectedStoreIndexFromId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storeId = prefs.getString('selectedStoreId');
+    if (storeId != null && isProducer) {
+      final index = stores.indexWhere((store) => store.id == storeId);
+      if (index != -1) {
+        _selectedStoreIndex = index;
+        notifyListeners();
+      }
+    }
+  }
+
+  // Chamada anterior usando índice (agora não mais usada, mas mantida se necessário)
   Future<void> updateSelectedStoreIndex() async {
     final prefs = await SharedPreferences.getInstance();
     _selectedStoreIndex = prefs.getInt("selectedStoreIndex");
+    notifyListeners();
+  }
+
+  // Chamada nova combinada com salvar ID
+  void setSelectedStoreIndex(int index) async {
+    if (index >= 0 && index < stores.length) {
+      _selectedStoreIndex = index;
+      await saveSelectedStoreId(stores[index].id);
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveSelectedStoreIndex(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('selectedStoreIndex', index);
+    setSelectedStoreIndex(index);
+  }
+
+  void setLocalSelectedStoreIndex(int? index) {
+    _selectedStoreIndex = index;
     notifyListeners();
   }
 
@@ -73,22 +111,18 @@ class AuthNotifier extends ChangeNotifier {
       await _loadStoresAndAdsForProducer(user);
     }
 
-    notifyListeners();
-  }
+    await updateSelectedStoreIndexFromId();
 
-  void setSelectedStoreIndex(int index) {
-    if (index >= 0 && index < stores.length) {
-      _selectedStoreIndex = index;
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   void addStore(store) {
-    (currentUser! as ProducerUser).stores.add(store);
-    stores.add(store);
-    notifyListeners();
+    if (isProducer) {
+      (currentUser! as ProducerUser).stores.add(store);
+      notifyListeners();
+    }
   }
-
+  
   Future<List<Review>> getReviewsForAd(String storeId, String adId) async {
     final snapshot =
         await fireStore
@@ -451,12 +485,6 @@ class AuthNotifier extends ChangeNotifier {
     return _currentUser!;
   }
 
-  Future<void> saveSelectedStoreIndex(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('selectedStoreIndex', index);
-    setSelectedStoreIndex(prefs.getInt("selectedStoreIndex")!);
-  }
-
   Future<void> _loadShoppingCart() async {
     if (_currentUser is! ConsumerUser) {
       print('Erro: _currentUser não é ConsumerUser');
@@ -532,7 +560,7 @@ class AuthNotifier extends ChangeNotifier {
 
     notifyListeners();
   }
-  
+
   Future<void> changeProductStockOrPrice(
     String storeId,
     ProductAd productAd,
@@ -816,7 +844,11 @@ class AuthNotifier extends ChangeNotifier {
   Future<void> removeStore(String storeId) async {
     await AuthService().removeStore(storeId);
     (currentUser as ProducerUser).stores.removeWhere((s) => s.id == storeId);
-    saveSelectedStoreIndex(selectedStoreIndex! - 1);
+    saveSelectedStoreIndex(
+      selectedStoreIndex! > 1
+          ? selectedStoreIndex! - 1
+          : selectedStoreIndex! + 1,
+    );
     notifyListeners();
   }
 

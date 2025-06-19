@@ -4,7 +4,6 @@ import 'package:harvestly/components/consumer/map_page.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/core/models/product.dart';
-import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -13,14 +12,14 @@ import '../../core/models/producer_user.dart';
 import '../../core/models/product_ad.dart';
 import '../../core/models/store.dart';
 import '../../core/services/auth/auth_notifier.dart';
+import '../../core/services/auth/auth_service.dart';
 import '../../core/services/other/manage_section_notifier.dart';
 import '../../pages/profile_page.dart';
 
 // ignore: must_be_immutable
 class StorePage extends StatefulWidget {
-  Store? store;
-
-  StorePage({super.key, this.store});
+  final Store? store;
+  const StorePage({super.key, this.store});
 
   @override
   State<StorePage> createState() => _StorePageState();
@@ -28,13 +27,14 @@ class StorePage extends StatefulWidget {
 
 class _StorePageState extends State<StorePage> {
   bool showBanca = true;
+  Store? myStore;
 
-  late Store myStore;
-  late ProducerUser? currentProducerUser;
-
-  void _openManageStoresMenu() {
-    final stores = currentProducerUser!.stores;
-    String? selectedStoreName = myStore.name;
+  void _openManageStoresMenu(
+    ProducerUser currentProducerUser,
+    List<Store> stores,
+  ) {
+    String? selectedStoreName =
+        stores.any((s) => s.name == myStore?.name) ? myStore?.name : null;
 
     showModalBottomSheet(
       context: context,
@@ -67,7 +67,7 @@ class _StorePageState extends State<StorePage> {
                   labelStyle: TextStyle(
                     color: Theme.of(context).colorScheme.secondary,
                   ),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 items:
                     stores.map((store) {
@@ -82,12 +82,17 @@ class _StorePageState extends State<StorePage> {
               ),
               const SizedBox(height: 12),
               ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
-                  _showCreateStoreDialog();
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreateStore(isFirstTime: false),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.add),
-                label: Text("Criar Nova Banca"),
+                label: const Text("Criar Nova Banca"),
               ),
               const SizedBox(height: 8),
               if (stores.length > 1)
@@ -96,7 +101,7 @@ class _StorePageState extends State<StorePage> {
                   onPressed: () {
                     final storeToDelete = stores.firstWhere(
                       (store) => store.name == selectedStoreName,
-                      orElse: () => myStore,
+                      orElse: () => stores.first,
                     );
                     _confirmDeleteStore(storeToDelete);
                   },
@@ -119,15 +124,6 @@ class _StorePageState extends State<StorePage> {
     );
   }
 
-  void _showCreateStoreDialog() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CreateStore(isFirstTime: false)),
-    );
-    currentProducerUser = await AuthService().getCurrentUser() as ProducerUser;
-    setState(() {});
-  }
-
   void _confirmDeleteStore(Store store) {
     showDialog(
       context: context,
@@ -148,9 +144,7 @@ class _StorePageState extends State<StorePage> {
                   listen: false,
                 ).removeStore(store.id);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Banca selecionada com sucesso!")),
-                );
+                Navigator.pop(context);
               },
               child: Text(
                 "Eliminar",
@@ -166,185 +160,126 @@ class _StorePageState extends State<StorePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    currentProducerUser =
-        widget.store == null ? authNotifier.currentUser as ProducerUser : null;
-    myStore =
-        widget.store != null
-            ? widget.store!
-            : (authNotifier.currentUser! as ProducerUser).stores[authNotifier
-                .selectedStoreIndex!];
-    if (widget.store != null) {
-      try {
-        authNotifier.addStoreVisit(widget.store!.id);
-      } catch (e) {
-        print("Ocorreu um erro em processar a visita à banca!");
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: widget.store != null ? AppBar() : null,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Column(
-        children: [
-          if (widget.store == null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isSmall = constraints.maxWidth < 400;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Banca Selecionada:",
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: myStore.name,
-                                  dropdownColor:
-                                      Theme.of(context).colorScheme.secondary,
-                                  iconEnabledColor:
-                                      Theme.of(context).colorScheme.secondary,
-                                  iconSize: 30,
-                                  style: const TextStyle(color: Colors.black),
-                                  selectedItemBuilder: (BuildContext context) {
-                                    return currentProducerUser!.stores.map((
-                                      store,
-                                    ) {
-                                      return Container(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          store.name!,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.secondary,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList();
-                                  },
-                                  items:
-                                      currentProducerUser!.stores.map((store) {
-                                        return DropdownMenuItem<String>(
-                                          value: store.name!,
-                                          child: Text(
-                                            store.name!,
-                                            style: TextStyle(
-                                              color:
-                                                  Theme.of(
-                                                    context,
-                                                  ).colorScheme.tertiaryFixed,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                  onChanged: (value) async {
-                                    if (value != null) {
-                                      final index = currentProducerUser!.stores
-                                          .indexWhere(
-                                            (store) => store.name == value,
-                                          );
-                                      print(index);
-                                      if (index != -1) {
-                                        await Provider.of<AuthNotifier>(
-                                          context,
-                                          listen: false,
-                                        ).saveSelectedStoreIndex(index);
-                                        setState(() {
-                                          myStore =
-                                              currentProducerUser!
-                                                  .stores[index];
-                                        });
-                                      }
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+    final user = Provider.of<AuthNotifier>(context).currentUser as ProducerUser;
 
-                        Flexible(
-                          flex: 1,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.secondary,
-                            ),
-                            onPressed: () {
-                              _openManageStoresMenu();
-                            },
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                "Gerir Bancas",
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.tertiaryFixed,
-                                  fontSize: isSmall ? 30 : 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+    return StreamBuilder<List<Store>>(
+      stream: AuthService().getCurrentUserStoresStream(user.id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Center(child: Text("Erro ao carregar as bancas."));
+        }
+
+        final stores = snapshot.data!;
+        if (stores.isEmpty) {
+          return Center(child: Text("Nenhuma banca disponível."));
+        }
+        print(
+          "Index selecionado: ${Provider.of<AuthNotifier>(context).selectedStoreIndex}",
+        );
+        print(
+          "Numero de lojas: ${(Provider.of<AuthNotifier>(context).currentUser as ProducerUser).stores.length}",
+        );
+        (Provider.of<AuthNotifier>(context).currentUser as ProducerUser).stores
+            .forEach((s) => print(s.name));
+        // Atualiza o myStore se ainda não estiver definido
+        myStore =
+            widget.store ??
+            (Provider.of<AuthNotifier>(context).currentUser as ProducerUser)
+                .stores[Provider.of<AuthNotifier>(context).selectedStoreIndex ??
+                0];
+
+        return Scaffold(
+          appBar: widget.store != null ? AppBar() : null,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          body: Column(
+            children: [
+              if (widget.store == null)
+                _buildStoreDropdownUI(context, stores, user),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.tertiary,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
                     ),
-                  );
-                },
-              ),
-            ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.tertiary,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildTopButton("Banca", showBanca, () {
+                        setState(() => showBanca = true);
+                      }, isLeft: true),
+                      _buildTopButton("Avaliações", !showBanca, () {
+                        setState(() => showBanca = false);
+                      }, isLeft: false),
+                    ],
+                  ),
                 ),
               ),
-              child: Row(
-                children: [
-                  _buildTopButton("Banca", showBanca, () {
-                    setState(() => showBanca = true);
-                  }, isLeft: true),
-                  _buildTopButton("Avaliações", !showBanca, () {
-                    setState(() => showBanca = false);
-                  }, isLeft: false),
-                ],
+              Expanded(
+                child:
+                    showBanca ? _buildStoreSection() : _buildReviewsSection(),
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStoreDropdownUI(
+    BuildContext context,
+    List<Store> stores,
+    ProducerUser user,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              iconEnabledColor: Theme.of(context).colorScheme.secondary,
+              decoration: InputDecoration(
+                labelText: "Selecionar banca",
+                labelStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                border: OutlineInputBorder(),
+              ),
+              value: myStore!.name,
+              items:
+                  stores.map((store) {
+                    return DropdownMenuItem(
+                      value: store.name,
+                      child: Text(store.name!),
+                    );
+                  }).toList(),
+              onChanged: (value) async {
+                final index = stores.indexWhere((s) => s.name == value);
+                if (index != -1) {
+                  await Provider.of<AuthNotifier>(
+                    context,
+                    listen: false,
+                  ).saveSelectedStoreIndex(index);
+                  setState(() {
+                    myStore = stores[index];
+                  });
+                }
+              },
             ),
           ),
-          Expanded(
-            child: showBanca ? _buildStoreSection() : _buildReviewsSection(),
+          const SizedBox(width: 10),
+          ElevatedButton(
+            onPressed: () => _openManageStoresMenu(user, stores),
+            child: const Text("Gerir Bancas"),
           ),
         ],
       ),
@@ -411,7 +346,7 @@ class _StorePageState extends State<StorePage> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          myStore.imageUrl!,
+                          myStore!.imageUrl!,
                           height: 100,
                           width: 150,
                           fit: BoxFit.cover,
@@ -426,7 +361,7 @@ class _StorePageState extends State<StorePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            myStore.name ?? "Sem nome",
+                            myStore!.name ?? "Sem nome",
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
@@ -434,7 +369,7 @@ class _StorePageState extends State<StorePage> {
                           ),
                           if (widget.store != null) const SizedBox(height: 8),
                           Text(
-                            myStore.slogan ?? "",
+                            myStore!.slogan ?? "",
                             style: const TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 16,
@@ -480,7 +415,7 @@ class _StorePageState extends State<StorePage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  myStore.description ?? "Sem descrição",
+                  myStore!.description ?? "Sem descrição",
                   style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 16),
@@ -498,7 +433,7 @@ class _StorePageState extends State<StorePage> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Municipio: ${myStore.municipality ?? "Sem Municipio"}",
+                          "Municipio: ${myStore!.municipality ?? "Sem Municipio"}",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -514,7 +449,7 @@ class _StorePageState extends State<StorePage> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Cidade: ${myStore.city ?? "Sem Cidade"}",
+                          "Cidade: ${myStore!.city ?? "Sem Cidade"}",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -534,7 +469,7 @@ class _StorePageState extends State<StorePage> {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Morada: ${myStore.address}",
+                          "Morada: ${myStore!.address}",
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
@@ -567,7 +502,7 @@ class _StorePageState extends State<StorePage> {
           ),
 
           const SizedBox(height: 10),
-          if (myStore.productsAds!.length > 0)
+          if (myStore!.productsAds!.length > 0)
             Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.secondary,
@@ -603,7 +538,7 @@ class _StorePageState extends State<StorePage> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            myStore.productsAds!.length.toString(),
+                            myStore!.productsAds!.length.toString(),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.secondary,
@@ -614,7 +549,7 @@ class _StorePageState extends State<StorePage> {
                       ),
                     ],
                   ),
-                  ...myStore.productsAds!
+                  ...myStore!.productsAds!
                       .map((prod) => _buildProductsAdsSection(prod))
                       .toList(),
                 ],
@@ -641,9 +576,9 @@ class _StorePageState extends State<StorePage> {
   }
 
   Widget _buildReviewsSection() {
-    final medianRating = myStore.averageRating;
+    final medianRating = myStore!.averageRating;
 
-    myStore.storeReviews!.sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
+    myStore!.storeReviews!.sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -655,7 +590,7 @@ class _StorePageState extends State<StorePage> {
         ),
         child: Column(
           children: [
-            (myStore.storeReviews != null && myStore.storeReviews!.isEmpty)
+            (myStore!.storeReviews != null && myStore!.storeReviews!.isEmpty)
                 ? Center(child: Text("Sem comentários"))
                 : Column(
                   children: [
@@ -683,7 +618,7 @@ class _StorePageState extends State<StorePage> {
                               direction: Axis.horizontal,
                             ),
                             Text(
-                              "(${myStore.storeReviews!.length} avaliações)",
+                              "(${myStore!.storeReviews!.length} avaliações)",
                               style: TextStyle(fontWeight: FontWeight.w700),
                             ),
                           ],
@@ -693,7 +628,7 @@ class _StorePageState extends State<StorePage> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: myStore.storeReviews!.length,
+                      itemCount: myStore!.storeReviews!.length,
                       itemBuilder: (ctx, i) {
                         final user =
                             Provider.of<AuthNotifier>(context, listen: false)
@@ -701,7 +636,7 @@ class _StorePageState extends State<StorePage> {
                                 .where(
                                   (u) =>
                                       u.id ==
-                                      myStore.storeReviews![i].reviewerId,
+                                      myStore!.storeReviews![i].reviewerId,
                                 )
                                 .first;
                         return Column(
@@ -720,7 +655,9 @@ class _StorePageState extends State<StorePage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          myStore.storeReviews![i].description!,
+                                          myStore!
+                                              .storeReviews![i]
+                                              .description!,
                                           style: TextStyle(fontSize: 16),
                                         ),
                                       ],
@@ -760,7 +697,7 @@ class _StorePageState extends State<StorePage> {
                                             ),
                                             RatingBarIndicator(
                                               rating:
-                                                  myStore
+                                                  myStore!
                                                       .storeReviews![i]
                                                       .rating!,
                                               itemBuilder:
@@ -781,7 +718,7 @@ class _StorePageState extends State<StorePage> {
                                       children: [
                                         Text(
                                           getTimeReviewPosted(
-                                            myStore.storeReviews![i].dateTime!,
+                                            myStore!.storeReviews![i].dateTime!,
                                           ),
                                         ),
                                       ],

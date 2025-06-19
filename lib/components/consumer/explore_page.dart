@@ -34,6 +34,7 @@ class _ExplorePageState extends State<ExplorePage> {
   List<String> selectedKeywords = [];
   List<ProductAd> allFavorites = [];
   List<ProductAd> displayedAds = [];
+  Map<String, int> _categoryCounts = {};
 
   late AuthNotifier authNotifier;
 
@@ -111,6 +112,7 @@ class _ExplorePageState extends State<ExplorePage> {
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
 
     final selectedCityLower = _selectedCity.trim().toLowerCase();
+
     final filteredProducers =
         authNotifier.producerUsers.where((producer) {
           return _selectedCity.trim().isEmpty ||
@@ -126,6 +128,12 @@ class _ExplorePageState extends State<ExplorePage> {
             .where((store) => store.productsAds?.isNotEmpty ?? false)
             .expand((store) => store.productsAds!)
             .toList();
+
+    final Map<String, int> categoryCounts = {};
+    for (final c in Categories.categories) {
+      categoryCounts[c.name] =
+          allAds.where((ad) => ad.product.category == c.name).length;
+    }
 
     final List<ProductAd> matching = [];
     final List<ProductAd> others = [];
@@ -165,22 +173,19 @@ class _ExplorePageState extends State<ExplorePage> {
     }
 
     final filtered = [...matching, ...others];
+
     final refinedFiltered =
-        (_selectedCity.isNotEmpty)
+        _selectedCity.isNotEmpty
             ? filtered.where((ad) {
               for (final user in authNotifier.allUsers) {
                 if (user is ProducerUser) {
                   for (final store in user.stores) {
-                    print(store.city);
-                    print(_selectedCity);
                     final matches =
                         store.productsAds?.any((a) => a.id == ad.id) ?? false;
                     final storeCity = store.city?.trim().toLowerCase() ?? '';
-
                     if (matches &&
                         (selectedCityLower.isEmpty ||
                             storeCity == selectedCityLower)) {
-                      print("Encontrou");
                       return true;
                     }
                   }
@@ -194,6 +199,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
     setState(() {
       displayedAds = refinedFiltered;
+      _categoryCounts = categoryCounts; // atualiza os counts aqui!
     });
   }
 
@@ -402,6 +408,7 @@ class _ExplorePageState extends State<ExplorePage> {
       context,
       listen: false,
     );
+    applyFilters();
     if (bottomNav.selectedCategory != null) {
       _searchText = bottomNav.selectedCategory!;
       _categoryText = bottomNav.selectedCategory!;
@@ -666,12 +673,12 @@ class _ExplorePageState extends State<ExplorePage> {
                                           tempCitySelected = "";
                                         });
                                         setState(() {
-                                          _selectedCity = AuthService()
-                                              .currentUser!
-                                              .city ?? "";
-                                          tempCitySelected = AuthService()
-                                              .currentUser!
-                                              .city ?? "";
+                                          _selectedCity =
+                                              AuthService().currentUser!.city ??
+                                              "";
+                                          tempCitySelected =
+                                              AuthService().currentUser!.city ??
+                                              "";
                                           applyFilters();
                                         });
                                       },
@@ -737,10 +744,7 @@ class _ExplorePageState extends State<ExplorePage> {
             ),
             const SizedBox(height: 16),
             ...Categories.categories.map((c) {
-              final count =
-                  displayedAds.where((ad) {
-                    return ad.product.category == c.name;
-                  }).length;
+              final count = _categoryCounts[c.name] ?? 0;
               return GestureDetector(
                 onTap: () {
                   setState(() {

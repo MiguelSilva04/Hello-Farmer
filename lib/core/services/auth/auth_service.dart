@@ -159,6 +159,19 @@ class AuthService {
     );
   }
 
+  Stream<List<Store>> getCurrentUserStoresStream(String userId) {
+    return fireStore
+        .collection('stores')
+        .where('ownerId', isEqualTo: userId)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => Store.fromMap(doc.data(), doc.id))
+                  .toList(),
+        );
+  }
+
   void listenToUserChanges() {
     _userChangesSubscription?.cancel();
     _userChangesSubscription = FirebaseAuth.instance.authStateChanges().listen((

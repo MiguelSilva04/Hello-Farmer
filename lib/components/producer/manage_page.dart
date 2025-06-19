@@ -196,7 +196,13 @@ class _ManagePageState extends State<ManagePage> {
             Expanded(
               child:
                   currentIndex == 0
-                      ? SingleChildScrollView(child: sections[currentIndex])
+                      ? Consumer<AuthNotifier>(
+                        builder: (ctx, authNotifier, _) {
+                          return SingleChildScrollView(
+                            child: sections[currentIndex],
+                          );
+                        },
+                      )
                       : sections[currentIndex],
             ),
           ],

@@ -115,9 +115,22 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   void initState() {
     super.initState();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final store = authNotifier.producerUsers
+        .expand((producer) => producer.stores)
+        .firstWhereOrNull(
+          (store) =>
+              store.productsAds?.any((ad) => ad.id == widget.ad.id) ?? false,
+        );
     reviews = widget.ad.adReviews ?? [];
     checkIfUserReviewed();
     getStoreAd();
+    if (widget.producer.id != authNotifier.currentUser!.id) {
+      try {
+        authNotifier.addAdVisit(store!.id, widget.ad.id);
+      } catch (e) {
+        print("Ocorreu um erro em processar a visita à banca!");
+      }
+    }
   }
 
   @override

@@ -52,6 +52,7 @@ class _MainMenuState extends State<MainMenu>
   // bool _hasStore = false;
   // late Future<AppUser> _initFuture;
   bool _isLoading = false;
+  bool _showLogo = true;
 
   @override
   void initState() {
@@ -161,15 +162,33 @@ class _MainMenuState extends State<MainMenu>
     return user;
   }
 
-  void _toggleSearch(AppUser user) {
+  void _toggleSearch(AppUser user) async {
+  if (_isSearching) {
+    FocusScope.of(context).unfocus();
+
+    await Future.delayed(const Duration(milliseconds: 350));
+  }
+
+  if (mounted) {
     setState(() {
       _isSearching = !_isSearching;
-      if (!_isSearching) {
+
+      if (_isSearching) {
+        _showLogo = false;
+      } else {
+        Future.delayed(const Duration(milliseconds: 350), () {
+          if (mounted) {
+            setState(() {
+              _showLogo = true;
+            });
+          }
+        });
         context.read<SearchNotifier>().clear();
         _searchQuery = "";
       }
     });
   }
+}
 
   void _navigateToPage(String route) {
     Navigator.of(context).push(
@@ -232,7 +251,7 @@ class _MainMenuState extends State<MainMenu>
                         ).setIndex(0),
                     child: const Icon(Icons.arrow_back),
                   ),
-                if (!_isSearching)
+                if (!_isSearching && _showLogo)
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Image.asset(
@@ -244,59 +263,64 @@ class _MainMenuState extends State<MainMenu>
             ),
             actions: [
               if ((user.isProducer) || (!user.isProducer)) ...[
-                AnimatedSwitcher(
-                  duration: Duration(milliseconds: 300),
-                  child:
-                      _isSearching
-                          ? Padding(
-                            key: const ValueKey('searchBar'),
-                            padding: const EdgeInsets.all(8),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.70,
-                              child: TextField(
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                  hintText: "Procurar...",
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12,
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: 200,
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: Duration(milliseconds: 300),
+                    child:
+                        _isSearching
+                            ? Padding(
+                              key: const ValueKey('searchBar'),
+                              padding: const EdgeInsets.all(8),
+                              child: SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                child: TextField(
+                                  autofocus: true,
+                                  decoration: InputDecoration(
+                                    hintText: "Procurar...",
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: const Icon(Icons.close),
+                                      onPressed: () => _toggleSearch(user),
+                                    ),
                                   ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.close),
-                                    onPressed: () => _toggleSearch(user),
-                                  ),
+                                  onChanged: (query) {
+                                    _searchQuery = query;
+                                    if (_debounce?.isActive ?? false)
+                                      _debounce!.cancel();
+                                    _debounce = Timer(
+                                      Duration(milliseconds: 300),
+                                      () {
+                                        if (mounted) {
+                                          context.read<SearchNotifier>().search(
+                                            query,
+                                            user.isProducer,
+                                            context,
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
                                 ),
-                                onChanged: (query) {
-                                  _searchQuery = query;
-
-                                  if (_debounce?.isActive ?? false)
-                                    _debounce!.cancel();
-                                  _debounce = Timer(
-                                    const Duration(milliseconds: 300),
-                                    () {
-                                      context.read<SearchNotifier>().search(
-                                        query,
-                                        user.isProducer,
-                                        context,
-                                      );
-                                    },
-                                  );
-                                },
                               ),
+                            )
+                            : IconButton(
+                              key: const ValueKey('searchIcon'),
+                              icon: const Icon(Icons.search),
+                              onPressed: () => _toggleSearch(user),
                             ),
-                          )
-                          : IconButton(
-                            key: const ValueKey('searchIcon'),
-                            icon: const Icon(Icons.search),
-                            onPressed: () => _toggleSearch(user),
-                          ),
+                  ),
                 ),
-
                 PopupMenuButton<String>(
                   tooltip: "Opções",
                   offset: const Offset(0, 50),
@@ -499,10 +523,13 @@ class _MainMenuState extends State<MainMenu>
                           filteredItems: searchNotifier.results,
                           query: _searchQuery,
                           onSelect: (item) {
+                            FocusScope.of(context).unfocus();
                             setState(() {
                               _isSearching = false;
                             });
-                            item.onTap();
+                            Future.microtask(() {
+                              item.onTap();
+                            });
                           },
                         );
                       },

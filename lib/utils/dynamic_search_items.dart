@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
 import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:provider/provider.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
@@ -28,9 +29,157 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
         onTap: () => navNotifier.setIndex(4),
       ),
       SearchResultItem(
-        title: 'Vendas',
+        title: 'Ver Vendas',
         section: 'Gestão',
         onTap: () => navNotifier.setIndex(1),
+      ),
+      SearchResultItem(
+        title: 'Editar Banca',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(1);
+        },
+      ),
+      SearchResultItem(
+        title: 'Faturação',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(2);
+        },
+      ),
+      SearchResultItem(
+        title: 'Ver Encomendas Abandonadas',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(3);
+        },
+      ),
+      SearchResultItem(
+        title: 'Gerir Stock',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(4);
+        },
+      ),
+      SearchResultItem(
+        title: 'Gerir Preços',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(5);
+        },
+      ),
+      SearchResultItem(
+        title: 'Gerir Cabazes',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(6);
+        },
+      ),
+      SearchResultItem(
+        title: 'Consultar Clientes',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(7);
+        },
+      ),
+      SearchResultItem(
+        title: 'Relatórios de Vendas',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(8);
+        },
+      ),
+      SearchResultItem(
+        title: 'Vendas por Canal',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(9);
+        },
+      ),
+      SearchResultItem(
+        title: 'Principais Produtos',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(10);
+        },
+      ),
+      SearchResultItem(
+        title: 'Consultas visitas à banca',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(11);
+        },
+      ),
+      SearchResultItem(
+        title: 'Finanças',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(12);
+        },
+      ),
+      SearchResultItem(
+        title: 'Gerir Canais de Venda',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(13);
+        },
+      ),
+      SearchResultItem(
+        title: 'Ver Banca atual',
+        section: 'Geral',
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.STORE_PAGE),
       ),
     ]);
 

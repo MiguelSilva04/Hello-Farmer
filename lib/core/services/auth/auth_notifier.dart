@@ -32,6 +32,7 @@ class AuthNotifier extends ChangeNotifier {
       isProducer && stores.isNotEmpty ? stores[_selectedStoreIndex!] : null;
   final StreamController<List<ProductAd>> _productAdsController =
       StreamController<List<ProductAd>>.broadcast();
+  List<String> favorites = [];
 
   Stream<List<ProductAd>> get productAdsStream => _productAdsController.stream;
 
@@ -442,6 +443,7 @@ class AuthNotifier extends ChangeNotifier {
 
     if (_currentUser is ConsumerUser) {
       await _loadShoppingCart();
+      favorites = await AuthService().getUserFavorites(_currentUser!.id);
     }
 
     notifyListeners();
@@ -809,5 +811,37 @@ class AuthNotifier extends ChangeNotifier {
       });
     });
     notifyListeners();
+  }
+
+  Future<void> addFavorite(String adId) async {
+    if (_currentUser == null || _currentUser is! ConsumerUser) return;
+
+    if (!favorites.contains(adId)) {
+      favorites.add(adId);
+      notifyListeners();
+      await AuthService().addToFavorites(_currentUser!.id, adId);
+    }
+  }
+
+  Future<void> removeFavorite(String adId) async {
+    if (_currentUser == null || _currentUser is! ConsumerUser) return;
+
+    if (favorites.contains(adId)) {
+      favorites.remove(adId);
+      notifyListeners();
+      await AuthService().removeFromFavorites(_currentUser!.id, adId);
+    }
+  }
+
+  bool isFavorite(String adId) {
+    return favorites.contains(adId);
+  }
+
+  Future<void> toggleFavorite(String adId) async {
+    if (isFavorite(adId)) {
+      await removeFavorite(adId);
+    } else {
+      await addFavorite(adId);
+    }
   }
 }

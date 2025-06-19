@@ -827,4 +827,25 @@ class AuthService {
     });
     print("Visitado!");
   }
+
+  Future<List<String>> getUserFavorites(String userId) async {
+    final doc = await fireStore.collection('users').doc(userId).get();
+    final data = doc.data();
+    if (data == null) return [];
+    return List<String>.from(data['favorites'] ?? []);
+  }
+
+  Future<void> addToFavorites(String userId, String productAdId) async {
+    final docRef = fireStore.collection('users').doc(userId);
+    await docRef.update({
+      'favorites': FieldValue.arrayUnion([productAdId])
+    });
+  }
+
+  Future<void> removeFromFavorites(String userId, String productAdId) async {
+    final docRef = fireStore.collection('users').doc(userId);
+    await docRef.update({
+      'favorites': FieldValue.arrayRemove([productAdId])
+    });
+  }
 }

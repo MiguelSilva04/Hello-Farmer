@@ -143,6 +143,16 @@ class _StorePageState extends State<StorePage> {
                   context,
                   listen: false,
                 ).removeStore(store.id);
+
+                await Provider.of<AuthNotifier>(
+                  context,
+                  listen: false,
+                ).saveSelectedStoreIndex(0);
+
+                setState(() {
+                  myStore = null;
+                });
+
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
@@ -186,12 +196,10 @@ class _StorePageState extends State<StorePage> {
         );
         (Provider.of<AuthNotifier>(context).currentUser as ProducerUser).stores
             .forEach((s) => print(s.name));
-        // Atualiza o myStore se ainda não estiver definido
+
         myStore =
             widget.store ??
-            (Provider.of<AuthNotifier>(context).currentUser as ProducerUser)
-                .stores[Provider.of<AuthNotifier>(context).selectedStoreIndex ??
-                0];
+            stores[Provider.of<AuthNotifier>(context).selectedStoreIndex ?? 0];
 
         return Scaffold(
           appBar: widget.store != null ? AppBar() : null,

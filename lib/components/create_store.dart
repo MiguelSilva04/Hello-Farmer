@@ -13,6 +13,8 @@ import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+import '../core/services/auth/store_service.dart';
+
 // ignore: must_be_immutable
 class CreateStore extends StatefulWidget {
   bool? isFirstTime;
@@ -133,6 +135,13 @@ class _CreateStoreState extends State<CreateStore> {
       );
 
       authNotifier.addStore(store);
+      print("A carregar a selectedStoreIndex");
+      await authNotifier.updateSelectedStoreIndex();
+      print("selectedStoreIndex carregada: ${authNotifier.selectedStoreIndex}");
+      print("Lojas a carregar...");
+      final storeService = Provider.of<StoreService>(context, listen: false);
+      await storeService.loadStores();
+      print("Lojas carregadas!");
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final newIndex = authNotifier.stores.length - 1;

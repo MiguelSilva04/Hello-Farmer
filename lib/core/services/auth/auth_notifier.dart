@@ -64,14 +64,12 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
-  // Chamada anterior usando índice (agora não mais usada, mas mantida se necessário)
   Future<void> updateSelectedStoreIndex() async {
     final prefs = await SharedPreferences.getInstance();
     _selectedStoreIndex = prefs.getInt("selectedStoreIndex");
     notifyListeners();
   }
 
-  // Chamada nova combinada com salvar ID
   void setSelectedStoreIndex(int index) async {
     if (index >= 0 && index < stores.length) {
       _selectedStoreIndex = index;

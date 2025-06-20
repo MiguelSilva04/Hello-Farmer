@@ -122,10 +122,8 @@ class StoreService with ChangeNotifier {
     for (final doc in snapshot.docs) {
       final storeData = doc.data();
       final storeId = doc.id;
-      print(storeData);
 
       final store = Store.fromJson({...storeData, 'id': storeId});
-      print(store.viewsByUserDateTime!.length);
 
       final adsSnapshot =
           await firestore

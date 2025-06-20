@@ -120,7 +120,7 @@ class AuthNotifier extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<List<Review>> getReviewsForAd(String storeId, String adId) async {
     final snapshot =
         await fireStore
@@ -232,6 +232,22 @@ class AuthNotifier extends ChangeNotifier {
         .doc(orderId)
         .snapshots()
         .map((docSnap) => Order.fromMap(docSnap.data()!));
+  }
+
+  Future<bool> checkIfUserAlreadyOrdered(String userId, String adId) async {
+    final ordersSnapshot =
+        await cf.FirebaseFirestore.instance
+            .collection('orders')
+            .where('consumerId', isEqualTo: userId)
+            .get();
+
+    final orders =
+        ordersSnapshot.docs.map((doc) => Order.fromJson(doc.data())).toList();
+
+    final hasOrderedProduct = orders.any(
+      (order) => order.ordersItems.any((item) => item.productAdId == adId),
+    );
+    return hasOrderedProduct;
   }
 
   Stream<List<Order>> consumerOrdersStream(String consumerId) {
@@ -752,7 +768,7 @@ class AuthNotifier extends ChangeNotifier {
 
         if (adSnapshot.exists) {
           final data = adSnapshot.data();
-          final currentStock = (data?['stock'] as int?) ?? 0;
+          final currentStock = (data?['stock']);
           final newStock = (currentStock - quantityOrdered).clamp(
             0,
             currentStock,
@@ -854,6 +870,7 @@ class AuthNotifier extends ChangeNotifier {
     if (_currentUser == null || _currentUser is! ConsumerUser) return;
 
     if (!favorites.contains(adId)) {
+      (currentUser as ConsumerUser).favouritesProductsIds?.add(adId);
       favorites.add(adId);
       notifyListeners();
       await AuthService().addToFavorites(_currentUser!.id, adId);
@@ -864,6 +881,9 @@ class AuthNotifier extends ChangeNotifier {
     if (_currentUser == null || _currentUser is! ConsumerUser) return;
 
     if (favorites.contains(adId)) {
+      (currentUser as ConsumerUser).favouritesProductsIds?.removeWhere(
+        (p) => p == adId,
+      );
       favorites.remove(adId);
       notifyListeners();
       await AuthService().removeFromFavorites(_currentUser!.id, adId);

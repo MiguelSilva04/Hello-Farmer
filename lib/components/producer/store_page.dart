@@ -171,35 +171,66 @@ class _StorePageState extends State<StorePage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<AuthNotifier>(context).currentUser as ProducerUser;
+    final user = Provider.of<AuthNotifier>(context).currentUser;
 
+    // Se não for produtor, mostrar apenas a loja passada no widget
+    if (user == null || !user.isProducer) {
+      myStore = widget.store;
+
+      return Scaffold(
+        appBar: AppBar(),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: Column(
+          children: [
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.tertiary,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    _buildTopButton("Banca", showBanca, () {
+                      setState(() => showBanca = true);
+                    }, isLeft: true),
+                    _buildTopButton("Avaliações", !showBanca, () {
+                      setState(() => showBanca = false);
+                    }, isLeft: false),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: showBanca ? _buildStoreSection() : _buildReviewsSection(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Se for produtor, usa o StreamBuilder com as bancas
     return StreamBuilder<List<Store>>(
       stream: AuthService().getCurrentUserStoresStream(user.id),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
         if (snapshot.hasError || !snapshot.hasData) {
-          return Center(child: Text("Erro ao carregar as bancas."));
+          return const Center(child: Text("Erro ao carregar as bancas."));
         }
 
         final stores = snapshot.data!;
         if (stores.isEmpty) {
-          return Center(child: Text("Nenhuma banca disponível."));
+          return const Center(child: Text("Nenhuma banca disponível."));
         }
-        print(
-          "Index selecionado: ${Provider.of<AuthNotifier>(context).selectedStoreIndex}",
-        );
-        print(
-          "Numero de lojas: ${(Provider.of<AuthNotifier>(context).currentUser as ProducerUser).stores.length}",
-        );
-        (Provider.of<AuthNotifier>(context).currentUser as ProducerUser).stores
-            .forEach((s) => print(s.name));
 
-        myStore =
-            widget.store ??
-            stores[Provider.of<AuthNotifier>(context).selectedStoreIndex ?? 0];
+        final selectedIndex =
+            Provider.of<AuthNotifier>(context).selectedStoreIndex ?? 0;
+        final safeIndex = selectedIndex < stores.length ? selectedIndex : 0;
+
+        myStore = widget.store ?? stores[safeIndex];
 
         return Scaffold(
           appBar: widget.store != null ? AppBar() : null,
@@ -207,7 +238,7 @@ class _StorePageState extends State<StorePage> {
           body: Column(
             children: [
               if (widget.store == null)
-                _buildStoreDropdownUI(context, stores, user),
+                _buildStoreDropdownUI(context, stores, user as ProducerUser),
               const Divider(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -5,7 +5,6 @@ import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:provider/provider.dart';
-import '../../core/services/auth/auth_service.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -175,6 +174,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             if (producer == null)
                               return const SizedBox.shrink();
 
+                            final keywordMap = {
+                              for (var k in Keywords.keywords) k.name: k.icon,
+                            };
+
                             return Column(
                               children: [
                                 ListTile(
@@ -240,13 +243,64 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                       ),
                                     ],
                                   ),
-                                  title: Text(
-                                    ad.product.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  title: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        ad.product.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      if (ad.keywords != null)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 4),
+                                          height: 36,
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Row(
+                                              children:
+                                                  ad.keywords!
+                                                      .map(
+                                                        (k) => Padding(
+                                                          padding:
+                                                              const EdgeInsets.only(
+                                                                right: 6,
+                                                              ),
+                                                          child: Chip(
+                                                            avatar: Icon(
+                                                              keywordMap[k],
+                                                              size: 16,
+                                                              color:
+                                                                  Theme.of(
+                                                                        context,
+                                                                      )
+                                                                      .colorScheme
+                                                                      .secondary,
+                                                            ),
+                                                            label: Text(
+                                                              k,
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                color:
+                                                                    Theme.of(
+                                                                          context,
+                                                                        )
+                                                                        .colorScheme
+                                                                        .secondary,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  subtitle: Row(
+                                  trailing: Column(
                                     children: [
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(50),
@@ -268,7 +322,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                       ),
                                       const SizedBox(width: 5),
                                       Text(
-                                        producer.stores[storeIndex!].name ??
+                                        producer.stores[storeIndex].name ??
                                             'Loja sem nome',
                                         style: const TextStyle(
                                           fontStyle: FontStyle.italic,

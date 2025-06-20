@@ -10,6 +10,7 @@ import 'package:harvestly/core/models/producer_user.dart';
 
 import '../../models/app_user.dart';
 import '../../models/notification.dart';
+import '../../models/store.dart';
 import 'auth_notifier.dart';
 
 class NotificationNotifier extends ChangeNotifier {
@@ -287,7 +288,7 @@ class NotificationNotifier extends ChangeNotifier {
         body: 'Recebeste uma nova encomenda na tua loja.',
       );
 
-  Future<void> addOrderSentNotification(AppUser store, String userId) =>
+  Future<void> addOrderSentNotification(Store store, String userId) =>
       _createAndSendNotification(
         userId: userId,
         type: NotificationType.orderSent,
@@ -296,18 +297,6 @@ class NotificationNotifier extends ChangeNotifier {
         title: 'A tua encomenda foi enviada!',
         body: 'A tua encomenda da loja ${store.id} foi enviada.',
       );
-
-  Future<void> addDeliveryScheduledNotification(
-    String userId,
-    String orderId,
-  ) => _createAndSendNotification(
-    userId: userId,
-    type: NotificationType.deliveryScheduled,
-    data: {'order': orderId},
-    isProducer: false,
-    title: 'Entrega agendada!',
-    body: 'A entrega da encomenda $orderId foi agendada.',
-  );
 
   Future<void> addNewReviewNotification(String storeId, String consumerId) =>
       _createAndSendNotification(

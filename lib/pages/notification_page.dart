@@ -138,8 +138,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return "Nova avaliação de $dynamicName";
       case NotificationType.abandonedOrder:
         return "Encomenda abandonada (${notification.data["order"]})";
-      case NotificationType.deliveryScheduled:
-        return "Entrega Nº(${notification.data['order']}) agendada";
       case NotificationType.lowStock:
         return "Stock baixo de ${notification.data['ad']} (${dynamicName})";
     }

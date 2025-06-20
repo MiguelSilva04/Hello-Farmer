@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:harvestly/components/producer/store_page.dart';
@@ -10,6 +11,8 @@ import 'package:harvestly/utils/keywords.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
+import '../../core/models/consumer_user.dart';
+import '../../core/models/order.dart';
 import '../../core/models/review.dart';
 import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
@@ -43,6 +46,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   late List<Review> reviews;
   String? replyToUserId;
   bool _isFavorite = false;
+  bool userHasOrderedThisProduct = false;
 
   double get rating {
     final repliedReviews = reviews.where((r) => r.replyTo != null).toList();
@@ -74,7 +78,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     setState(() => reviews = newReviews);
   }
 
-  void checkIfUserReviewed() {
+  void checkIfUserReviewed() async {
     final userId = authNotifier.currentUser?.id;
 
     if (userId != null) {
@@ -83,6 +87,17 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
           return review.reviewerId == userId;
         });
       });
+
+      if (!authNotifier.currentUser!.isProducer) {
+        final hasOrderedProduct = await authNotifier.checkIfUserAlreadyOrdered(
+          userId,
+          widget.ad.id,
+        );
+
+        setState(() {
+          userHasOrderedThisProduct = hasOrderedProduct;
+        });
+      }
     }
   }
 
@@ -146,6 +161,9 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     try {
       if (_isFavorite) {
         await authNotifier.addFavorite(widget.ad.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Produto adicionado aos favoritos!")),
+        );
       } else {
         await authNotifier.removeFavorite(widget.ad.id);
       }
@@ -701,7 +719,6 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     String Function(DateTime date) getTimeReviewPosted,
     Future<void> Function() submitReview,
   ) {
-    reviews.forEach((r) => print(r.replyTo));
     final mainReviews = reviews.where((r) => r.replyTo == "").toList();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -715,174 +732,28 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
           ),
-          Column(
-            children: [
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: mainReviews.length,
-                itemBuilder: (ctx, i) {
-                  final replyReview = getReplyUser(mainReviews[i].reviewerId!);
-                  return Column(
-                    children: [
-                      Column(
+          mainReviews.length > 0
+              ? Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: mainReviews.length,
+                    itemBuilder: (ctx, i) {
+                      final replyReview = getReplyUser(
+                        mainReviews[i].reviewerId!,
+                      );
+                      return Column(
                         children: [
-                          ListTile(
-                            isThreeLine: true,
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  mainReviews[i].description!,
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                            title: InkWell(
-                              onTap:
-                                  () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => ProfilePage(
-                                            authNotifier.allUsers
-                                                .where(
-                                                  (el) =>
-                                                      el.id ==
-                                                      mainReviews[i].reviewerId,
-                                                )
-                                                .first,
-                                          ),
-                                    ),
-                                  ),
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.tertiary,
-                                      backgroundImage: NetworkImage(
-                                        authNotifier.allUsers
-                                            .where(
-                                              (u) =>
-                                                  u.id ==
-                                                  mainReviews[i].reviewerId,
-                                            )
-                                            .first
-                                            .imageUrl,
-                                      ),
-                                      radius: 10,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        authNotifier.allUsers
-                                                .where(
-                                                  (el) =>
-                                                      el.id ==
-                                                      mainReviews[i].reviewerId,
-                                                )
-                                                .first
-                                                .firstName +
-                                            " " +
-                                            authNotifier.allUsers
-                                                .where(
-                                                  (el) =>
-                                                      el.id ==
-                                                      mainReviews[i].reviewerId,
-                                                )
-                                                .first
-                                                .lastName,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 16),
-                                      ),
-                                    ),
-                                    RatingBarIndicator(
-                                      rating: mainReviews[i].rating!,
-                                      itemBuilder:
-                                          (context, index) => Icon(
-                                            Icons.star,
-                                            color: Colors.amber.shade700,
-                                          ),
-                                      itemCount: 5,
-                                      itemSize: 18,
-                                      direction: Axis.horizontal,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Text(
-                                  getTimeReviewPosted(mainReviews[i].dateTime!),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (authNotifier.currentUser!.id ==
-                                  widget.producer.id &&
-                              replyReview == null)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 12,
-                                left: 12,
-                                right: 12,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        replyToUserId =
-                                            mainReviews[i].reviewerId;
-                                      });
-                                    },
-                                    child: Text(
-                                      "Responder",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.surface,
-                                      ),
-                                    ),
-                                  ),
-                                  InkWell(
-                                    onTap:
-                                        () => print("Reportado com sucesso!"),
-                                    child: Text(
-                                      "Reportar",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.surface,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (replyReview != null)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: ListTile(
+                          Column(
+                            children: [
+                              ListTile(
                                 isThreeLine: true,
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      replyReview.description!,
+                                      mainReviews[i].description!,
                                       style: TextStyle(fontSize: 16),
                                     ),
                                   ],
@@ -897,7 +768,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                     .where(
                                                       (el) =>
                                                           el.id ==
-                                                          replyReview
+                                                          mainReviews[i]
                                                               .reviewerId,
                                                     )
                                                     .first,
@@ -907,8 +778,6 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                   child: SizedBox(
                                     width: double.infinity,
                                     child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
                                       children: [
                                         CircleAvatar(
                                           backgroundColor:
@@ -920,7 +789,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                 .where(
                                                   (u) =>
                                                       u.id ==
-                                                      replyReview.reviewerId,
+                                                      mainReviews[i].reviewerId,
                                                 )
                                                 .first
                                                 .imageUrl,
@@ -928,72 +797,42 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                           radius: 10,
                                         ),
                                         const SizedBox(width: 4),
-                                        Flexible(
-                                          child: Row(
-                                            children: [
-                                              Text(
+                                        Expanded(
+                                          child: Text(
+                                            authNotifier.allUsers
+                                                    .where(
+                                                      (el) =>
+                                                          el.id ==
+                                                          mainReviews[i]
+                                                              .reviewerId,
+                                                    )
+                                                    .first
+                                                    .firstName +
+                                                " " +
                                                 authNotifier.allUsers
-                                                        .where(
-                                                          (el) =>
-                                                              el.id ==
-                                                              replyReview
-                                                                  .reviewerId,
-                                                        )
-                                                        .first
-                                                        .firstName +
-                                                    " " +
-                                                    authNotifier.allUsers
-                                                        .where(
-                                                          (el) =>
-                                                              el.id ==
-                                                              replyReview
-                                                                  .reviewerId,
-                                                        )
-                                                        .first
-                                                        .lastName,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(fontSize: 16),
-                                              ),
-                                              const SizedBox(width: 5),
-                                              Flexible(
-                                                child: Card(
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(5),
-                                                    child: Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons.person,
-                                                          size: 20,
-                                                        ),
-                                                        FittedBox(
-                                                          fit: BoxFit.scaleDown,
-                                                          child: Text(
-                                                            "Produtor",
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
+                                                    .where(
+                                                      (el) =>
+                                                          el.id ==
+                                                          mainReviews[i]
+                                                              .reviewerId,
+                                                    )
+                                                    .first
+                                                    .lastName,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(fontSize: 16),
                                           ),
                                         ),
-                                        // RatingBarIndicator(
-                                        //   rating: getReplyUser(mainReviews[i].id)!.rating!,
-                                        //   itemBuilder:
-                                        //       (context, index) => Icon(
-                                        //         Icons.star,
-                                        //         color: Colors.amber.shade700,
-                                        //       ),
-                                        //   itemCount: 5,
-                                        //   itemSize: 18,
-                                        //   direction: Axis.horizontal,
-                                        // ),
+                                        RatingBarIndicator(
+                                          rating: mainReviews[i].rating!,
+                                          itemBuilder:
+                                              (context, index) => Icon(
+                                                Icons.star,
+                                                color: Colors.amber.shade700,
+                                              ),
+                                          itemCount: 5,
+                                          itemSize: 18,
+                                          direction: Axis.horizontal,
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -1004,169 +843,385 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                   children: [
                                     Text(
                                       getTimeReviewPosted(
-                                        replyReview.dateTime!,
+                                        mainReviews[i].dateTime!,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          if (replyToUserId == mainReviews[i].reviewerId)
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Responder à avaliação:"),
-                                  const SizedBox(height: 8),
-                                  Row(
+                              if (authNotifier.currentUser!.id ==
+                                      widget.producer.id &&
+                                  replyReview == null)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: 12,
+                                    left: 12,
+                                    right: 12,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            replyToUserId =
+                                                mainReviews[i].reviewerId;
+                                          });
+                                        },
+                                        child: Text(
+                                          "Responder",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.surface,
+                                          ),
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap:
+                                            () =>
+                                                print("Reportado com sucesso!"),
+                                        child: Text(
+                                          "Reportar",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.surface,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (replyReview != null)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: ListTile(
+                                    isThreeLine: true,
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          replyReview.description!,
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ],
+                                    ),
+                                    title: InkWell(
+                                      onTap:
+                                          () => Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => ProfilePage(
+                                                    authNotifier.allUsers
+                                                        .where(
+                                                          (el) =>
+                                                              el.id ==
+                                                              replyReview
+                                                                  .reviewerId,
+                                                        )
+                                                        .first,
+                                                  ),
+                                            ),
+                                          ),
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundColor:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.tertiary,
+                                              backgroundImage: NetworkImage(
+                                                authNotifier.allUsers
+                                                    .where(
+                                                      (u) =>
+                                                          u.id ==
+                                                          replyReview
+                                                              .reviewerId,
+                                                    )
+                                                    .first
+                                                    .imageUrl,
+                                              ),
+                                              radius: 10,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    authNotifier.allUsers
+                                                            .where(
+                                                              (el) =>
+                                                                  el.id ==
+                                                                  replyReview
+                                                                      .reviewerId,
+                                                            )
+                                                            .first
+                                                            .firstName +
+                                                        " " +
+                                                        authNotifier.allUsers
+                                                            .where(
+                                                              (el) =>
+                                                                  el.id ==
+                                                                  replyReview
+                                                                      .reviewerId,
+                                                            )
+                                                            .first
+                                                            .lastName,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Flexible(
+                                                    child: Card(
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              5,
+                                                            ),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.person,
+                                                              size: 20,
+                                                            ),
+                                                            FittedBox(
+                                                              fit:
+                                                                  BoxFit
+                                                                      .scaleDown,
+                                                              child: Text(
+                                                                "Produtor",
+                                                                style:
+                                                                    TextStyle(
+                                                                      fontSize:
+                                                                          12,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            // RatingBarIndicator(
+                                            //   rating: getReplyUser(mainReviews[i].id)!.rating!,
+                                            //   itemBuilder:
+                                            //       (context, index) => Icon(
+                                            //         Icons.star,
+                                            //         color: Colors.amber.shade700,
+                                            //       ),
+                                            //   itemCount: 5,
+                                            //   itemSize: 18,
+                                            //   direction: Axis.horizontal,
+                                            // ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    trailing: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      children: [
+                                        Text(
+                                          getTimeReviewPosted(
+                                            replyReview.dateTime!,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              if (replyToUserId == mainReviews[i].reviewerId)
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Expanded(
-                                        child: TextFormField(
-                                          controller: reviewController,
-                                          decoration: InputDecoration(
-                                            labelText: 'Comentário',
-                                            hintText:
-                                                'Escreve o teu comentário...',
-                                            border: const OutlineInputBorder(),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color:
-                                                    Theme.of(context)
-                                                        .colorScheme
-                                                        .secondaryFixed,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color:
-                                                    Theme.of(
-                                                      context,
-                                                    ).colorScheme.surface,
-                                                width: 0.5,
-                                              ),
-                                            ),
-                                            alignLabelWithHint: true,
-                                          ),
-                                          maxLines: null,
-                                          minLines: 4,
-                                          keyboardType: TextInputType.multiline,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Column(
+                                      Text("Responder à avaliação:"),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          IconButton(
-                                            icon: Icon(Icons.close),
-                                            onPressed: () {
-                                              setState(() {
-                                                replyToUserId = null;
-                                              });
-                                            },
-                                          ),
-                                          (_isLoading)
-                                              ? const SizedBox(
-                                                height: 24,
-                                                width: 24,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
+                                          Expanded(
+                                            child: TextFormField(
+                                              controller: reviewController,
+                                              decoration: InputDecoration(
+                                                labelText: 'Comentário',
+                                                hintText:
+                                                    'Escreve o teu comentário...',
+                                                border:
+                                                    const OutlineInputBorder(),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .secondaryFixed,
+                                                      ),
                                                     ),
-                                              )
-                                              : ElevatedButton(
-                                                onPressed: () => submitReview(),
-                                                child: const Text("Publicar"),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                      borderSide: BorderSide(
+                                                        color:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .surface,
+                                                        width: 0.5,
+                                                      ),
+                                                    ),
+                                                alignLabelWithHint: true,
                                               ),
+                                              maxLines: null,
+                                              minLines: 4,
+                                              keyboardType:
+                                                  TextInputType.multiline,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Column(
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(Icons.close),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    replyToUserId = null;
+                                                  });
+                                                },
+                                              ),
+                                              (_isLoading)
+                                                  ? const SizedBox(
+                                                    height: 24,
+                                                    width: 24,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                        ),
+                                                  )
+                                                  : ElevatedButton(
+                                                    onPressed:
+                                                        () => submitReview(),
+                                                    child: const Text(
+                                                      "Publicar",
+                                                    ),
+                                                  ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
+                                ),
+                            ],
+                          ),
+                          const Divider(),
                         ],
-                      ),
-                      const Divider(),
-                    ],
-                  );
-                },
-              ),
-              if (!hasReviewed &&
-                  authNotifier.currentUser!.id != widget.producer.id) ...[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Avaliação:"),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: reviewController,
-                        decoration: InputDecoration(
-                          labelText: 'Comentário',
-                          hintText: 'Escreve o teu comentário...',
-                          border: const OutlineInputBorder(),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color:
-                                  Theme.of(context).colorScheme.secondaryFixed,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.surface,
-                              width: 0.5,
-                            ),
-                          ),
-                          alignLabelWithHint: true,
-                        ),
-                        maxLines: null,
-                        minLines: 4,
-                        keyboardType: TextInputType.multiline,
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    RatingBar.builder(
-                      initialRating: _rating,
-                      minRating: 1,
-                      direction: Axis.horizontal,
-                      allowHalfRating: true,
-                      itemCount: 5,
-                      itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      itemBuilder:
-                          (context, _) =>
-                              Icon(Icons.star, color: Colors.amberAccent),
-                      onRatingUpdate: (rating) {
-                        setState(() {
-                          _rating = rating;
-                        });
-                      },
-                    ),
+                  if (userHasOrderedThisProduct &&
+                      !hasReviewed &&
+                      authNotifier.currentUser!.id != widget.producer.id) ...[
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          (_isLoading)
-                              ? Center(child: CircularProgressIndicator())
-                              : ElevatedButton(
-                                onPressed: () => submitReview(),
-                                child: Text("Publicar"),
+                          Text("Avaliação:"),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: reviewController,
+                            decoration: InputDecoration(
+                              labelText: 'Comentário',
+                              hintText: 'Escreve o teu comentário...',
+                              border: const OutlineInputBorder(),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryFixed,
+                                ),
                               ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  width: 0.5,
+                                ),
+                              ),
+                              alignLabelWithHint: true,
+                            ),
+                            maxLines: null,
+                            minLines: 4,
+                            keyboardType: TextInputType.multiline,
+                          ),
                         ],
                       ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        RatingBar.builder(
+                          initialRating: _rating,
+                          minRating: 1,
+                          direction: Axis.horizontal,
+                          allowHalfRating: true,
+                          itemCount: 5,
+                          itemPadding: const EdgeInsets.symmetric(
+                            horizontal: 4.0,
+                          ),
+                          itemBuilder:
+                              (context, _) =>
+                                  Icon(Icons.star, color: Colors.amberAccent),
+                          onRatingUpdate: (rating) {
+                            setState(() {
+                              _rating = rating;
+                            });
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              (_isLoading)
+                                  ? Center(child: CircularProgressIndicator())
+                                  : ElevatedButton(
+                                    onPressed: () => submitReview(),
+                                    child: Text("Publicar"),
+                                  ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ],
-            ],
-          ),
+                ],
+              )
+              : Padding(
+                padding: const EdgeInsets.all(15),
+                child: Text("Sem comentários..."),
+              ),
         ],
       ),
     );

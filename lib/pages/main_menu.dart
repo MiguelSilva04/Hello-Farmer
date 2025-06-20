@@ -58,7 +58,7 @@ class _MainMenuState extends State<MainMenu>
   void initState() {
     super.initState();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    _initializeApp();
+    _initializeApp(false);
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -77,34 +77,27 @@ class _MainMenuState extends State<MainMenu>
     super.dispose();
   }
 
-  Future<AppUser> _initializeApp() async {
-    setState(() {
-      _isLoading = true;
-    });
-    print("User a carregar...");
+  Future<AppUser> _initializeApp(bool isRefreshing) async {
+    if (!isRefreshing)
+      setState(() {
+        _isLoading = true;
+      });
     user = await authNotifier.loadUser();
-    print("User carregado!");
 
     if (user.isProducer) {
-      print("A carregar a selectedStoreIndex");
       await authNotifier.updateSelectedStoreIndex();
-      print("selectedStoreIndex carregada: ${authNotifier.selectedStoreIndex}");
     }
-    print("Lojas a carregar...");
+
     final storeService = Provider.of<StoreService>(context, listen: false);
     await storeService.loadStores();
-    print("Lojas carregadas!");
 
-    print("Users a carregar!");
     await authNotifier.loadAllUsers();
-    print("Users carregados!");
 
     final notificationNotifier = Provider.of<NotificationNotifier>(
       context,
       listen: false,
     );
 
-    print("A carregar notificacoes e token");
     if (user.isProducer) {
       final selectedStoreId =
           (authNotifier.currentUser as ProducerUser)
@@ -115,29 +108,22 @@ class _MainMenuState extends State<MainMenu>
         id: selectedStoreId,
         isProducer: true,
       );
-      print("Token carregado!");
 
       notificationNotifier.listenToNotifications(
         id: selectedStoreId,
         isProducer: true,
       );
-      print("Notificacoes Carregadas!");
     } else {
       await notificationNotifier.setupFCM(
         id: authNotifier.currentUser!.id,
         isProducer: false,
       );
-      print("Token carregado!");
 
       notificationNotifier.listenToNotifications(
         id: authNotifier.currentUser!.id,
         isProducer: false,
       );
-      print("Notificacoes Carregadas!");
     }
-    print("Tokens e notificacoes carregados!");
-
-    print("Chats e conversas a carregar !");
     final chatService = Provider.of<ChatService>(context, listen: false);
     final chatNotifier = Provider.of<ChatListNotifier>(context, listen: false);
     final currentChat = chatService.currentChat;
@@ -154,41 +140,41 @@ class _MainMenuState extends State<MainMenu>
         }
       });
     }
-    print("Chats e conversas carregados!");
 
-    setState(() {
-      _isLoading = false;
-    });
+    if (!isRefreshing)
+      setState(() {
+        _isLoading = false;
+      });
     return user;
   }
 
   void _toggleSearch(AppUser user) async {
-  if (_isSearching) {
-    FocusScope.of(context).unfocus();
+    if (_isSearching) {
+      FocusScope.of(context).unfocus();
 
-    await Future.delayed(const Duration(milliseconds: 350));
+      await Future.delayed(const Duration(milliseconds: 350));
+    }
+
+    if (mounted) {
+      setState(() {
+        _isSearching = !_isSearching;
+
+        if (_isSearching) {
+          _showLogo = false;
+        } else {
+          Future.delayed(const Duration(milliseconds: 350), () {
+            if (mounted) {
+              setState(() {
+                _showLogo = true;
+              });
+            }
+          });
+          context.read<SearchNotifier>().clear();
+          _searchQuery = "";
+        }
+      });
+    }
   }
-
-  if (mounted) {
-    setState(() {
-      _isSearching = !_isSearching;
-
-      if (_isSearching) {
-        _showLogo = false;
-      } else {
-        Future.delayed(const Duration(milliseconds: 350), () {
-          if (mounted) {
-            setState(() {
-              _showLogo = true;
-            });
-          }
-        });
-        context.read<SearchNotifier>().clear();
-        _searchQuery = "";
-      }
-    });
-  }
-}
 
   void _navigateToPage(String route) {
     Navigator.of(context).push(
@@ -264,9 +250,7 @@ class _MainMenuState extends State<MainMenu>
             actions: [
               if ((user.isProducer) || (!user.isProducer)) ...[
                 ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: 200,
-                  ),
+                  constraints: BoxConstraints(maxWidth: 200),
                   child: AnimatedSwitcher(
                     duration: Duration(milliseconds: 300),
                     child:
@@ -423,12 +407,35 @@ class _MainMenuState extends State<MainMenu>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Icon(
-                                  FontAwesomeIcons.heart,
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.tertiaryFixed,
+                                Consumer<AuthNotifier>(
+                                  builder: (context, auth, _) {
+                                    final count = auth.favorites.length;
+
+                                    return InkWell(
+                                      onTap:
+                                          () => Navigator.of(context).pushNamed(
+                                            AppRoutes.NOTIFICATION_PAGE,
+                                          ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Badge.count(
+                                          count: count,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                            ),
+                                            child: Icon(
+                                              FontAwesomeIcons.heart,
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.tertiaryFixed,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                                 SizedBox(width: 10),
                                 Text("Favoritos"),
@@ -513,40 +520,44 @@ class _MainMenuState extends State<MainMenu>
               ),
             ],
           ),
-          body: FadeTransition(
-            opacity: _opacityAnimation,
-            child:
-                _isSearching
-                    ? Consumer<SearchNotifier>(
-                      builder: (context, searchNotifier, _) {
-                        return GlobalSearchResults(
-                          filteredItems: searchNotifier.results,
-                          query: _searchQuery,
-                          onSelect: (item) {
-                            FocusScope.of(context).unfocus();
-                            setState(() {
-                              _isSearching = false;
-                            });
-                            Future.microtask(() {
-                              item.onTap();
-                            });
-                          },
-                        );
-                      },
-                    )
-                    : Consumer<AuthNotifier>(
-                      builder: (context, authNotifier, _) {
-                        final user = authNotifier.currentUser;
+          body: RefreshIndicator(
+            color: Theme.of(context).colorScheme.secondary,
+            onRefresh: () => _initializeApp(true),
+            child: FadeTransition(
+              opacity: _opacityAnimation,
+              child:
+                  _isSearching
+                      ? Consumer<SearchNotifier>(
+                        builder: (context, searchNotifier, _) {
+                          return GlobalSearchResults(
+                            filteredItems: searchNotifier.results,
+                            query: _searchQuery,
+                            onSelect: (item) {
+                              FocusScope.of(context).unfocus();
+                              setState(() {
+                                _isSearching = false;
+                              });
+                              Future.microtask(() {
+                                item.onTap();
+                              });
+                            },
+                          );
+                        },
+                      )
+                      : Consumer<AuthNotifier>(
+                        builder: (context, authNotifier, _) {
+                          final user = authNotifier.currentUser;
 
-                        return user is ProducerUser
-                            ? _producerPages[Provider.of<
-                              BottomNavigationNotifier
-                            >(context).currentIndex]
-                            : _consumerPages[Provider.of<
-                              BottomNavigationNotifier
-                            >(context).currentIndex];
-                      },
-                    ),
+                          return user is ProducerUser
+                              ? _producerPages[Provider.of<
+                                BottomNavigationNotifier
+                              >(context).currentIndex]
+                              : _consumerPages[Provider.of<
+                                BottomNavigationNotifier
+                              >(context).currentIndex];
+                        },
+                      ),
+            ),
           ),
 
           bottomNavigationBar:

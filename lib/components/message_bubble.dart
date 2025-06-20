@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:provider/provider.dart';
 
-import '../core/services/auth/auth_service.dart';
-
 class MessageBubble extends StatelessWidget {
   static const _defaultImage = 'assets/images/avatar.png';
   final ChatMessage message;

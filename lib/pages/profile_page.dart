@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/order.dart';
@@ -664,34 +665,54 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         if (user!.isProducer && (user as ProducerUser).stores.isNotEmpty) ...[
           const SizedBox(height: 10),
-          Text("🏪 Bancas", style: TextStyle(fontSize: 20)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Banca${(user as ProducerUser).stores.length > 1 ? "s" : ""}:",
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
           const SizedBox(height: 5),
           ...(user as ProducerUser).stores
               .map(
-                (store) => InkWell(
-                  onTap:
-                      () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => StorePage(store: store),
-                        ),
-                      ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 8,
-                        children: [
-                          Text(store.name!, style: TextStyle(fontSize: 18)),
-                          Text(
-                            " 📍 ${store.city!}",
-                            style: TextStyle(fontSize: 18),
+                (store) => Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        onTap:
+                            () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => StorePage(store: store),
+                              ),
+                            ),
+                        leading: Container(
+                          width: 75,
+                          height: 75,
+                          child: Image(
+                            image: NetworkImage(store.imageUrl!),
+                            fit:
+                                BoxFit
+                                    .cover, // opcional, para ajustar a imagem ao container
                           ),
-                          Icon(Icons.keyboard_arrow_right_outlined),
-                        ],
+                        ),
+
+                        title: AutoSizeText(
+                          store.name!,
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        subtitle: AutoSizeText(
+                          "📍 ${store.city!}",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        trailing: Icon(Icons.keyboard_arrow_right_outlined),
                       ),
-                    ],
-                  ),
+                    ),
+                    const Divider(),
+                  ],
                 ),
               )
               .toList(),

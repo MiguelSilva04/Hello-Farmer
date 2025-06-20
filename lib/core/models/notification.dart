@@ -26,8 +26,6 @@ class NotificationItem {
         return "Nova avaliação";
       case NotificationType.abandonedOrder:
         return "Encomenda abandonada";
-      case NotificationType.deliveryScheduled:
-        return "Entrega agendada";
       case NotificationType.lowStock:
         return "Stock baixo";
     }
@@ -45,8 +43,6 @@ class NotificationItem {
         return "Nova avaliação de ${data["consumer"]}";
       case NotificationType.abandonedOrder:
         return "Encomenda abandonada (${data["order"]})";
-      case NotificationType.deliveryScheduled:
-        return "Entrega Nº(${data['order']}) agendada ";
       case NotificationType.lowStock:
         return "Stock baixo de (${data['ad']})";
     }
@@ -68,7 +64,6 @@ class NotificationItem {
 enum NotificationType {
   orderPlaced,
   orderSent,
-  deliveryScheduled,
   newReview,
   newMessage,
   abandonedOrder,
@@ -82,8 +77,6 @@ extension NotificationTypeIcon on NotificationType {
         return Icons.local_shipping_rounded;
       case NotificationType.orderPlaced:
         return Icons.shopping_cart_checkout_rounded;
-      case NotificationType.deliveryScheduled:
-        return Icons.schedule_send_rounded;
       case NotificationType.newReview:
         return Icons.reviews_rounded;
       case NotificationType.newMessage:
@@ -97,20 +90,18 @@ extension NotificationTypeIcon on NotificationType {
 
   Color get color {
     switch (this) {
-      case NotificationType.orderSent:
-        return Colors.green.shade600; // Verde: enviado com sucesso
       case NotificationType.orderPlaced:
-        return Colors.teal.shade600; // Teal: encomenda recebida
-      case NotificationType.deliveryScheduled:
-        return Colors.indigo.shade600; // Azul escuro: agendamento
+        return Colors.indigo.shade600;
+      case NotificationType.orderSent:
+        return Colors.green.shade600;
       case NotificationType.newReview:
-        return Colors.amber.shade800; // Amarelo forte: avaliação
+        return Colors.amber.shade800;
       case NotificationType.newMessage:
-        return Colors.blue.shade400; // Azul leve: comunicação
+        return Colors.blue.shade400;
       case NotificationType.abandonedOrder:
-        return Colors.grey.shade700; // Cinzento escuro: inatividade
+        return Colors.grey.shade700;
       case NotificationType.lowStock:
-        return Colors.red.shade700; // Vermelho: alerta urgente
+        return Colors.red.shade700;
     }
   }
 }

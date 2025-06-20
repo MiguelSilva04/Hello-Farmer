@@ -803,7 +803,6 @@ class _ExplorePageState extends State<ExplorePage> {
       _searchText = "";
       _categoryText = '';
       _selectedKeyword = null;
-      //_selectedCity = AuthService().currentUser!.city ?? "";
       searchEditingController;
       _minPrice = 0;
       _maxPrice = 30;

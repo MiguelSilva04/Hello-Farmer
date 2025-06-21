@@ -26,6 +26,7 @@ class _MapPageState extends State<MapPage> {
   LatLng? _currentPosition;
   GoogleMapController? _mapController;
   Set<Marker> _markers = {};
+  BitmapDescriptor? _shopIcon;
 
   dynamic _selectedStore;
 
@@ -51,9 +52,7 @@ class _MapPageState extends State<MapPage> {
                 });
                 _goToStore(coords);
               },
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueGreen,
-              ),
+              icon: _shopIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
             ),
           );
           markerId++;
@@ -78,7 +77,22 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _determinePosition();
+    _loadCustomMarker();
   }
+
+  Future<void> _loadCustomMarker() async {
+  final BitmapDescriptor bitmap = await BitmapDescriptor.asset(
+    const ImageConfiguration(size: Size(48, 48)),
+    'assets/images/shop.png',
+  );
+  if (mounted) {
+    setState(() {
+      _shopIcon = bitmap;
+    });
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    _loadMarkers(authNotifier.producerUsers);
+  }
+}
 
   Future<void> _determinePosition() async {
     var status = await Permission.location.request();

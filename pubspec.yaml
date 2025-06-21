@@ -187,6 +187,7 @@ flutter:
     - assets/images/mock_images/cenoura.jpg
     - assets/images/mock_images/batata.jpg
     - assets/images/mock_images/tomate.jpg
+    - assets/images/shop.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -34,7 +34,10 @@ class OrderDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final chatService = Provider.of<ChatService>(context, listen: false);
-    final store = producer.stores.where((s) => s.id == order.storeId).first;
+    final Store? store = producer.stores.cast<Store?>().firstWhere(
+      (s) => s?.id == order.storeId,
+      orElse: () => null,
+    );
 
     Widget buildUserContactSection({
       required BuildContext context,
@@ -53,9 +56,11 @@ class OrderDetailsPage extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => StorePage(store: store)),
-              );
+              if (store != null) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => StorePage(store: store)),
+                );
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(12),
@@ -73,7 +78,7 @@ class OrderDetailsPage extends StatelessWidget {
                         Text(
                           displayedUser is ConsumerUser
                               ? "${displayedUser.firstName} ${displayedUser.lastName}"
-                              : store.name ?? 'Sem nome',
+                              : store?.name ?? 'Sem nome',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -219,6 +224,17 @@ class OrderDetailsPage extends StatelessWidget {
                 'pt_PT',
               ).format(curOrder.deliveryDate);
               final products = curOrder.ordersItems;
+              final hasMissingProducts = products.any((item) {
+                final ad = authNotifier.producerUsers
+                    .expand((p) => p.stores.expand((s) => s.productsAds ?? []))
+                    .cast<ProductAd?>()
+                    .firstWhere(
+                      (ad) => ad?.id == item.productAdId,
+                      orElse: () => null,
+                    );
+
+                return ad?.product == null;
+              });
               final deliveryMethod = curOrder.deliveryMethod!.toDisplayString();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,13 +381,25 @@ class OrderDetailsPage extends StatelessWidget {
                   ),
                   Column(
                     children: [
-                      if (!authNotifier.currentUser!.isProducer)
+                      if (!authNotifier.currentUser!.isProducer &&
+                          store != null)
                         buildUserContactSection(
                           context: context,
                           displayedUser: producer,
                           title: "Banca Vendedora",
                           subtitle: store.name,
                           isProducerSide: true,
+                        )
+                      else
+                        const Padding(
+                          padding: EdgeInsets.only(top: 16.0),
+                          child: Text(
+                            "Banca não disponível.",
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
                         ),
                       if (authNotifier.currentUser!.isProducer)
                         buildUserContactSection(
@@ -437,26 +465,77 @@ class OrderDetailsPage extends StatelessWidget {
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final item = products[index];
-                          final ad =
-                              authNotifier.producerUsers
-                                      .expand(
-                                        (p) => p.stores.expand(
-                                          (s) => s.productsAds ?? [],
-                                        ),
-                                      )
-                                      .firstWhere(
-                                        (ad) {
-                                          return ad.id == item.productAdId;
-                                        },
-                                        orElse:
-                                            () =>
-                                                throw Exception(
-                                                  "ProductAd não encontrado.",
-                                                ),
-                                      )
-                                  as ProductAd;
 
-                          final product = ad.product;
+                          final ad = authNotifier.producerUsers
+                              .expand(
+                                (p) =>
+                                    p.stores.expand((s) => s.productsAds ?? []),
+                              )
+                              .cast<ProductAd?>()
+                              .firstWhere(
+                                (ad) => ad?.id == item.productAdId,
+                                orElse: () => null,
+                              );
+
+                          final product = ad?.product;
+
+                          if (ad == null || product == null) {
+                            return Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      height: 80,
+                                      width: 80,
+                                      child: Icon(
+                                        Icons.hide_image,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Produto eliminado pelo produtor",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.8),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "Este produto foi removido e já não se encontra disponível.",
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.6),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
                           final quantityText =
                               product.unit == Unit.KG
                                   ? "${item.qty} ${product.unit.toDisplayString()}"
@@ -533,34 +612,50 @@ class OrderDetailsPage extends StatelessWidget {
                     "Para mais detalhes sobre a entrega, contacta o vendedor.",
                     style: TextStyle(fontSize: 12),
                   ),
-                  Center(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.secondary,
-                      ),
-                      onPressed:
-                          () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (ctx) => InvoicePageConsumer(
-                                    order: order,
-                                    producer: producer,
-                                  ),
+
+                  if (!hasMissingProducts)
+                    Center(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.surface,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.secondary,
+                        ),
+                        onPressed:
+                            () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (ctx) => InvoicePageConsumer(
+                                      order: order,
+                                      producer: producer,
+                                    ),
+                              ),
                             ),
-                          ),
-                      icon: Icon(
-                        Icons.receipt,
-                        size: 30,
-                        color: Theme.of(context).colorScheme.secondary,
+                        icon: Icon(
+                          Icons.receipt,
+                          size: 30,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                        label: const Text(
+                          "Consultar fatura",
+                          style: TextStyle(fontSize: 20),
+                        ),
                       ),
-                      label: const Text(
-                        "Consultar fatura",
-                        style: TextStyle(fontSize: 20),
+                    )
+                  else
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        "Fatura indisponível: um ou mais produtos foram removidos.",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
+
                   const SizedBox(height: 10),
                 ],
               );
@@ -599,8 +694,12 @@ class _OrderTimelineState extends State<OrderTimeline> {
   }
 
   Future<void> updateOrderState() async {
-    final store = Provider.of<AuthNotifier>(context, listen: false).stores
-        .where((s) => s.orders?.any((o) => o.id == widget.order.id) ?? false).first;
+    final store =
+        Provider.of<AuthNotifier>(context, listen: false).stores
+            .where(
+              (s) => s.orders?.any((o) => o.id == widget.order.id) ?? false,
+            )
+            .first;
     setState(() => _isLoading = true);
     final newOrderState = steps[currentStep];
     await Provider.of<AuthNotifier>(

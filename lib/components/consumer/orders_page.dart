@@ -157,7 +157,6 @@ class _OrdersPageState extends State<OrdersPage>
                     (ad) => ad.id == orderItem.productAdId,
                   ),
                 )
-                .whereType<ProductAd>()
                 .toList();
 
         return OrderCard(order: order, ads: ordersAds);
@@ -168,15 +167,20 @@ class _OrdersPageState extends State<OrdersPage>
 
 class OrderCard extends StatelessWidget {
   final Order order;
-  final ads;
-
+  final List<ProductAd?> ads;
   const OrderCard({super.key, required this.order, required this.ads});
-
   @override
   Widget build(BuildContext context) {
-    final producer = Provider.of<AuthNotifier>(context, listen: false)
-        .producerUsers
-        .firstWhere((u) => u.stores.any((store) => store.id == order.storeId));
+    final producer = Provider.of<AuthNotifier>(
+      context,
+      listen: false,
+    ).producerUsers.firstWhereOrNull(
+      (u) => u.stores.any((store) => store.id == order.storeId),
+    );
+
+    if (producer == null) {
+      return const SizedBox.shrink();
+    }
 
     final visibleAds = ads.take(3).toList();
     final extraCount = ads.length - visibleAds.length;
@@ -203,10 +207,26 @@ class OrderCard extends StatelessWidget {
                     Row(
                       children: [
                         ...visibleAds.map((ad) {
+                          if (ad == null) {
+                            return Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Icon(Icons.hide_image, size: 18),
+                            );
+                          }
+
                           final image =
                               ad.product.imageUrls.isNotEmpty
                                   ? ad.product.imageUrls.first
                                   : null;
+
                           return Padding(
                             padding: const EdgeInsets.only(right: 2),
                             child: ClipRRect(
@@ -230,6 +250,7 @@ class OrderCard extends StatelessWidget {
                             ),
                           );
                         }),
+
                         if (extraCount > 0)
                           Container(
                             width: 20,

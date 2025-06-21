@@ -381,7 +381,7 @@ class OrderDetailsPage extends StatelessWidget {
                   ),
                   Column(
                     children: [
-                      if (!authNotifier.currentUser!.isProducer &&
+                      if (
                           store != null)
                         buildUserContactSection(
                           context: context,

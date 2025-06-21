@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
+import 'package:harvestly/core/services/chat/chat_service.dart';
+import 'package:harvestly/utils/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -16,30 +19,46 @@ class ClientsSection extends StatefulWidget {
 }
 
 class _ClientsSectionState extends State<ClientsSection> {
-  late final List<Order> _orders;
-  late final List<AppUser> _consumers;
-  late final Map<String, List<Order>> _ordersByConsumer;
+  List<Order> _orders = [];
+  List<AppUser> _consumers = [];
+  Map<String, List<Order>> _ordersByConsumer = {};
+  bool _isLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_isLoaded) {
+      final currentUser = (AuthService().currentUser! as ProducerUser);
+      final users = Provider.of<AuthNotifier>(context, listen: false).allUsers;
+      final selectedStore =
+          currentUser.stores[Provider.of<AuthNotifier>(
+            context,
+            listen: false,
+          ).selectedStoreIndex!];
+
+      final orders = selectedStore.orders ?? [];
+
+      final ordersByConsumer = <String, List<Order>>{};
+      for (final order in orders) {
+        ordersByConsumer.putIfAbsent(order.consumerId, () => []).add(order);
+      }
+
+      final consumers =
+          users.where((u) => ordersByConsumer.keys.contains(u.id)).toList();
+
+      setState(() {
+        _orders = orders;
+        _ordersByConsumer = ordersByConsumer;
+        _consumers = consumers;
+        _isLoaded = true;
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    final currentUser = (AuthService().currentUser! as ProducerUser);
-    final users = AuthService().users;
-    final selectedStore =
-        currentUser.stores[Provider.of<AuthNotifier>(
-          context,
-          listen: false,
-        ).selectedStoreIndex!];
-
-    _orders = selectedStore.orders ?? [];
-
-    _ordersByConsumer = {};
-    for (final order in _orders) {
-      _ordersByConsumer.putIfAbsent(order.consumerId, () => []).add(order);
-    }
-
-    _consumers =
-        users.where((u) => _ordersByConsumer.keys.contains(u.id)).toList();
   }
 
   Widget _buildHeader() {
@@ -205,12 +224,85 @@ class _ClientsSectionState extends State<ClientsSection> {
                     ],
                   ),
                   trailing: IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.message_rounded,
-                      color: Colors.green,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                    onPressed: () {
-                      // Lógica para contactar (e.g., abrir WhatsApp ou chat interno)
+                    onPressed: () async {
+                      final chatService = Provider.of<ChatService>(
+                        context,
+                        listen: false,
+                      );
+                      final currentUser =
+                          AuthService().currentUser! as ProducerUser;
+                      final otherUser = client;
+
+                      final chatList =
+                          Provider.of<ChatListNotifier>(
+                            context,
+                            listen: false,
+                          ).chats;
+                      final existingChat = chatList.firstWhere(
+                        (chat) =>
+                            (chat.consumerId == currentUser.id &&
+                                chat.producerId == otherUser.id) ||
+                            (chat.producerId == currentUser.id &&
+                                chat.consumerId == otherUser.id),
+                      );
+                      chatService.updateCurrentChat(existingChat);
+                      Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+
+                      // Criar nova conversa
+                      final _messageController = TextEditingController();
+                      final result = await showDialog<String>(
+                        context: context,
+                        builder:
+                            (ctx) => AlertDialog(
+                              title: Text("Enviar mensagem"),
+                              content: TextField(
+                                controller: _messageController,
+                                decoration: const InputDecoration(
+                                  hintText: "Escreve a tua mensagem...",
+                                ),
+                                maxLines: null,
+                                autofocus: true,
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(ctx).pop(),
+                                  child: const Text("Fechar"),
+                                ),
+                                TextButton(
+                                  onPressed:
+                                      () => Navigator.of(
+                                        ctx,
+                                      ).pop(_messageController.text.trim()),
+                                  child: const Text("Enviar"),
+                                ),
+                              ],
+                            ),
+                      );
+                      if (result != null && result.isNotEmpty) {
+                        final newChat = await chatService.createChat(
+                          currentUser.isProducer
+                              ? otherUser.id
+                              : currentUser.id,
+                          currentUser.isProducer
+                              ? currentUser.id
+                              : otherUser.id,
+                        );
+
+                        await chatService.save(result, currentUser, newChat.id);
+
+                        Provider.of<ChatListNotifier>(
+                          context,
+                          listen: false,
+                        ).addChat(newChat);
+
+                        chatService.updateCurrentChat(newChat);
+
+                        Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+                      }
                     },
                   ),
                 ),

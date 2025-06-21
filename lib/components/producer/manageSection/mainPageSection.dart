@@ -418,23 +418,29 @@ class _MainPageSectionState extends State<MainPageSection> {
                   children: [
                     Row(
                       children: [
-                        const Text(
-                          "Canais de venda",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: const Text(
+                            "Canais de venda",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed:
-                              () => Provider.of<ManageSectionNotifier>(
-                                context,
-                                listen: false,
-                              ).setIndex(13),
-                          child: const Text(
-                            "Definir Canais de venda",
-                            style: TextStyle(fontSize: 12),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 160),
+                          child: TextButton(
+                            onPressed:
+                                () => Provider.of<ManageSectionNotifier>(
+                                  context,
+                                  listen: false,
+                                ).setIndex(13),
+                            child: const Text(
+                              "Definir Canais de venda",
+                              style: TextStyle(fontSize: 11),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
                         ),
                       ],
@@ -497,23 +503,32 @@ class _MainPageSectionState extends State<MainPageSection> {
                           children: [
                             Row(
                               children: [
-                                const Text(
-                                  "Anúncios publicados",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                Expanded(
+                                  child: const Text(
+                                    "Anúncios publicados",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                                const Spacer(),
-                                TextButton.icon(
-                                  onPressed: () {
-                                    Provider.of<BottomNavigationNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).setIndex(2);
-                                  },
-                                  icon: const Icon(Icons.add),
-                                  label: const Text("Novo anúncio"),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: 150),
+                                  child: TextButton.icon(
+                                    onPressed: () {
+                                      Provider.of<BottomNavigationNotifier>(
+                                        context,
+                                        listen: false,
+                                      ).setIndex(2);
+                                    },
+                                    icon: const Icon(Icons.add),
+                                    label: const Text(
+                                      "Novo anúncio",
+                                      style: TextStyle(fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),

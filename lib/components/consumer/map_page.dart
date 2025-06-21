@@ -144,7 +144,6 @@ class _MapPageState extends State<MapPage> {
             });
           },
         ),
-        //Botão de voltar se ow idget estiver a ser acedido externamente
         if (Navigator.canPop(context))
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
@@ -153,7 +152,11 @@ class _MapPageState extends State<MapPage> {
               heroTag: 'backButton',
               onPressed: () => Navigator.pop(context),
               backgroundColor: Theme.of(context).colorScheme.surface,
-              child: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface, size: 20),
+              child: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).colorScheme.onSurface,
+                size: 20,
+              ),
             ),
           ),
 
@@ -167,13 +170,16 @@ class _MapPageState extends State<MapPage> {
                 _selectedStore != null
                     ? Card(
                       key: ValueKey(_selectedStore),
-                      elevation: 6,
+                      elevation: 8,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      color: Theme.of(context).colorScheme.surface,
+                      color: Theme.of(context).colorScheme.background,
+                      shadowColor: Theme.of(
+                        context,
+                      ).shadowColor.withOpacity(0.2),
                       child: Padding(
-                        padding: const EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,14 +187,14 @@ class _MapPageState extends State<MapPage> {
                             Row(
                               children: [
                                 CircleAvatar(
-                                  radius: 30,
+                                  radius: 32,
                                   backgroundImage:
                                       _selectedStore.imageUrl != null &&
                                               _selectedStore.imageUrl.isNotEmpty
                                           ? NetworkImage(
                                             _selectedStore.imageUrl,
                                           )
-                                          : AssetImage(
+                                          : const AssetImage(
                                                 'assets/images/simpleLogo.png',
                                               )
                                               as ImageProvider,
@@ -198,29 +204,59 @@ class _MapPageState extends State<MapPage> {
                                       ).colorScheme.secondaryContainer,
                                   onBackgroundImageError: (_, __) {},
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Text(
                                     _selectedStore.name,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onBackground,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            if (_selectedStore.description != null)
+                            if (_selectedStore.description != null &&
+                                _selectedStore.description.isNotEmpty)
                               Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(_selectedStore.description),
+                                padding: const EdgeInsets.only(top: 12.0),
+                                child: Text(
+                                  _selectedStore.description,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onBackground.withOpacity(0.7),
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             Align(
                               alignment: Alignment.centerRight,
                               child: ElevatedButton.icon(
-                                icon: const Icon(Icons.store),
+                                icon: const Icon(Icons.storefront_outlined),
                                 label: const Text('Ver Banca'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
                                 onPressed: () async {
                                   await Navigator.push(
                                     context,

@@ -599,6 +599,7 @@ class AuthService {
     required File backgroundImageFile,
     required List<String> deliveryMethods,
     required LatLng coordinates,
+    required String billingAddress,
   }) async {
     final FirebaseFirestore _firestore = fireStore;
     final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -614,6 +615,21 @@ class AuthService {
       final bgUploadTask = await bgRef.putFile(backgroundImageFile);
       final backgroundImageUrl = await bgUploadTask.ref.getDownloadURL();
       final dateTime = Timestamp.now();
+
+      final querySnapshot =
+          await _firestore
+              .collection('stores')
+              .where('ownerId', isEqualTo: currentUser!.id)
+              .limit(1)
+              .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final docRef = querySnapshot.docs.first.reference;
+
+        await docRef.update({'billingAddress': billingAddress});
+      } else {
+        print('Nenhuma loja encontrada para este ownerId.');
+      }
 
       await _firestore.collection('stores').doc(storeId).set({
         'id': storeId,

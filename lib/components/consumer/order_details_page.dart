@@ -706,7 +706,8 @@ class _OrderTimelineState extends State<OrderTimeline> {
       context,
       listen: false,
     ).changeOrderState(widget.order.id, newOrderState);
-    if (newOrderState == OrderState.Pending)
+    print(newOrderState);
+    if (newOrderState == OrderState.Sent)
       await Provider.of<NotificationNotifier>(
         context,
         listen: false,

@@ -335,17 +335,21 @@ class AnalysisReportsSection extends StatelessWidget {
 
       for (var order in orders) {
         final hasProduct = order.ordersItems.any((p) {
-          final finalProductAd =
-              (AuthService().currentUser! as ProducerUser)
-                  .stores[Provider.of<AuthNotifier>(
-                    context,
-                    listen: false,
-                  ).selectedStoreIndex!]
-                  .productsAds!
-                  .where((pr) => pr.id == p.productAdId)
-                  .first;
+          final matchingAds = (AuthService().currentUser! as ProducerUser)
+              .stores[Provider.of<AuthNotifier>(
+                context,
+                listen: false,
+              ).selectedStoreIndex!]
+              .productsAds!
+              .where((pr) => pr.id == p.productAdId);
+
+          if (matchingAds.isEmpty) return false;
+
+          final finalProductAd = matchingAds.first;
+
           return finalProductAd.product.name == productName;
         });
+
         if (hasProduct) {
           totalOrders++;
           if (order.state == OrderState.Delivered) {

@@ -165,47 +165,49 @@ class AnalysisMainProductsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<ProductStats> calculateProductStats() {
-      final currentStore =
-          (AuthService().currentUser! as ProducerUser)
-              .stores[Provider.of<AuthNotifier>(
-            context,
-            listen: false,
-          ).selectedStoreIndex!];
-      final orders = currentStore.orders ?? [];
-      final Map<String, ProductStats> statsMap = {};
+  final currentStore = (AuthService().currentUser! as ProducerUser)
+      .stores[Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex!];
+  final orders = currentStore.orders ?? [];
+  final Map<String, ProductStats> statsMap = {};
 
-      for (final order in orders) {
-        for (final ad in order.ordersItems) {
-          final productAd =
-              currentStore.productsAds!
-                  .where((p) => p.id == ad.productAdId)
-                  .first;
-          final product = productAd.product;
-          final name = product.name;
-          final image = product.imageUrls.first;
-          final unit = productAd.product.unit;
-          final amount = ad.qty;
-          final price = productAd.product.price;
+  for (final order in orders) {
+    for (final ad in order.ordersItems) {
+      final matchingAds = currentStore.productsAds!
+          .where((p) => p.id == ad.productAdId);
 
-          statsMap.putIfAbsent(
-            name,
-            () => ProductStats(name: name, image: image, unit: product.unit),
-          );
-          final stats = statsMap[name]!;
-
-          stats.totalSales += 1;
-          stats.totalAmountInSales += price;
-
-          if (unit == Unit.KG) {
-            stats.totalKg += amount;
-          } else if (unit == Unit.UNIT) {
-            stats.totalUnits += amount;
-          }
-        }
+      if (matchingAds.isEmpty) {
+        continue;
       }
 
-      return statsMap.values.toList();
+      final productAd = matchingAds.first;
+      final product = productAd.product;
+      final name = product.name;
+      final image = product.imageUrls.first;
+      final unit = product.unit;
+      final amount = ad.qty;
+      final price = product.price;
+
+      statsMap.putIfAbsent(
+        name,
+        () => ProductStats(name: name, image: image, unit: unit),
+      );
+
+      final stats = statsMap[name]!;
+
+      stats.totalSales += 1;
+      stats.totalAmountInSales += price;
+
+      if (unit == Unit.KG) {
+        stats.totalKg += amount;
+      } else if (unit == Unit.UNIT) {
+        stats.totalUnits += amount;
+      }
     }
+  }
+
+  return statsMap.values.toList();
+}
+
 
     final stats = calculateProductStats();
     stats.sort((a, b) => b.totalSales.compareTo(a.totalSales));

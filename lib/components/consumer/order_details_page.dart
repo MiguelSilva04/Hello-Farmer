@@ -599,15 +599,20 @@ class _OrderTimelineState extends State<OrderTimeline> {
   }
 
   Future<void> updateOrderState() async {
-    final store = Provider.of<AuthNotifier>(context, listen: false).stores
-        .where((s) => s.orders?.any((o) => o.id == widget.order.id) ?? false).first;
+    final store =
+        Provider.of<AuthNotifier>(context, listen: false).stores
+            .where(
+              (s) => s.orders?.any((o) => o.id == widget.order.id) ?? false,
+            )
+            .first;
     setState(() => _isLoading = true);
     final newOrderState = steps[currentStep];
     await Provider.of<AuthNotifier>(
       context,
       listen: false,
     ).changeOrderState(widget.order.id, newOrderState);
-    if (newOrderState == OrderState.Pending)
+    print(newOrderState);
+    if (newOrderState == OrderState.Sent)
       await Provider.of<NotificationNotifier>(
         context,
         listen: false,

@@ -17,9 +17,9 @@ import '../core/services/auth/store_service.dart';
 
 // ignore: must_be_immutable
 class CreateStore extends StatefulWidget {
-  bool? isFirstTime;
+  final bool isFirstTime;
   Function()? onClick;
-  CreateStore({super.key, this.isFirstTime, this.onClick});
+  CreateStore({super.key, required this.isFirstTime, this.onClick});
 
   @override
   State<CreateStore> createState() => _CreateStoreState();
@@ -33,6 +33,7 @@ class _CreateStoreState extends State<CreateStore> {
   final descriptionController = TextEditingController();
   final cityController = TextEditingController();
   final addressController = TextEditingController();
+  final billingAddressController = TextEditingController();
   final municipalityController = TextEditingController();
   String? backgroundImageUrl;
   String? imageUrl;
@@ -132,6 +133,7 @@ class _CreateStoreState extends State<CreateStore> {
         deliveryMethods:
             selectedDeliveryMethods.map((m) => m.toDisplayString()).toList(),
         coordinates: coordinates!,
+        billingAddress: billingAddressController.text.trim()
       );
 
       authNotifier.addStore(store);
@@ -165,9 +167,9 @@ class _CreateStoreState extends State<CreateStore> {
   Widget build(BuildContext context) {
     final content = Scaffold(
       appBar:
-          widget.isFirstTime!
+          widget.isFirstTime
               ? AppBar(
-                automaticallyImplyLeading: !widget.isFirstTime!,
+                automaticallyImplyLeading: !widget.isFirstTime,
                 title: Image.asset(
                   "assets/images/logo_android2.png",
                   height: 50,
@@ -316,6 +318,13 @@ class _CreateStoreState extends State<CreateStore> {
                       );
                     }).toList(),
               ),
+
+              if (widget.isFirstTime)
+                _buildTextField(
+                  "Endereço de faturação",
+                  billingAddressController,
+                  validator: true,
+                ),
               const SizedBox(height: 20),
               _isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -398,8 +407,6 @@ class _MapPageProducerState extends State<MapPageProducer> {
   @override
   void initState() {
     super.initState();
-
-    // Se tiver posição inicial da loja, usa logo
     if (widget.initialPosition != null) {
       _currentPosition = widget.initialPosition;
       _selectedMarker = Marker(

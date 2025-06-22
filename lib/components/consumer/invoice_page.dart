@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
+import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
@@ -22,10 +24,12 @@ class InvoicePageConsumer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedStoreIndex =
-        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
+    final firstItem = order.ordersItems.first;
+    final store = producer.stores.firstWhere(
+      (store) => store.productsAds!.any((ad) => ad.id == firstItem.productAdId),
+    );
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
-      final ad = producer.stores[selectedStoreIndex!].productsAds!.firstWhere(
+      final ad = store.productsAds!.firstWhere(
         (ad) => ad.id == item.productAdId,
       );
       final product = ad.product;
@@ -69,7 +73,7 @@ class InvoicePageConsumer extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    producer.stores[selectedStoreIndex!].name ?? 'N/A',
+                    store.name ?? 'N/A' ?? 'N/A',
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],
@@ -184,7 +188,9 @@ class InvoicePageConsumer extends StatelessWidget {
                     ],
                   ),
                   ...order.ordersItems.map((item) {
-                    final ad = producer.stores[selectedStoreIndex].productsAds!
+                    final ad = producer
+                        .stores[producer.stores.indexOf(store)]
+                        .productsAds!
                         .firstWhere((ad) => ad.id == item.productAdId);
                     final product = ad.product;
 
@@ -325,6 +331,7 @@ class InvoicePageConsumer extends StatelessWidget {
                       final pdf = await generateInvoicePdf(
                         order,
                         producer,
+                        store,
                         consumerName,
                         context,
                       );
@@ -347,6 +354,7 @@ class InvoicePageConsumer extends StatelessWidget {
                       final pdf = await generateInvoicePdf(
                         order,
                         producer,
+                        store,
                         consumerName,
                         context,
                       );
@@ -368,20 +376,24 @@ class InvoicePageConsumer extends StatelessWidget {
   Future<pw.Document> generateInvoicePdf(
     Order order,
     ProducerUser producer,
+    Store store,
     String consumerName,
     BuildContext context,
   ) async {
     final pdf = pw.Document();
 
+    final imageLogo = pw.MemoryImage(
+      (await rootBundle.load(
+        'assets/images/logo_green.png',
+      )).buffer.asUint8List(),
+    );
+
     final ttf = pw.Font.ttf(
       await rootBundle.load('assets/fonts/Poppins-Regular.ttf'),
     );
 
-    final selectedStoreIndex =
-        Provider.of<AuthNotifier>(context, listen: false).selectedStoreIndex;
-
     final subtotal = order.ordersItems.fold<double>(0.0, (sum, item) {
-      final ad = producer.stores[selectedStoreIndex!].productsAds!.firstWhere(
+      final ad = store.productsAds!.firstWhere(
         (ad) => ad.id == item.productAdId,
       );
       final product = ad.product;
@@ -396,86 +408,121 @@ class InvoicePageConsumer extends StatelessWidget {
         build:
             (context) => pw.DefaultTextStyle(
               style: pw.TextStyle(font: ttf),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    "Fatura",
-                    style: pw.TextStyle(
-                      fontSize: 24,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                  pw.SizedBox(height: 16),
-                  pw.Text(
-                    "Vendedor: ${producer.firstName} ${producer.lastName}",
-                  ),
-                  pw.Text(
-                    "Banca: ${producer.stores[selectedStoreIndex!].name ?? 'N/A'}",
-                  ),
-                  pw.Text("Encomenda Nº: ${order.id}"),
-                  pw.SizedBox(height: 16),
-                  pw.Text("Cliente: $consumerName"),
-                  pw.Text(
-                    "Data: ${order.deliveryDate.toLocal().toString().split(' ')[0]}",
-                  ),
-                  pw.SizedBox(height: 24),
-                  pw.TableHelper.fromTextArray(
-                    headers: ["Descrição", "Qtd.", "Custo/un."],
-                    data:
-                        order.ordersItems.map((item) {
-                          final ad = producer
-                              .stores[selectedStoreIndex]
-                              .productsAds!
-                              .firstWhere((ad) => ad.id == item.productAdId);
-                          final product = ad.product;
-                          final unitLabel = product.unit.toDisplayString();
-                          final isKg = product.unit == Unit.KG;
-                          final qtyDisplay =
-                              isKg
-                                  ? "${item.qty.toStringAsFixed(2)} $unitLabel"
-                                  : "${item.qty.toStringAsFixed(0)} $unitLabel";
-                          final priceDisplay =
-                              "${product.price.toStringAsFixed(2)} €";
-                          return [product.name, qtyDisplay, priceDisplay];
-                        }).toList(),
-                    cellStyle: pw.TextStyle(font: ttf),
-                    headerStyle: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      font: ttf,
-                    ),
-                  ),
-                  pw.SizedBox(height: 24),
-                  pw.Align(
-                    alignment: pw.Alignment.centerRight,
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.end,
-                      children: [
-                        pw.Text("Subtotal: ${subtotal.toStringAsFixed(2)} €"),
-                        pw.Text("IVA (23%): ${iva.toStringAsFixed(2)} €"),
-                        pw.Text(
-                          "Total: ${total.toStringAsFixed(2)} €",
-                          style: pw.TextStyle(
-                            fontWeight: pw.FontWeight.bold,
-                            font: ttf,
+              child: pw.Padding(
+                padding: const pw.EdgeInsets.all(24),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Center(
+                      child: pw.Column(
+                        children: [
+                          pw.Image(imageLogo, width: 80, height: 80),
+                          pw.SizedBox(height: 8),
+                          pw.Text(
+                            "FATURA",
+                            style: pw.TextStyle(
+                              fontSize: 28,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  pw.SizedBox(height: 32),
-                  pw.Center(
-                    child: pw.Column(
-                      children: [
-                        pw.Text(
-                          "Endereço de Faturação:",
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                        ),
-                        pw.Text(producer.billingAddress ?? "Não definido."),
-                      ],
+                    pw.SizedBox(height: 24),
+                    pw.Text(
+                      "Informações do Vendedor",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                    pw.SizedBox(height: 6),
+                    pw.Text("Nome: ${producer.firstName} ${producer.lastName}"),
+                    pw.Text("Banca: ${store.name ?? 'N/A'}"),
+                    pw.Text(
+                      "Endereço: ${producer.billingAddress ?? 'Não definido'}",
+                    ),
+                    pw.SizedBox(height: 16),
+                    pw.Text(
+                      "Informações do Cliente",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 6),
+                    pw.Text("Nome: $consumerName"),
+                    pw.Text(
+                      "Data de Entrega: ${order.deliveryDate.toLocal().toString().split(' ')[0]}",
+                    ),
+                    pw.Text("Encomenda Nº: ${order.id}"),
+                    pw.SizedBox(height: 24),
+                    pw.Divider(),
+                    pw.Text(
+                      "Detalhes da Encomenda",
+                      style: pw.TextStyle(
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.TableHelper.fromTextArray(
+                      headers: ["Descrição", "Qtd.", "Custo/un."],
+                      data:
+                          order.ordersItems.map((item) {
+                            final ad = store.productsAds!.firstWhere(
+                              (ad) => ad.id == item.productAdId,
+                            );
+                            final product = ad.product;
+                            final unitLabel = product.unit.toDisplayString();
+                            final isKg = product.unit == Unit.KG;
+                            final qtyDisplay =
+                                isKg
+                                    ? "${item.qty.toStringAsFixed(2)} $unitLabel"
+                                    : "${item.qty.toStringAsFixed(0)} $unitLabel";
+                            final priceDisplay =
+                                "${product.price.toStringAsFixed(2)} €";
+                            return [product.name, qtyDisplay, priceDisplay];
+                          }).toList(),
+                      cellStyle: pw.TextStyle(font: ttf),
+                      headerStyle: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        font: ttf,
+                      ),
+                      cellAlignment: pw.Alignment.centerLeft,
+                      headerDecoration: pw.BoxDecoration(
+                        color: PdfColors.grey300,
+                      ),
+                    ),
+                    pw.SizedBox(height: 24),
+                    pw.Divider(),
+                    pw.Align(
+                      alignment: pw.Alignment.centerRight,
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.end,
+                        children: [
+                          pw.Text("Subtotal: ${subtotal.toStringAsFixed(2)} €"),
+                          pw.Text("IVA (23%): ${iva.toStringAsFixed(2)} €"),
+                          pw.Text(
+                            "Total: ${total.toStringAsFixed(2)} €",
+                            style: pw.TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.SizedBox(height: 32),
+                    pw.Divider(),
+                    pw.Center(
+                      child: pw.Text(
+                        "Obrigado pela sua compra!",
+                        style: pw.TextStyle(
+                          fontStyle: pw.FontStyle.italic,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
       ),

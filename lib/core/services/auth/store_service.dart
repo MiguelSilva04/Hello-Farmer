@@ -209,7 +209,7 @@ class StoreService with ChangeNotifier {
 
     await storeRef.update({
       'name': name,
-      'slogan': slogan,
+      'subName': slogan,
       'description': description,
       'address': address,
       'city': city,

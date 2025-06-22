@@ -381,33 +381,34 @@ class OrderDetailsPage extends StatelessWidget {
                   ),
                   Column(
                     children: [
-                      if (
-                          store != null)
-                        buildUserContactSection(
-                          context: context,
-                          displayedUser: producer,
-                          title: "Banca Vendedora",
-                          subtitle: store.name,
-                          isProducerSide: true,
-                        )
-                      else
-                        const Padding(
-                          padding: EdgeInsets.only(top: 16.0),
-                          child: Text(
-                            "Banca não disponível.",
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontStyle: FontStyle.italic,
+                      if (authNotifier.currentUser!.id == consumer?.id ||
+                          !authNotifier.currentUser!.isProducer)
+                        if (store != null)
+                          buildUserContactSection(
+                            context: context,
+                            displayedUser: producer,
+                            title: "Banca Vendedora",
+                            subtitle: store.city,
+                            isProducerSide: true,
+                          )
+                        else
+                          const Padding(
+                            padding: EdgeInsets.only(top: 16.0),
+                            child: Text(
+                              "Banca não disponível.",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontStyle: FontStyle.italic,
+                              ),
                             ),
                           ),
-                        ),
-                      if (authNotifier.currentUser!.isProducer)
+                      if (authNotifier.currentUser!.id == producer.id)
                         buildUserContactSection(
                           context: context,
                           displayedUser: consumer!,
                           title: "Comprador",
                           subtitle: consumer!.city,
-                          isProducerSide: false,
+                          isProducerSide: true,
                         ),
                     ],
                   ),

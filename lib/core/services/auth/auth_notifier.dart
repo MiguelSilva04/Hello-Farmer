@@ -804,12 +804,7 @@ class AuthNotifier extends ChangeNotifier {
   }
 
   Future<void> deleteProductAd(String storeId, String productAdId) async {
-    final docRef = cf.FirebaseFirestore.instance
-        .collection('stores')
-        .doc(storeId)
-        .collection('ads')
-        .doc(productAdId);
-    await docRef.delete();
+    AuthService().removeAd(storeId, productAdId);
     (currentUser as ProducerUser).stores[selectedStoreIndex!].productsAds!
         .removeWhere((ad) => ad.id == productAdId);
     notifyListeners();

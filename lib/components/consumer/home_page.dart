@@ -13,7 +13,8 @@ import '../../core/models/producer_user.dart';
 import '../../core/models/store.dart';
 
 class ConsumerHomePage extends StatefulWidget {
-  const ConsumerHomePage({super.key});
+  final Function(bool) initializeApp;
+  const ConsumerHomePage({super.key, required this.initializeApp});
 
   @override
   State<ConsumerHomePage> createState() => _ConsumerHomePageState();
@@ -82,7 +83,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
       }
     }
 
-    return nearbyStores.take(5).toList(); // Mostra no máx 5
+    return nearbyStores.take(5).toList();
   }
 
   Widget _buildStoreItem(ProducerUser user, Store store) {
@@ -135,100 +136,104 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<ProductAd>>(
-      stream: context.watch<AuthNotifier>().getAllProductAdsStream(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return RefreshIndicator(
+      color: Theme.of(context).colorScheme.secondary,
+      onRefresh: () => widget.initializeApp(true),
+      child: StreamBuilder<List<ProductAd>>(
+        stream: context.watch<AuthNotifier>().getAllProductAdsStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        final allAds = snapshot.data!;
-        final seenIds = <String>{};
-        final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
-        final top5Ads = uniqueAds.take(5).toList();
+          final allAds = snapshot.data!;
+          final seenIds = <String>{};
+          final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
+          final top5Ads = uniqueAds.take(5).toList();
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'Olá, $userName!',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(
+                    'Olá, $userName!',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'Descobre os melhores produtos frescos na tua zona!',
-                  style: TextStyle(fontSize: 16),
+                const SizedBox(height: 8),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(
+                    'Descobre os melhores produtos frescos na tua zona!',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              _buildPromotionsBanner(),
-              const SizedBox(height: 16),
-              _buildCategories(),
+                _buildPromotionsBanner(),
+                const SizedBox(height: 16),
+                _buildCategories(),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: const Text(
-                  'Recomendados para ti',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 110,
-                child: Padding(
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: top5Ads.length,
-                    itemBuilder: (context, index) {
-                      final ad = top5Ads[index];
-                      return _buildProductItem(ad);
+                  child: const Text(
+                    'Recomendados para ti',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 110,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: top5Ads.length,
+                      itemBuilder: (context, index) {
+                        final ad = top5Ads[index];
+                        return _buildProductItem(ad);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(
+                    'Produtores com bancas perto de ti',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 120,
+                  child: Builder(
+                    builder: (context) {
+                      final nearbyStores = getNearbyStores();
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: nearbyStores.length,
+                        itemBuilder: (context, index) {
+                          final producer =
+                              nearbyStores[index]['producer'] as ProducerUser;
+                          final store = nearbyStores[index]['store'] as Store;
+                          return _buildStoreItem(producer, store);
+                        },
+                      );
                     },
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  'Produtores com bancas perto de ti',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 120,
-                child: Builder(
-                  builder: (context) {
-                    final nearbyStores = getNearbyStores();
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: nearbyStores.length,
-                      itemBuilder: (context, index) {
-                        final producer =
-                            nearbyStores[index]['producer'] as ProducerUser;
-                        final store = nearbyStores[index]['store'] as Store;
-                        return _buildStoreItem(producer, store);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -286,9 +291,8 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   }
 
   Widget _buildCategories() {
-    final categories =
-        Categories.categories.map((c) => c.name).take(5).toList();
-    final icons = Categories.categories.map((c) => c.icon).take(5).toList();
+    final categories = Categories.categories.map((c) => c.name).toList();
+    final icons = Categories.categories.map((c) => c.icon).toList();
 
     return SizedBox(
       height: 100,

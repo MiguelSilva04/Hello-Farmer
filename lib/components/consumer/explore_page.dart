@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/components/countryCitySelector.dart';
@@ -21,7 +22,7 @@ class ExplorePage extends StatefulWidget {
 
 class _ExplorePageState extends State<ExplorePage> {
   String _searchText = '';
-  String _categoryText = '';
+  late String _categoryText;
   String? _selectedKeyword;
   String _selectedCity = AuthService().currentUser!.city ?? "";
   TextEditingController searchEditingController = TextEditingController();
@@ -37,6 +38,7 @@ class _ExplorePageState extends State<ExplorePage> {
   Map<String, int> _categoryCounts = {};
 
   late AuthNotifier authNotifier;
+  late BottomNavigationNotifier bottomNotifier;
 
   Widget _buildSeasonalCard() {
     return Container(
@@ -199,7 +201,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
     setState(() {
       displayedAds = refinedFiltered;
-      _categoryCounts = categoryCounts; // atualiza os counts aqui!
+      _categoryCounts = categoryCounts;
     });
   }
 
@@ -403,17 +405,15 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   void initState() {
     super.initState();
-
-    final bottomNav = Provider.of<BottomNavigationNotifier>(
+    bottomNotifier = Provider.of<BottomNavigationNotifier>(
       context,
       listen: false,
     );
     applyFilters();
-    if (bottomNav.selectedCategory != null) {
-      _searchText = bottomNav.selectedCategory!;
-      _categoryText = bottomNav.selectedCategory!;
+    if (bottomNotifier.selectedCategory != null) {
+      _searchText = bottomNotifier.selectedCategory!;
+      _categoryText = bottomNotifier.selectedCategory!;
       applyFilters();
-      bottomNav.setCategory(null);
     }
   }
 
@@ -482,10 +482,10 @@ class _ExplorePageState extends State<ExplorePage> {
                 child: Row(
                   children: [
                     Flexible(
-                      child: Text(
-                        'Em $_selectedCity...',
+                      child: AutoSizeText(
+                        '${_categoryText}${_categoryText.isNotEmpty ? " em " : "Em "}$_selectedCity...',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: _categoryText.isNotEmpty ? 16 : 20,
                           fontWeight: FontWeight.bold,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -747,6 +747,7 @@ class _ExplorePageState extends State<ExplorePage> {
               final count = _categoryCounts[c.name] ?? 0;
               return GestureDetector(
                 onTap: () {
+                  bottomNotifier.setCategory(c.name);
                   setState(() {
                     _searchText = c.name;
                     _categoryText = c.name;
@@ -799,6 +800,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
   void clearFilters() {
     searchEditingController.clear();
+    bottomNotifier.setCategory('');
     setState(() {
       _searchText = "";
       _categoryText = '';

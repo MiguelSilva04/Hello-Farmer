@@ -210,7 +210,7 @@ class _MainMenuState extends State<MainMenu>
     ];
 
     final List<Widget> _consumerPages = [
-      ConsumerHomePage(),
+      ConsumerHomePage(initializeApp: _initializeApp),
       OrdersPage(),
       ExplorePage(),
       ChatListPage(),
@@ -520,44 +520,40 @@ class _MainMenuState extends State<MainMenu>
               ),
             ],
           ),
-          body: RefreshIndicator(
-            color: Theme.of(context).colorScheme.secondary,
-            onRefresh: () => _initializeApp(true),
-            child: FadeTransition(
-              opacity: _opacityAnimation,
-              child:
-                  _isSearching
-                      ? Consumer<SearchNotifier>(
-                        builder: (context, searchNotifier, _) {
-                          return GlobalSearchResults(
-                            filteredItems: searchNotifier.results,
-                            query: _searchQuery,
-                            onSelect: (item) {
-                              FocusScope.of(context).unfocus();
-                              setState(() {
-                                _isSearching = false;
-                              });
-                              Future.microtask(() {
-                                item.onTap();
-                              });
-                            },
-                          );
-                        },
-                      )
-                      : Consumer<AuthNotifier>(
-                        builder: (context, authNotifier, _) {
-                          final user = authNotifier.currentUser;
+          body: FadeTransition(
+            opacity: _opacityAnimation,
+            child:
+                _isSearching
+                    ? Consumer<SearchNotifier>(
+                      builder: (context, searchNotifier, _) {
+                        return GlobalSearchResults(
+                          filteredItems: searchNotifier.results,
+                          query: _searchQuery,
+                          onSelect: (item) {
+                            FocusScope.of(context).unfocus();
+                            setState(() {
+                              _isSearching = false;
+                            });
+                            Future.microtask(() {
+                              item.onTap();
+                            });
+                          },
+                        );
+                      },
+                    )
+                    : Consumer<AuthNotifier>(
+                      builder: (context, authNotifier, _) {
+                        final user = authNotifier.currentUser;
 
-                          return user is ProducerUser
-                              ? _producerPages[Provider.of<
-                                BottomNavigationNotifier
-                              >(context).currentIndex]
-                              : _consumerPages[Provider.of<
-                                BottomNavigationNotifier
-                              >(context).currentIndex];
-                        },
-                      ),
-            ),
+                        return user is ProducerUser
+                            ? _producerPages[Provider.of<
+                              BottomNavigationNotifier
+                            >(context).currentIndex]
+                            : _consumerPages[Provider.of<
+                              BottomNavigationNotifier
+                            >(context).currentIndex];
+                      },
+                    ),
           ),
 
           bottomNavigationBar:

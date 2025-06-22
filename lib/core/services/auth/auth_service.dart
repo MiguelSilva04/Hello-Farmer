@@ -833,8 +833,56 @@ class AuthService {
   }
 
   Future<void> removeStore(String storeId) async {
-    final docRef = fireStore.collection('stores').doc(storeId);
-    await docRef.delete();
+    final firestore = FirebaseFirestore.instance;
+    final storage = FirebaseStorage.instance;
+
+    try {
+      final storageRef = storage.ref().child('stores/$storeId');
+
+      final ListResult listResult = await storageRef.listAll();
+
+      for (var item in listResult.items) {
+        await item.delete();
+      }
+
+      for (var prefix in listResult.prefixes) {
+        final subList = await prefix.listAll();
+        for (var subItem in subList.items) {
+          await subItem.delete();
+        }
+      }
+
+      final docRef = firestore.collection('stores').doc(storeId);
+      await docRef.delete();
+    } catch (e) {
+      print('Erro ao remover a loja: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> removeAd(String storeId, String adId) async {
+    final fireStore = FirebaseFirestore.instance;
+    final storage = FirebaseStorage.instance;
+
+    try {
+      final folderRef = storage.ref().child('stores/$storeId/ads/$adId/');
+      final ListResult files = await folderRef.listAll();
+
+      for (final file in files.items) {
+        await file.delete();
+      }
+
+      final docRef = fireStore
+          .collection('stores')
+          .doc(storeId)
+          .collection('ads')
+          .doc(adId);
+
+      await docRef.delete();
+    } catch (e) {
+      print("Erro ao remover anúncio e imagens: $e");
+      rethrow;
+    }
   }
 
   Future<void> addStoreVisit(String storeId, String userId) async {

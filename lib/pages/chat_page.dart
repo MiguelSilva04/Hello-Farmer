@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:harvestly/components/messages.dart';
 import 'package:harvestly/components/new_message.dart';
+import 'package:harvestly/core/models/app_user.dart';
+import 'package:harvestly/core/models/chat.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/models/app_user.dart';
-import '../core/services/chat/chat_list_notifier.dart';
+import 'package:collection/collection.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -17,29 +19,12 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  StreamSubscription? _messageSubscription;
   late AuthNotifier authNotifier;
 
   @override
   void initState() {
     super.initState();
     authNotifier = Provider.of(context, listen: false);
-    final chatService = Provider.of<ChatService>(context, listen: false);
-    final currentChat = chatService.currentChat!;
-
-    chatService.listenToCurrentChatMessages((messages) {
-      if (messages.isNotEmpty) {
-        final lastMessage = messages.first;
-        final notifier = Provider.of<ChatListNotifier>(context, listen: false);
-        notifier.updateLastMessage(currentChat.id, lastMessage);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _messageSubscription?.cancel();
-    super.dispose();
   }
 
   Widget getLeadingAppBarWidget(
@@ -47,12 +32,8 @@ class _ChatPageState extends State<ChatPage> {
     AppUser consumer,
     AppUser producer,
   ) {
-    final currentChat = Provider.of<ChatService>(context).currentChat!;
-
     return InkWell(
-      onTap: () async {
-        Navigator.of(context).pop();
-      },
+      onTap: () => Navigator.of(context).pop(),
       borderRadius: BorderRadius.circular(100),
       child: Row(
         children: [
@@ -61,25 +42,15 @@ class _ChatPageState extends State<ChatPage> {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.grey[300],
-            child: FutureBuilder(
-              future: Future.value(
-                (authNotifier.currentUser!.id == currentChat.consumerId)
-                    ? producer.imageUrl
-                    : consumer.imageUrl,
-              ),
-              builder: (ctx, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
-                }
-                if (!snapshot.hasData || snapshot.data == null) {
-                  return const Icon(Icons.group);
-                }
-                return CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(snapshot.data as String),
-                );
-              },
+            backgroundImage: NetworkImage(
+              (authNotifier.currentUser!.id == consumer.id)
+                  ? producer.imageUrl ?? ''
+                  : consumer.imageUrl ?? '',
             ),
+            child:
+                (consumer.imageUrl == null && producer.imageUrl == null)
+                    ? const Icon(Icons.group)
+                    : null,
           ),
         ],
       ),
@@ -88,25 +59,45 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatService>(
-      builder: (ctx, chatService, _) {
-        final currentChat = chatService.currentChat!;
-        final consumer =
-            authNotifier.allUsers
-                .where((u) => u.id == currentChat.consumerId)
-                .first;
-        final producer =
-            authNotifier.allUsers
-                .where((u) => u.id == currentChat.producerId)
-                .first;
+    final chatService = Provider.of<ChatService>(context, listen: false);
+    final currentChatId = chatService.currentChat!.id;
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream:
+          FirebaseFirestore.instance
+              .collection('chats')
+              .doc(currentChatId)
+              .snapshots(),
+      builder: (context, chatSnapshot) {
+        if (chatSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (!chatSnapshot.hasData || !chatSnapshot.data!.exists) {
+          return const Scaffold(
+            body: Center(child: Text('Chat não encontrado.')),
+          );
+        }
+
+        final chatData = chatSnapshot.data!;
+        final chat = Chat.fromDocument(chatData);
+
+        final consumer = authNotifier.allUsers.firstWhereOrNull(
+          (u) => u.id == chat.consumerId,
+        );
+        final producer = authNotifier.allUsers.firstWhereOrNull(
+          (u) => u.id == chat.producerId,
+        );
+
         return Scaffold(
           appBar: AppBar(
             leadingWidth: 70,
-            leading: getLeadingAppBarWidget(context, consumer, producer),
+            leading: getLeadingAppBarWidget(context, consumer!, producer!),
             title: Text(
-              (authNotifier.currentUser!.id == currentChat.consumerId)
-                  ? producer.firstName + " " + producer.lastName
-                  : consumer.firstName + " " + consumer.lastName,
+              (authNotifier.currentUser!.id == consumer.id)
+                  ? '${producer.firstName} ${producer.lastName}'
+                  : '${consumer.firstName} ${consumer.lastName}',
             ),
             centerTitle: false,
             titleSpacing: 5,
@@ -115,8 +106,8 @@ class _ChatPageState extends State<ChatPage> {
           body: SafeArea(
             child: Column(
               children: [
-                Expanded(child: Messages(currentChat.id)),
-                NewMessage(currentChat.id),
+                Expanded(child: Messages(currentChatId)),
+                NewMessage(currentChatId),
               ],
             ),
           ),

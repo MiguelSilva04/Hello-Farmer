@@ -160,10 +160,26 @@ class _BubbleSpecialThreeState extends State<BubbleSpecialThree> {
                             padding:
                                 stateTick
                                     ? const EdgeInsets.only(left: 4, right: 8)
+                                    : widget.isSender
+                                    ? EdgeInsets.only(
+                                      right: 2,
+                                      left:
+                                          (_showTime &&
+                                                  widget.text.trim().length <=
+                                                      3)
+                                              ? 15
+                                              : 0,
+                                      bottom: _showTime ? 12 : 0,
+                                    )
                                     : EdgeInsets.only(
-                                      left: 4,
-                                      right: _showTime ? 20 : 8,
-                                      bottom: _showTime ? 8 : 0,
+                                      left: 2,
+                                      right:
+                                          (_showTime &&
+                                                  widget.text.trim().length <=
+                                                      3)
+                                              ? 15
+                                              : 0,
+                                      bottom: _showTime ? 12 : 0,
                                     ),
                             child: Text(
                               widget.text,
@@ -181,23 +197,23 @@ class _BubbleSpecialThreeState extends State<BubbleSpecialThree> {
                           if (_showTime)
                             Positioned(
                               bottom: 0,
-                              right: widget.isSender ? null : 0,
-                              left: widget.isSender ? 0 : null,
+                              right: widget.isSender ? 5 : null,
+                              left: widget.isSender ? null : 5,
                               child: Padding(
                                 padding:
                                     (widget.text.trim().length == 1)
                                         ? EdgeInsets.only(
-                                          left: widget.isSender ? 0.0 : 10,
-                                          right: widget.isSender ? 10 : 0.0,
+                                          left: widget.isSender ? 10 : 0,
+                                          right: widget.isSender ? 0 : 10,
                                         )
-                                        : EdgeInsets.zero,
+                                        : EdgeInsets.only(top: 50),
                                 child: Text(
                                   widget.hourSent!,
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 12,
                                     color:
                                         (widget.isSender)
-                                            ? Colors.grey
+                                            ? Colors.white
                                             : Colors.black,
                                   ),
                                 ),

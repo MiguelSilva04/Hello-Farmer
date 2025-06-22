@@ -44,7 +44,7 @@ class SearchNotifier extends ChangeNotifier {
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
   }
-  
+
   void clear() {
     _results = [];
     notifyListeners();

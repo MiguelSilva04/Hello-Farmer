@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:harvestly/components/messages.dart';
 import 'package:harvestly/components/new_message.dart';
 import 'package:harvestly/core/models/app_user.dart';
@@ -44,13 +42,12 @@ class _ChatPageState extends State<ChatPage> {
             backgroundColor: Colors.grey[300],
             backgroundImage: NetworkImage(
               (authNotifier.currentUser!.id == consumer.id)
-                  ? producer.imageUrl ?? ''
-                  : consumer.imageUrl ?? '',
+                  ? producer.imageUrl
+                  : consumer.imageUrl,
             ),
             child:
-                (consumer.imageUrl == null && producer.imageUrl == null)
-                    ? const Icon(Icons.group)
-                    : null,
+                    const Icon(Icons.group)
+                    
           ),
         ],
       ),

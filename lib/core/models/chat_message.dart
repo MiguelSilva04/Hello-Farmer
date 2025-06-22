@@ -7,6 +7,7 @@ class ChatMessage {
   final String userId;
   final String userName;
   final String userImageUrl;
+  bool seen = false;
 
   ChatMessage({
     required this.id,
@@ -15,6 +16,7 @@ class ChatMessage {
     required this.userId,
     required this.userName,
     required this.userImageUrl,
+    required this.seen,
   });
 
   // Método para criar um ChatMessage a partir de um Map (como o Firestore retorna)
@@ -22,12 +24,14 @@ class ChatMessage {
     return ChatMessage(
       id: map['id'] ?? '',
       text: map['text'] ?? '',
-      createdAt: map['createdAt'] is Timestamp
-          ? (map['createdAt'] as Timestamp).toDate()
-          : DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt:
+          map['createdAt'] is Timestamp
+              ? (map['createdAt'] as Timestamp).toDate()
+              : DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
       userId: map['userId'] ?? '',
       userName: map['userName'] ?? '',
       userImageUrl: map['userImageUrl'] ?? '',
+      seen: map['seen'] ?? false,
     );
   }
 
@@ -40,6 +44,7 @@ class ChatMessage {
       'userId': userId,
       'userName': userName,
       'userImageUrl': userImageUrl,
+      'seen': seen
     };
   }
 
@@ -51,6 +56,7 @@ class ChatMessage {
     String? userId,
     String? userName,
     String? userImageUrl,
+    bool? seen
   }) {
     return ChatMessage(
       id: id ?? this.id,
@@ -59,6 +65,7 @@ class ChatMessage {
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
       userImageUrl: userImageUrl ?? this.userImageUrl,
+      seen: seen ?? this.seen,
     );
   }
 }

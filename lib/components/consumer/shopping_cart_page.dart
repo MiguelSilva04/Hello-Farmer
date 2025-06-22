@@ -25,23 +25,20 @@ class ShoppingCartPage extends StatefulWidget {
 class _ShoppingCartPageState extends State<ShoppingCartPage> {
   late List<AppUser> users;
   late ProductAdFinder finder;
-  late Map<ProductAd, double> productAdQuantities;
-  Store? store;
-  bool multipleStoresDetected = false;
+  late Map<Store, Map<ProductAd, double>> storeProductAdQuantities;
   late ShoppingCart? cart;
-  DeliveryMethod? selectedDeliveryMethod;
-
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
-  List<MapEntry<ProductAd, double>> productAdEntries = [];
   late AuthNotifier authNotifier;
+  late AppUser currentUser;
 
   bool _isLoading = false;
-
-  bool _isCheckout = false;
-  final _checkoutFormKey = GlobalKey<FormState>();
-  String? fullName, address, postalCode, city, phoneNumber, discountCode;
-  late AppUser currentUser;
+  final Map<Store, bool> _isCheckout = {};
+  final Map<Store, GlobalKey<FormState>> _checkoutFormKeys = {};
+  final Map<Store, DeliveryMethod?> _selectedDeliveryMethod = {};
+  final Map<Store, String?> _address = {};
+  final Map<Store, String?> _postalCode = {};
+  final Map<Store, String?> _city = {};
+  final Map<Store, String?> _phoneNumber = {};
+  final Map<Store, String?> _discountCode = {};
 
   @override
   void initState() {
@@ -51,12 +48,9 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     cart = (authNotifier.currentUser as ConsumerUser).shoppingCart;
     users = authNotifier.producerUsers;
     finder = ProductAdFinder(users);
-    productAdQuantities = {};
+    storeProductAdQuantities = {};
 
     _loadCartProducts();
-    if (store != null && store!.preferredDeliveryMethod.length == 1) {
-      selectedDeliveryMethod = store!.preferredDeliveryMethod.first;
-    }
   }
 
   double roundDouble(double value, int places) {
@@ -65,8 +59,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   }
 
   Future<void> sendOrderToFirestore({
+    required Store store,
     required String consumerId,
-    required String storeId,
     required String address,
     required String postalCode,
     required String phone,
@@ -78,66 +72,66 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     setState(() => _isLoading = true);
     await authNotifier.createOrder(
       consumerId: consumerId,
-      storeId: storeId,
+      storeId: store.id,
       address: address,
       cartItems: cartItems,
       totalPrice: roundDouble(totalPrice, 2),
       postalCode: postalCode,
-      phone: phoneNumber!,
+      phone: phone,
       discountCode: discountCode,
       deliveryMethod: deliveryMethod,
     );
     await Provider.of<NotificationNotifier>(
       context,
       listen: false,
-    ).addOrderPlacedNotification(currentUser, storeId);
+    ).addOrderPlacedNotification(currentUser, store.id);
     setState(() => _isLoading = false);
     _loadCartProducts();
   }
 
   void _loadCartProducts() {
-    productAdQuantities.clear();
-    multipleStoresDetected = false;
+    storeProductAdQuantities.clear();
 
-    Store? detectedStore;
-
-    if (cart != null && cart!.productsQty != null)
-      cart!.productsQty!.forEach((product) {
-        print(product.productAdId);
+    if (cart != null && cart!.productsQty != null) {
+      for (var product in cart!.productsQty!) {
         final productAd = finder.findProductAdById(product.productAdId);
         final productStore = finder.findStoreByAdId(product.productAdId);
 
-        if (detectedStore == null) {
-          detectedStore = productStore;
-        } else if (detectedStore!.name != productStore?.name) {
-          multipleStoresDetected = true;
+        if (productAd != null && productStore != null) {
+          storeProductAdQuantities.putIfAbsent(productStore, () => {});
+          storeProductAdQuantities[productStore]![productAd] = product.quantity;
         }
+      }
+    }
 
-        if (productAd != null) {
-          productAdQuantities[productAd] = product.quantity;
-        }
-      });
-
-    store = detectedStore;
-
-    productAdEntries = productAdQuantities.entries.toList();
+    for (var store in storeProductAdQuantities.keys) {
+      _isCheckout.putIfAbsent(store, () => false);
+      _checkoutFormKeys.putIfAbsent(store, () => GlobalKey<FormState>());
+      _selectedDeliveryMethod.putIfAbsent(
+        store,
+        () =>
+            store.preferredDeliveryMethod.length == 1
+                ? store.preferredDeliveryMethod.first
+                : null,
+      );
+      _address.putIfAbsent(store, () => null);
+      _postalCode.putIfAbsent(store, () => null);
+      _city.putIfAbsent(store, () => null);
+      _phoneNumber.putIfAbsent(store, () => null);
+      _discountCode.putIfAbsent(store, () => null);
+    }
 
     setState(() {});
   }
 
-  void _changeQuantity(ProductAd productAd, int delta) async {
+  void _changeQuantity(Store store, ProductAd productAd, int delta) async {
     final consumer = authNotifier.currentUser as ConsumerUser;
 
-    int currentIndex = productAdEntries.indexWhere(
-      (entry) => entry.key.id == productAd.id,
-    );
-    if (currentIndex == -1) return;
-
-    final currentQty = productAdQuantities[productAd]!;
+    final currentQty = storeProductAdQuantities[store]![productAd]!;
     final newQty = currentQty + delta;
 
     if (newQty <= 0) {
-      _removeProduct(productAd);
+      _removeProduct(store, productAd);
       return;
     }
 
@@ -154,17 +148,12 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     }
 
     setState(() {
-      productAdQuantities[productAd] = newQty;
-      productAdEntries[currentIndex] = MapEntry(productAd, newQty);
+      storeProductAdQuantities[store]![productAd] = newQty;
     });
   }
 
-  void _removeProduct(ProductAd productAd) async {
+  void _removeProduct(Store store, ProductAd productAd) async {
     final consumer = authNotifier.currentUser as ConsumerUser;
-    final index = productAdEntries.indexWhere(
-      (entry) => entry.key.id == productAd.id,
-    );
-    if (index == -1) return;
 
     await Provider.of<AuthNotifier>(
       context,
@@ -172,56 +161,50 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     ).removeProduct(consumer.id, productAd.id);
 
     setState(() {
-      productAdQuantities.remove(productAd);
-      productAdEntries.removeAt(index);
-      _listKey.currentState?.removeItem(
-        index,
-        (context, animation) =>
-            _buildItem(MapEntry(productAd, 0), index, animation),
-        duration: Duration(milliseconds: 300),
-      );
+      storeProductAdQuantities[store]!.remove(productAd);
+      if (storeProductAdQuantities[store]!.isEmpty) {
+        storeProductAdQuantities.remove(store);
+      }
     });
   }
 
-  double _calculateTotal() {
+  double _calculateTotal(Store store) {
     double total = 0;
-    productAdQuantities.forEach((ad, qty) {
+    storeProductAdQuantities[store]?.forEach((ad, qty) {
       total += ad.product.price * qty;
     });
     return total;
   }
 
-  void _submitCheckoutForm() async {
-    if (_checkoutFormKey.currentState!.validate()) {
-      _checkoutFormKey.currentState!.save();
+  void _submitCheckoutForm(Store store) async {
+    final formKey = _checkoutFormKeys[store]!;
+    if (formKey.currentState!.validate()) {
+      formKey.currentState!.save();
       setState(() => _isLoading = true);
 
       final userId = AuthService().currentUser!.id;
       final cartItems =
-          cart!.productsQty!
+          storeProductAdQuantities[store]!.entries
               .map(
-                (item) => {
-                  'productId': item.productAdId,
-                  'quantity': item.quantity,
-                },
+                (entry) => {'productId': entry.key.id, 'quantity': entry.value},
               )
               .toList();
 
       await sendOrderToFirestore(
+        store: store,
         consumerId: userId,
-        storeId: store!.id,
-        address: "$address, $postalCode $city",
+        address: "${_address[store]}, ${_postalCode[store]} ${_city[store]}",
         cartItems: cartItems,
-        totalPrice: _calculateTotal(),
-        postalCode: postalCode!,
-        phone: phoneNumber!,
-        discountCode: discountCode ?? '',
-        deliveryMethod: selectedDeliveryMethod!,
+        totalPrice: _calculateTotal(store),
+        postalCode: _postalCode[store]!,
+        phone: _phoneNumber[store]!,
+        discountCode: _discountCode[store] ?? '',
+        deliveryMethod: _selectedDeliveryMethod[store]!,
       );
 
       setState(() {
         _isLoading = false;
-        _isCheckout = false;
+        _isCheckout[store] = false;
       });
 
       _loadCartProducts();
@@ -229,42 +212,42 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Pedido efetuado com sucesso!")));
-      Navigator.of(context).pop();
     }
   }
 
-  Widget _buildCheckoutForm() {
+  Widget _buildCheckoutForm(Store store) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Form(
-        key: _checkoutFormKey,
+        key: _checkoutFormKeys[store],
         child: ListView(
+          shrinkWrap: true,
           children: [
             Text(
-              "Finalizar Pedido",
+              "Finalizar Pedido - ${store.name}",
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             SizedBox(height: 16),
             TextFormField(
               decoration: InputDecoration(labelText: "Morada de entrega"),
-              onSaved: (value) => address = value,
+              onSaved: (value) => _address[store] = value,
               validator: (value) => value!.isEmpty ? "Campo obrigatório" : null,
             ),
             TextFormField(
               decoration: InputDecoration(labelText: "Código Postal"),
-              onSaved: (value) => postalCode = value,
+              onSaved: (value) => _postalCode[store] = value,
               validator: (value) => value!.isEmpty ? "Campo obrigatório" : null,
               maxLength: 10,
             ),
             TextFormField(
               decoration: InputDecoration(labelText: "Cidade"),
-              onSaved: (value) => city = value,
+              onSaved: (value) => _city[store] = value,
               validator: (value) => value!.isEmpty ? "Campo obrigatório" : null,
             ),
             TextFormField(
               decoration: InputDecoration(labelText: "Telefone"),
               keyboardType: TextInputType.phone,
-              onSaved: (value) => phoneNumber = value,
+              onSaved: (value) => _phoneNumber[store] = value,
               validator: (value) => value!.isEmpty ? "Campo obrigatório" : null,
               maxLength: 9,
             ),
@@ -272,20 +255,20 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
               decoration: InputDecoration(
                 labelText: "Código de desconto (opcional)",
               ),
-              onSaved: (value) => discountCode = value,
+              onSaved: (value) => _discountCode[store] = value,
             ),
             SizedBox(height: 24),
-            (store != null && store!.preferredDeliveryMethod.length > 1)
+            (store.preferredDeliveryMethod.length > 1)
                 ? DropdownButtonFormField<DeliveryMethod>(
                   dropdownColor: Theme.of(context).colorScheme.secondary,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.tertiaryFixed,
                   ),
                   decoration: InputDecoration(labelText: "Método de entrega"),
-                  value: selectedDeliveryMethod,
+                  value: _selectedDeliveryMethod[store],
                   onChanged: (value) {
                     setState(() {
-                      selectedDeliveryMethod = value;
+                      _selectedDeliveryMethod[store] = value;
                     });
                   },
                   validator:
@@ -294,7 +277,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                               ? "Selecione um método de entrega"
                               : null,
                   items:
-                      store!.preferredDeliveryMethod.map((method) {
+                      store.preferredDeliveryMethod.map((method) {
                         return DropdownMenuItem(
                           value: method,
                           child: Text(method.toDisplayString()),
@@ -326,13 +309,13 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              selectedDeliveryMethod!.toIcon(),
+                              _selectedDeliveryMethod[store]!.toIcon(),
                               size: 20,
                               color: Theme.of(context).colorScheme.secondary,
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              selectedDeliveryMethod!.toDisplayString(),
+                              _selectedDeliveryMethod[store]!.toDisplayString(),
                               style: Theme.of(
                                 context,
                               ).textTheme.titleMedium?.copyWith(
@@ -354,8 +337,8 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                 OutlinedButton(
                   onPressed:
                       () => setState(() {
-                        selectedDeliveryMethod = null;
-                        _isCheckout = false;
+                        _selectedDeliveryMethod[store] = null;
+                        _isCheckout[store] = false;
                       }),
                   child: Text("Cancelar"),
                 ),
@@ -367,7 +350,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                         foregroundColor:
                             Theme.of(context).colorScheme.secondary,
                       ),
-                      onPressed: _submitCheckoutForm,
+                      onPressed: () => _submitCheckoutForm(store),
                       child: Text("Comprar"),
                     ),
               ],
@@ -379,235 +362,247 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
   }
 
   Widget _buildCartView() {
-    return productAdQuantities.isEmpty
-        ? Center(child: Text("Carrinho Vazio"))
-        : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                "Banca: ${store!.name}",
+    if (storeProductAdQuantities.isEmpty) {
+      return Center(child: Text("Carrinho Vazio"));
+    }
+
+    return ListView.separated(
+      itemCount: storeProductAdQuantities.entries.length,
+      separatorBuilder:
+          (context, index) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Divider(
+              thickness: 3,
+              color: Theme.of(context).colorScheme.primary.withAlpha(77),
+            ),
+          ),
+      itemBuilder: (context, idx) {
+        final entry = storeProductAdQuantities.entries.elementAt(idx);
+        final store = entry.key;
+        final productAdEntries = entry.value.entries.toList();
+
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Banca: ${store.name}",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-            ),
-            Expanded(
-              child: AnimatedList(
-                key: _listKey,
-                padding: EdgeInsets.all(16),
-                initialItemCount: productAdEntries.length,
-                itemBuilder: (context, index, animation) {
-                  return _buildItem(productAdEntries[index], index, animation);
-                },
-              ),
-            ),
-          ],
-        );
-  }
+              Divider(),
+              ...productAdEntries.map((productEntry) {
+                final productAd = productEntry.key;
+                final qty = productEntry.value;
+                final product = productAd.product;
+                final pricePerProduct = product.price;
+                final totalPrice = pricePerProduct * qty;
 
-  Widget _buildItem(
-    MapEntry<ProductAd, double> entry,
-    int index,
-    Animation<double> animation,
-  ) {
-    final productAd = entry.key;
-    final qty = entry.value;
-    final product = productAd.product;
-    final pricePerProduct = product.price;
-    final totalPrice = pricePerProduct * qty;
-
-    return SizeTransition(
-      sizeFactor: animation,
-      axisAlignment: 0.0,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            product.imageUrls.isNotEmpty
-                ? Image.network(
-                  product.imageUrls.first,
-                  width: 75,
-                  height: 75,
-                  fit: BoxFit.cover,
-                )
-                : Icon(Icons.image_not_supported, size: 100),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Text("Categoria: ${product.category}"),
-                  SizedBox(height: 8),
-                  Row(
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      InkWell(
-                        onTap: () => _changeQuantity(productAd, -1),
-                        child: Icon(Icons.remove_circle_outline),
-                      ),
-                      SizedBox(width: 5),
-                      Row(
-                        children: [
-                          AnimatedSwitcher(
-                            duration: Duration(milliseconds: 250),
-                            child: Text(
-                              product.unit == Unit.KG
-                                  ? qty.toStringAsFixed(2)
-                                  : qty.toStringAsFixed(0),
-                              key: ValueKey<double>(qty),
+                      product.imageUrls.isNotEmpty
+                          ? Image.network(
+                            product.imageUrls.first,
+                            width: 75,
+                            height: 75,
+                            fit: BoxFit.cover,
+                          )
+                          : Icon(Icons.image_not_supported, size: 100),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
                               style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
+                            Text("Categoria: ${product.category}"),
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                InkWell(
+                                  onTap:
+                                      () =>
+                                          _changeQuantity(store, productAd, -1),
+                                  child: Icon(Icons.remove_circle_outline),
+                                ),
+                                SizedBox(width: 5),
+                                Row(
+                                  children: [
+                                    AnimatedSwitcher(
+                                      duration: Duration(milliseconds: 250),
+                                      child: Text(
+                                        product.unit == Unit.KG
+                                            ? qty.toStringAsFixed(2)
+                                            : qty.toStringAsFixed(0),
+                                        key: ValueKey<double>(qty),
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      " ${product.unit == Unit.KG
+                                          ? product.unit.toDisplayString()
+                                          : (product.unit == Unit.UNIT && qty > 1)
+                                          ? product.unit.toDisplayString() + "s"
+                                          : product.unit.toDisplayString()}",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(width: 5),
+                                InkWell(
+                                  onTap:
+                                      () =>
+                                          _changeQuantity(store, productAd, 1),
+                                  child: Icon(Icons.add_circle_outline),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.delete_outline),
+                            onPressed: () => _removeProduct(store, productAd),
                           ),
                           Text(
-                            " ${product.unit == Unit.KG
-                                ? product.unit.toDisplayString()
-                                : (product.unit == Unit.UNIT && qty > 1)
-                                ? product.unit.toDisplayString() + "s"
-                                : product.unit.toDisplayString()}",
+                            "${totalPrice.toStringAsFixed(2)}€",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Theme.of(context).colorScheme.surface,
+                            ),
                           ),
                         ],
                       ),
-                      SizedBox(width: 5),
-                      InkWell(
-                        onTap: () => _changeQuantity(productAd, 1),
-                        child: Icon(Icons.add_circle_outline),
-                      ),
                     ],
+                  ),
+                );
+              }).toList(),
+              Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'Total: ',
+                          style: TextStyle(
+                            color:
+                                Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                              '${_calculateTotal(store).toStringAsFixed(2)} €',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 18,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 6,
+                    ),
+                    onPressed:
+                        productAdEntries.isEmpty
+                            ? null
+                            : () => setState(() {
+                              _isCheckout.updateAll((key, value) => false);
+                              _isCheckout[store] = true;
+                              _selectedDeliveryMethod[store] ??=
+                                  store.preferredDeliveryMethod.length == 1
+                                      ? store.preferredDeliveryMethod.first
+                                      : null;
+                            }),
+                    child: Text(
+                      "Finalizar Compra",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.delete_outline),
-                  onPressed: () => _removeProduct(productAd),
-                ),
-                Text(
-                  "${totalPrice.toStringAsFixed(2)}€",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Theme.of(context).colorScheme.surface,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Store? _getCheckoutStore() {
+    try {
+      return _isCheckout.entries.firstWhere((e) => e.value == true).key;
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (multipleStoresDetected) {
-      return Scaffold(
-        appBar: AppBar(title: Text("Carrinho")),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              "O carrinho contém produtos de várias bancas. "
-              "Por favor, finalize compras separadamente para cada banca.",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-        ),
-      );
-    }
-
+    final checkoutStore = _getCheckoutStore();
     return Scaffold(
-      appBar: AppBar(title: Text("Carrinho")),
-      body: _isCheckout ? _buildCheckoutForm() : _buildCartView(),
-      bottomNavigationBar:
-          _isCheckout
-              ? null
-              : Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, -3),
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'Total: ',
-                            style: TextStyle(
-                              color:
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          TextSpan(
-                            text: '${_calculateTotal().toStringAsFixed(2)} €',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 30,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 8,
-                        shadowColor: Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.5),
-                      ),
-                      onPressed:
-                          productAdQuantities.isEmpty
-                              ? () {}
-                              : () => setState(() => _isCheckout = true),
-                      child: Text(
-                        "Finalizar Compra",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      appBar: AppBar(
+        title: Text("Carrinho"),
+        leading: Builder(
+          builder: (context) {
+            final checkoutStore = _getCheckoutStore();
+            return IconButton(
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                if (checkoutStore != null) {
+                  setState(() {
+                    _isCheckout[checkoutStore] = false;
+                    _selectedDeliveryMethod[checkoutStore] = null;
+                  });
+                } else {
+                  Navigator.of(context).maybePop();
+                }
+              },
+            );
+          },
+        ),
+      ),
+      body:
+          checkoutStore != null
+              ? _buildCheckoutForm(checkoutStore)
+              : _buildCartView(),
     );
   }
 }
@@ -622,7 +617,6 @@ class ProductAdFinder {
       if (user is ProducerUser) {
         for (var store in user.stores) {
           final productAd = store.productsAds?.firstWhereOrNull((ad) {
-            print(ad.id == adId);
             return ad.id == adId;
           });
           if (productAd != null) return productAd;

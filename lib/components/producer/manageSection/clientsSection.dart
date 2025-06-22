@@ -19,7 +19,6 @@ class ClientsSection extends StatefulWidget {
 }
 
 class _ClientsSectionState extends State<ClientsSection> {
-  List<Order> _orders = [];
   List<AppUser> _consumers = [];
   Map<String, List<Order>> _ordersByConsumer = {};
   bool _isLoaded = false;
@@ -48,7 +47,6 @@ class _ClientsSectionState extends State<ClientsSection> {
           users.where((u) => ordersByConsumer.keys.contains(u.id)).toList();
 
       setState(() {
-        _orders = orders;
         _ordersByConsumer = ordersByConsumer;
         _consumers = consumers;
         _isLoaded = true;

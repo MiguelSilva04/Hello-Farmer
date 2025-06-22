@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
 import 'package:harvestly/components/producer/store_page.dart';
-import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';

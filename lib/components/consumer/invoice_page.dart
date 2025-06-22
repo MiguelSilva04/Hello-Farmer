@@ -8,9 +8,6 @@ import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:provider/provider.dart';
-
-import '../../core/services/auth/auth_notifier.dart';
 
 class InvoicePageConsumer extends StatelessWidget {
   final Order order;
@@ -73,7 +70,7 @@ class InvoicePageConsumer extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    store.name ?? 'N/A' ?? 'N/A',
+                    store.name ?? 'N/A',
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],

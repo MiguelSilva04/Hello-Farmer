@@ -167,6 +167,7 @@ class ChatService with ChangeNotifier {
                     userData?['firstName'] + " " + userData?['lastName'] ??
                     'Utilizador desconhecido',
                 userImageUrl: userData?['imageUrl'] ?? '',
+                seen: userData?['seen'] ?? false,
               ),
             );
           }
@@ -293,6 +294,7 @@ class ChatService with ChangeNotifier {
           data.containsKey('userImageUrl') && data['userImageUrl'] != null
               ? data['userImageUrl']
               : "",
+      seen: data['seen']
     );
   }
 
@@ -364,6 +366,7 @@ class ChatService with ChangeNotifier {
       userId: user.id,
       userName: userName,
       userImageUrl: user.imageUrl,
+      seen: false,
     );
 
     final docRef = await store

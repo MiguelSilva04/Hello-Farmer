@@ -779,19 +779,61 @@ class AuthNotifier extends ChangeNotifier {
       });
     }
 
+    // Atualizar o carrinho local e remoto para manter apenas os itens NÃO encomendados
     final shoppingCartQuery =
         await fireStore
             .collection('shoppingCarts')
             .where('ownerId', isEqualTo: consumerId)
             .get();
 
-    for (final doc in shoppingCartQuery.docs) {
-      await doc.reference.delete();
-    }
+    final orderedProductIds =
+        cartItems.map((item) => item['productId'] as String).toSet();
 
     final shoppingCart = (_currentUser as ConsumerUser).shoppingCart;
-    shoppingCart?.productsQty?.clear();
-    shoppingCart?.totalPrice = 0;
+    if (shoppingCart != null && shoppingCart.productsQty != null) {
+      shoppingCart.productsQty!.removeWhere(
+        (reg) => orderedProductIds.contains(reg.productAdId),
+      );
+      double newTotal = 0;
+      for (final reg in shoppingCart.productsQty!) {
+        final productAd =
+            await fireStore
+                .collection('stores')
+                .doc(storeId)
+                .collection('ads')
+                .doc(reg.productAdId)
+                .get();
+        final adData = productAd.data();
+        double price = 0;
+        if (adData != null &&
+            adData['product'] != null &&
+            adData['product']['price'] != null) {
+          price = (adData['product']['price'] as num).toDouble();
+        }
+        newTotal += reg.quantity * price;
+      }
+      shoppingCart.totalPrice = newTotal;
+    }
+
+    for (final doc in shoppingCartQuery.docs) {
+      final data = doc.data();
+      final productsQty =
+          (data['productsQty'] as List<dynamic>? ?? [])
+              .where((item) => !orderedProductIds.contains(item['productAdId']))
+              .toList();
+
+      double newTotal = 0;
+      for (final item in productsQty) {
+        // Se o preço não estiver salvo no carrinho, você pode precisar buscar o preço do produto
+        newTotal +=
+            (item['quantity'] as num) * ((item['productPrice'] ?? 0) as num);
+      }
+
+      await doc.reference.update({
+        'productsQty': productsQty,
+        'totalPrice': newTotal,
+      });
+    }
 
     notifyListeners();
   }

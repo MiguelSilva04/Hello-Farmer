@@ -10,7 +10,7 @@ import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/utils/categories.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:provider/provider.dart';
-
+import 'package:collection/collection.dart';
 import '../../core/services/auth/auth_notifier.dart';
 
 class ExplorePage extends StatefulWidget {
@@ -132,9 +132,28 @@ class _ExplorePageState extends State<ExplorePage> {
             .toList();
 
     final Map<String, int> categoryCounts = {};
+
+    final stores = authNotifier.producerUsers.expand((p) => p.stores).toList();
+
     for (final c in Categories.categories) {
       categoryCounts[c.name] =
-          allAds.where((ad) => ad.product.category == c.name).length;
+          allAds.where((ad) {
+            final store = stores.firstWhereOrNull(
+              (s) => (s.productsAds ?? []).any(
+                (productAd) => productAd.id == ad.id,
+              ),
+            );
+
+            if (store == null) return false;
+
+            final isSameCategory = ad.product.category == c.name;
+            final isSameCity = store.city == _selectedCity;
+
+            final price = ad.product.price;
+            final isWithinPriceRange = price >= _minPrice && price <= _maxPrice;
+
+            return isSameCategory && isSameCity && isWithinPriceRange;
+          }).length;
     }
 
     final List<ProductAd> matching = [];
@@ -775,11 +794,7 @@ class _ExplorePageState extends State<ExplorePage> {
     return _searchText != "" ||
         _categoryText != '' ||
         _selectedKeyword != null ||
-        _selectedCity != AuthService().currentUser!.city ||
         searchEditingController.text != "" ||
-        _minPrice != 0 ||
-        _maxPrice != 30 ||
-        _sortOption != 'name_asc' ||
         _searchText != "";
   }
 
@@ -806,9 +821,6 @@ class _ExplorePageState extends State<ExplorePage> {
       _categoryText = '';
       _selectedKeyword = null;
       searchEditingController;
-      _minPrice = 0;
-      _maxPrice = 30;
-      _sortOption = 'name_asc';
     });
   }
 }

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart' as cf;
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:harvestly/components/producer/store_page.dart';
@@ -11,8 +10,6 @@ import 'package:harvestly/utils/keywords.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
-import '../../core/models/consumer_user.dart';
-import '../../core/models/order.dart';
 import '../../core/models/review.dart';
 import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/chat/chat_list_notifier.dart';

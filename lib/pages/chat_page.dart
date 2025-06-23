@@ -18,11 +18,21 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   late AuthNotifier authNotifier;
+  late String currentChatId;
+  late ChatService chatService;
 
   @override
   void initState() {
     super.initState();
-    authNotifier = Provider.of(context, listen: false);
+    chatService = Provider.of<ChatService>(context, listen: false);
+    authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    currentChatId = chatService.currentChat!.id;
+    chatService.listenAndMarkMessagesAsSeen(authNotifier.currentUser!.id);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   Widget getLeadingAppBarWidget(
@@ -45,9 +55,6 @@ class _ChatPageState extends State<ChatPage> {
                   ? producer.imageUrl
                   : consumer.imageUrl,
             ),
-            child:
-                    const Icon(Icons.group)
-                    
           ),
         ],
       ),
@@ -56,15 +63,8 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final chatService = Provider.of<ChatService>(context, listen: false);
-    final currentChatId = chatService.currentChat!.id;
-
     return StreamBuilder<DocumentSnapshot>(
-      stream:
-          FirebaseFirestore.instance
-              .collection('chats')
-              .doc(currentChatId)
-              .snapshots(),
+      stream: chatService.messagesChat(),
       builder: (context, chatSnapshot) {
         if (chatSnapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(

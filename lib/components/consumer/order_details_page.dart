@@ -389,7 +389,7 @@ class OrderDetailsPage extends StatelessWidget {
                             displayedUser: producer,
                             title: "Banca Vendedora",
                             subtitle: store.city,
-                            isProducerSide: true,
+                            isProducerSide: false,
                           )
                         else
                           const Padding(

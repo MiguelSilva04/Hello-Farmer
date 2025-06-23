@@ -1,14 +1,12 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import '../core/models/chat.dart';
 import '../core/services/auth/auth_notifier.dart';
-import '../core/services/chat/chat_list_notifier.dart';
-import '../utils/app_routes.dart';
-import 'package:intl/intl.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_service.dart';
+import '../utils/app_routes.dart';
+import 'package:intl/intl.dart';
 
 class ChatListPage extends StatefulWidget {
   @override
@@ -18,35 +16,36 @@ class ChatListPage extends StatefulWidget {
 class _ChatListPageState extends State<ChatListPage> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatListNotifier>(
-      builder: (ctx, notifier, _) {
+    final currentUser = AuthService().currentUser;
+    if (currentUser == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return StreamBuilder<List<Chat>>(
+      stream: Provider.of<ChatService>(
+        context,
+        listen: false,
+      ).streamUserChats(currentUser.id),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return _buildEmptyState(context);
+        }
+        final chats = snapshot.data!;
         return RefreshIndicator(
           color: Theme.of(context).colorScheme.secondary,
           onRefresh: () async {
-            notifier.listenToChats();
+            setState(() {});
           },
-          child:
-              notifier.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : notifier.chats.isEmpty
-                  ? _buildEmptyState(context)
-                  : AnimatedList(
-                    initialItemCount: notifier.chats.length,
-                    itemBuilder: (ctx, index, animation) {
-                      final isLastItem = index == notifier.chats.length - 1;
-                      return Column(
-                        children: [
-                          _buildChatTile(
-                            context,
-                            notifier,
-                            notifier.chats[index],
-                            animation,
-                          ),
-                          if (!isLastItem) const Divider(),
-                        ],
-                      );
-                    },
-                  ),
+          child: ListView.separated(
+            itemCount: chats.length,
+            separatorBuilder: (_, __) => const Divider(),
+            itemBuilder: (ctx, index) {
+              return _buildChatTile(context, chats[index]);
+            },
+          ),
         );
       },
     );
@@ -58,7 +57,6 @@ class _ChatListPageState extends State<ChatListPage> {
 
     final allUsers = Provider.of<AuthNotifier>(context, listen: false).allUsers;
 
-    // Filtra utilizadores do tipo oposto e exclui o próprio user
     final filteredUsers =
         allUsers.where((user) {
           return user.id != currentUser?.id && (user.isProducer != isProducer);
@@ -190,12 +188,7 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  Widget _buildChatTile(
-    BuildContext context,
-    ChatListNotifier notifier,
-    Chat chat,
-    Animation<double> animation,
-  ) {
+  Widget _buildChatTile(BuildContext context, Chat chat) {
     final currentUser = AuthService().currentUser;
     final lastMessage = chat.lastMessage;
     final AuthNotifier authNotifier = Provider.of(context, listen: false);
@@ -211,65 +204,84 @@ class _ChatListPageState extends State<ChatListPage> {
                 ? 'Eu: ${lastMessage.text}'
                 : '${lastMessage.text}');
 
+    final int unreadCount =
+        chat.messages!
+            .where((msg) => msg.userId != currentUser?.id && msg.seen == false)
+            .length;
+
     final trailingWidget =
         lastMessage == null
             ? null
-            : Text(
-              _formatTime(lastMessage.createdAt),
-              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (unreadCount > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatTime(lastMessage.createdAt),
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+              ],
             );
 
-    return FadeTransition(
-      opacity: animation,
-      child: Slidable(
-        key: ValueKey(chat.id),
-        endActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          children: [
-            SlidableAction(
-              onPressed: (_) => _confirmRemoveChat(context, notifier, chat),
-              backgroundColor: const Color(0xFFFE4A49),
-              foregroundColor: Colors.white,
-              icon: Icons.delete,
-              label: 'Remover',
-            ),
-          ],
-        ),
-        child: ListTile(
-          onTap: () async {
-            Provider.of<ChatService>(
-              context,
-              listen: false,
-            ).updateCurrentChat(chat);
-            // Provider.of<ChatService>(
-            //   context,
-            //   listen: false,
-            // ).updateCurrentUsers(_getListAppUsers(chat));
-            await Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-          },
-          leading: CircleAvatar(
-            backgroundImage:
-                AuthService().currentUser!.id == consumer.id
-                    ? NetworkImage(producer.imageUrl)
-                    : NetworkImage(consumer.imageUrl),
+    return Slidable(
+      key: ValueKey(chat.id),
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
+        children: [
+          SlidableAction(
+            onPressed: (_) => _confirmRemoveChat(context, chat),
+            backgroundColor: const Color(0xFFFE4A49),
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'Remover',
           ),
-          title: Text(
-            AuthService().currentUser!.id == consumer.id
-                ? producer.firstName + " " + producer.lastName
-                : consumer.firstName + " " + consumer.lastName,
-          ),
-          subtitle: Text(subtitleText),
-          trailing: trailingWidget,
+        ],
+      ),
+      child: ListTile(
+        onTap: () async {
+          Provider.of<ChatService>(
+            context,
+            listen: false,
+          ).updateCurrentChat(chat);
+          await Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+        },
+        leading: CircleAvatar(
+          backgroundImage:
+              currentUser!.id == consumer.id
+                  ? NetworkImage(producer.imageUrl)
+                  : NetworkImage(consumer.imageUrl),
         ),
+        title: Text(
+          currentUser.id == consumer.id
+              ? producer.firstName + " " + producer.lastName
+              : consumer.firstName + " " + consumer.lastName,
+        ),
+        subtitle: Text(subtitleText),
+        trailing: trailingWidget,
       ),
     );
   }
 
-  Future<void> _confirmRemoveChat(
-    BuildContext context,
-    ChatListNotifier notifier,
-    Chat chat,
-  ) async {
+  Future<void> _confirmRemoveChat(BuildContext context, Chat chat) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -292,7 +304,7 @@ class _ChatListPageState extends State<ChatListPage> {
     );
 
     if (confirm ?? false) {
-      await notifier.removeChat(chat);
+      await Provider.of<ChatService>(context, listen: false).removeChat(chat);
     }
   }
 

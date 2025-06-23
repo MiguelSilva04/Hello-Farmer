@@ -41,14 +41,6 @@ class BubbleSpecialThree extends StatefulWidget {
 }
 
 class _BubbleSpecialThreeState extends State<BubbleSpecialThree> {
-  bool _showTime = false;
-
-  void _toggleTimeVisibility() {
-    setState(() {
-      _showTime = !_showTime;
-    });
-  }
-
   Widget getCircleAvatar() {
     return InkWell(
       onTap: () {
@@ -93,144 +85,118 @@ class _BubbleSpecialThreeState extends State<BubbleSpecialThree> {
       );
     }
 
-    return GestureDetector(
-      onTap: _toggleTimeVisibility,
-      child: Column(
-        crossAxisAlignment:
-            widget.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          if (!widget.isSender &&
-              widget.senderName != null &&
-              !widget.isSameUser!)
-            Padding(
-              padding: const EdgeInsets.only(left: 48, bottom: 0),
-              child: Text(
-                widget.senderName!,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.black,
-                  fontStyle:
-                      (widget.isNickname!)
-                          ? FontStyle.italic
-                          : FontStyle.normal,
+    return Column(
+      crossAxisAlignment:
+          widget.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        if (!widget.isSender &&
+            widget.senderName != null &&
+            !widget.isSameUser!)
+          Padding(
+            padding: const EdgeInsets.only(left: 48, bottom: 0),
+            child: Text(
+              widget.senderName!,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.black,
+                fontStyle:
+                    (widget.isNickname!) ? FontStyle.italic : FontStyle.normal,
+              ),
+            ),
+          ),
+        Row(
+          mainAxisAlignment:
+              widget.isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (!widget.isSender && widget.avatarImage != null)
+              getCircleAvatar(),
+            Align(
+              alignment:
+                  widget.isSender ? Alignment.topRight : Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                child: CustomPaint(
+                  painter: _SpecialChatBubbleThree(
+                    color: widget.color,
+                    alignment:
+                        widget.isSender
+                            ? Alignment.topRight
+                            : Alignment.topLeft,
+                    tail: !widget.isSameUser!,
+                  ),
+                  child: Container(
+                    constraints:
+                        widget.constraints ??
+                        BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * .75,
+                        ),
+                    margin:
+                        widget.isSender
+                            ? const EdgeInsets.fromLTRB(7, 7, 17, 7)
+                            : const EdgeInsets.fromLTRB(17, 7, 7, 7),
+                    child: Stack(
+                      children: <Widget>[
+                        Padding(
+                          padding:
+                              widget.isSender
+                                  ? EdgeInsets.only(
+                                    right: 2,
+                                    left: 15,
+                                    bottom: 12,
+                                  )
+                                  : EdgeInsets.only(
+                                    left: 2,
+                                    right:
+                                        (widget.text.trim().length <= 3)
+                                            ? 15
+                                            : 0,
+                                    bottom: 12,
+                                  ),
+                          child: Text(
+                            widget.text,
+                            style: widget.textStyle,
+                            textAlign: TextAlign.left,
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: widget.isSender ? 5 : null,
+                          left: widget.isSender ? null : 5,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                widget.hourSent ?? '',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color:
+                                      (widget.isSender)
+                                          ? Colors.white
+                                          : Colors.black,
+                                ),
+                              ),
+                              if (stateIcon != null &&
+                                  stateTick &&
+                                  widget.isSender)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: stateIcon,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          Row(
-            mainAxisAlignment:
-                widget.isSender
-                    ? MainAxisAlignment.end
-                    : MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (!widget.isSender && widget.avatarImage != null)
-                getCircleAvatar(),
-              Align(
-                alignment:
-                    widget.isSender ? Alignment.topRight : Alignment.topLeft,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 4,
-                  ),
-                  child: CustomPaint(
-                    painter: _SpecialChatBubbleThree(
-                      color: widget.color,
-                      alignment:
-                          widget.isSender
-                              ? Alignment.topRight
-                              : Alignment.topLeft,
-                      tail: !widget.isSameUser!,
-                    ),
-                    child: Container(
-                      constraints:
-                          widget.constraints ??
-                          BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * .75,
-                          ),
-                      margin:
-                          widget.isSender
-                              ? stateTick
-                                  ? const EdgeInsets.fromLTRB(7, 7, 14, 7)
-                                  : const EdgeInsets.fromLTRB(7, 7, 17, 7)
-                              : const EdgeInsets.fromLTRB(17, 7, 7, 7),
-                      child: Stack(
-                        children: <Widget>[
-                          Padding(
-                            padding:
-                                stateTick
-                                    ? const EdgeInsets.only(left: 4, right: 8)
-                                    : widget.isSender
-                                    ? EdgeInsets.only(
-                                      right: 2,
-                                      left:
-                                          (_showTime &&
-                                                  widget.text.trim().length <=
-                                                      3)
-                                              ? 15
-                                              : 0,
-                                      bottom: _showTime ? 12 : 0,
-                                    )
-                                    : EdgeInsets.only(
-                                      left: 2,
-                                      right:
-                                          (_showTime &&
-                                                  widget.text.trim().length <=
-                                                      3)
-                                              ? 15
-                                              : 0,
-                                      bottom: _showTime ? 12 : 0,
-                                    ),
-                            child: Text(
-                              widget.text,
-                              style: widget.textStyle,
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-                          stateIcon != null && stateTick
-                              ? Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: stateIcon,
-                              )
-                              : const SizedBox(width: 1),
-                          if (_showTime)
-                            Positioned(
-                              bottom: 0,
-                              right: widget.isSender ? 5 : null,
-                              left: widget.isSender ? null : 5,
-                              child: Padding(
-                                padding:
-                                    (widget.text.trim().length == 1)
-                                        ? EdgeInsets.only(
-                                          left: widget.isSender ? 10 : 0,
-                                          right: widget.isSender ? 0 : 10,
-                                        )
-                                        : EdgeInsets.only(top: 50),
-                                child: Text(
-                                  widget.hourSent!,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color:
-                                        (widget.isSender)
-                                            ? Colors.white
-                                            : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              if (widget.isSender && widget.avatarImage != null)
-                getCircleAvatar(),
-            ],
-          ),
-        ],
-      ),
+            if (widget.isSender && widget.avatarImage != null)
+              getCircleAvatar(),
+          ],
+        ),
+      ],
     );
   }
 }

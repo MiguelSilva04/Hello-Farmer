@@ -13,6 +13,7 @@ import '../../models/producer_user.dart';
 
 class ChatService with ChangeNotifier {
   static final ChatService _instance = ChatService._internal();
+  final _firestore = FirebaseFirestore.instance;
 
   factory ChatService() {
     return _instance;
@@ -26,6 +27,13 @@ class ChatService with ChangeNotifier {
   Chat? get currentChat => _currentChat;
 
   StreamSubscription<List<ChatMessage>>? _chatMessagesSubscription;
+  StreamSubscription<QuerySnapshot>? _messagesSubscription;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _messagesSubscription?.cancel();
+  }
 
   void listenToChatMessages(
     String chatId,
@@ -35,11 +43,42 @@ class ChatService with ChangeNotifier {
     _chatMessagesSubscription = messagesStream(chatId).listen(onNewMessages);
   }
 
+  void listenAndMarkMessagesAsSeen(String userId) {
+    _messagesSubscription = FirebaseFirestore.instance
+        .collection('chats')
+        .doc(currentChat!.id)
+        .collection('messages')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen((snapshot) async {
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            if (data['seen'] == false && data['userId'] != userId) {
+              await doc.reference.update({'seen': true});
+            }
+          }
+        });
+  }
+
   void listenToCurrentChatMessages(
     void Function(List<ChatMessage>) onNewMessages,
   ) {
     if (_currentChat == null) throw Exception('No current chat selected.');
     listenToChatMessages(_currentChat!.id, onNewMessages);
+  }
+
+  Future<List<ChatMessage>> fetchMessagesForChat(String chatId) async {
+    return await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .get()
+        .then(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => ChatMessage.fromMap(doc.data()))
+                  .toList(),
+        );
   }
 
   void stopListeningToCurrentChatMessages() {
@@ -58,6 +97,18 @@ class ChatService with ChangeNotifier {
         .collection('messages')
         .doc(messageId)
         .delete();
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> messagesQuery(
+    String userId,
+  ) async {
+    return await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(currentChat!.id)
+        .collection('messages')
+        .where('seen', isEqualTo: false)
+        .where('userId', isNotEqualTo: userId)
+        .get();
   }
 
   Future<void> editMessage(
@@ -134,6 +185,13 @@ class ChatService with ChangeNotifier {
     notifyListeners();
   }
 
+  Stream<DocumentSnapshot> messagesChat() {
+    return FirebaseFirestore.instance
+        .collection('chats')
+        .doc(currentChat!.id)
+        .snapshots();
+  }
+
   Stream<List<ChatMessage>> messagesStream(String chatId) {
     final store = FirebaseFirestore.instance;
     return store
@@ -167,7 +225,7 @@ class ChatService with ChangeNotifier {
                     userData?['firstName'] + " " + userData?['lastName'] ??
                     'Utilizador desconhecido',
                 userImageUrl: userData?['imageUrl'] ?? '',
-                seen: userData?['seen'] ?? false,
+                seen: data['seen'] ?? false,
               ),
             );
           }
@@ -272,6 +330,7 @@ class ChatService with ChangeNotifier {
       'userId': msg.userId,
       'userName': msg.userName,
       'userImageUrl': msg.userImageUrl,
+      'seen': msg.seen,
     };
   }
 
@@ -294,7 +353,7 @@ class ChatService with ChangeNotifier {
           data.containsKey('userImageUrl') && data['userImageUrl'] != null
               ? data['userImageUrl']
               : "",
-      seen: data['seen']
+      seen: data['seen'] ?? false,
     );
   }
 
@@ -378,5 +437,87 @@ class ChatService with ChangeNotifier {
 
     final doc = await docRef.get();
     return doc.data();
+  }
+
+  Future<void> setUserOnline(String userId) async {
+    await _firestore.collection('chats').doc(currentChat!.id).update({
+      'onlineUsers': FieldValue.arrayUnion([userId]),
+    });
+  }
+
+  Future<void> setUserOffline(String userId) async {
+    await _firestore.collection('chats').doc(currentChat!.id).update({
+      'onlineUsers': FieldValue.arrayRemove([userId]),
+    });
+  }
+
+  Future<bool> isOtherUserOnline(
+    String myId,
+    String consumerId,
+    String producerId,
+  ) async {
+    final doc = await _firestore.collection('chats').doc(currentChat!.id).get();
+    final onlineUsers = List<String>.from(doc['onlineUsers'] ?? []);
+    final otherId = myId == consumerId ? producerId : consumerId;
+    return onlineUsers.contains(otherId);
+  }
+
+  Stream<List<Chat>> streamUserChats(String userId) {
+    final consumerStream =
+        _firestore
+            .collection('chats')
+            .where('consumerId', isEqualTo: userId)
+            .snapshots();
+
+    final producerStream =
+        _firestore
+            .collection('chats')
+            .where('producerId', isEqualTo: userId)
+            .snapshots();
+
+    return Rx.zip2(consumerStream, producerStream, (
+      QuerySnapshot consumerSnap,
+      QuerySnapshot producerSnap,
+    ) async {
+      final allDocs = [...consumerSnap.docs, ...producerSnap.docs];
+      final uniqueDocs = {for (var doc in allDocs) doc.id: doc}.values.toList();
+
+      // Para cada chat, buscar a última mensagem, desencriptar e buscar todas as mensagens
+      final chats = await Future.wait(
+        uniqueDocs.map((doc) async {
+          final chat = Chat.fromMap(doc.data() as Map<String, dynamic>);
+
+          // Buscar todas as mensagens da subcoleção 'messages'
+          final messagesSnapshot =
+              await _firestore
+                  .collection('chats')
+                  .doc(doc.id)
+                  .collection('messages')
+                  .orderBy('createdAt', descending: true)
+                  .get();
+
+          final messages = messagesSnapshot.docs.map((msgDoc) {
+            final msgData = msgDoc.data();
+            if (msgData.containsKey('text')) {
+              msgData['text'] = EncryptionService.decryptMessage(msgData['text']);
+            }
+            return ChatMessage.fromMap(msgData);
+          }).toList();
+
+          chat.messages = messages;
+
+          // Definir a última mensagem, se houver
+          if (messages.isNotEmpty) {
+            chat.lastMessage = messages.first;
+          } else {
+            chat.lastMessage = null;
+          }
+
+          return chat;
+        }),
+      );
+
+      return chats;
+    }).asyncMap((future) => future); // Para lidar com o Future<List<Chat>>
   }
 }

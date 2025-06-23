@@ -30,27 +30,7 @@ class _MessagesState extends State<Messages> {
   void initState() {
     super.initState();
     provider = Provider.of<ChatService>(context, listen: false);
-    // _loadUserEntryDates();
   }
-
-  // Future<void> _loadUserEntryDates() async {
-  //   chat = provider!.currentChat;
-  //   if (chat != null) {
-  //     final joinedConsumerDate = await provider!.getUserJoinDate(
-  //       chat!.consumerId,
-  //       chat!.id,
-  //     );
-  //     final joinedProducerDate = await provider!.getUserJoinDate(
-  //       chat!.producerId,
-  //       chat!.id,
-  //     );
-
-  //     setState(() {
-  //       userEntryDates[chat!.consumerId] = joinedConsumerDate!;
-  //       userEntryDates[chat!.producerId] = joinedProducerDate!;
-  //     });
-  //   }
-  // }
 
   bool compareDatesDays(DateTime d1, DateTime d2) {
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
@@ -92,6 +72,9 @@ class _MessagesState extends State<Messages> {
     return StreamBuilder<List<ChatMessage>>(
       stream: chatService.messagesStream(widget.chatId),
       builder: (ctx, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
         final messages = snapshot.data ?? [];
         final List<MapEntry<DateTime, Widget>> timelineEntries = [];
 

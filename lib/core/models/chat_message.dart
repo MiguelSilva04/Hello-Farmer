@@ -35,7 +35,6 @@ class ChatMessage {
     );
   }
 
-  // Método para converter o objeto em map (para enviar para o Firestore)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -48,7 +47,6 @@ class ChatMessage {
     };
   }
 
-  // Método opcional para facilitar cópias modificadas
   ChatMessage copyWith({
     String? id,
     String? text,

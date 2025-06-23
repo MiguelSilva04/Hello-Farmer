@@ -67,6 +67,8 @@ class MessageBubble extends StatelessWidget {
             ),
             isSameUser: itsTheSameUser,
             showAvatar: doShowAvatar,
+            seen: message.seen == true,
+            sent: message.seen == false,
           ),
           SizedBox(height: 5),
         ],

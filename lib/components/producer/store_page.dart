@@ -213,7 +213,6 @@ class _StorePageState extends State<StorePage> {
       );
     }
 
-    // Se for produtor, usa o StreamBuilder com as bancas
     return StreamBuilder<List<Store>>(
       stream: AuthService().getCurrentUserStoresStream(user.id),
       builder: (context, snapshot) {

@@ -22,8 +22,6 @@ class ConsumerHomePage extends StatefulWidget {
 
 class _ConsumerHomePageState extends State<ConsumerHomePage> {
   late String userName;
-  late List<ProductAd> recommendedAds;
-  late List<ProducerUser> nearbyProducers;
   late final ScrollController _scrollController;
   late final List<String> promoImages;
   late AuthNotifier authNotifier;
@@ -34,11 +32,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
     super.initState();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final user = AuthService().currentUser;
-    if (user != null) {
-      userName = user.firstName;
-    } else {
-      userName = 'Utilizador';
-    }
+    userName = user?.firstName ?? 'Utilizador';
 
     promoImages = [
       'assets/images/discounts_images/75%PT.png',
@@ -149,6 +143,14 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           final allAds = snapshot.data!;
           final seenIds = <String>{};
           final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
+
+          // Ordenar: primeiro os com highlight HOME, depois os restantes
+          uniqueAds.sort((a, b) {
+            final aHighlight = a.highlightType == HighlightType.HOME ? 0 : 1;
+            final bHighlight = b.highlightType == HighlightType.HOME ? 0 : 1;
+            return aHighlight.compareTo(bHighlight);
+          });
+
           final top5Ads = uniqueAds.take(5).toList();
 
           return SingleChildScrollView(
@@ -274,7 +276,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
             right: 0,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withOpacity(0.5),
               child: const Text(
                 'Promoções até 75% em todas a fruta da tua zona!',
                 style: TextStyle(
@@ -348,6 +350,8 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   Widget _buildProductItem(ProductAd ad) {
     final product = ad.product;
     final producer = findProducerOfAd(ad, authNotifier.producerUsers);
+    final isHighlighted = ad.highlightType == HighlightType.HOME;
+
     return InkWell(
       onTap:
           () => Navigator.of(context).push(
@@ -358,22 +362,83 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           ),
       child: Padding(
         padding: const EdgeInsets.only(right: 12.0),
-        child: Column(
+        child: Stack(
           children: [
-            CircleAvatar(
-              radius: 35,
-              backgroundImage: NetworkImage(product.imageUrls.first),
-            ),
-            const SizedBox(height: 6),
-            SizedBox(
-              width: 70,
-              child: Text(
-                product.name,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.transparent,
+                  width: isHighlighted ? 3 : 0,
+                ),
+                borderRadius: BorderRadius.circular(40),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color:
+                            isHighlighted
+                                ? Colors.amber
+                                : Colors.transparent,
+                        width: 5,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 35,
+                      backgroundImage: NetworkImage(product.imageUrls.first),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      product.name,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
               ),
             ),
+            if (isHighlighted)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.star,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.secondaryFixed,
+                        ),
+                        SizedBox(width: 2),
+                        Text(
+                          'Destacado',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondaryFixed,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

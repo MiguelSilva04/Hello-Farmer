@@ -260,8 +260,14 @@ class _ExplorePageState extends State<ExplorePage> {
       );
     }
 
+    final highlightedAds =
+        ads.where((ad) => ad.highlight == HighlightType.SEARCH).toList();
+    final normalAds =
+        ads.where((ad) => ad.highlight != HighlightType.SEARCH).toList();
+    final prioritizedAds = [...highlightedAds, ...normalAds];
+
     final Map<String, List<ProductAd>> groupedAds = {};
-    for (final ad in ads) {
+    for (final ad in prioritizedAds) {
       final category = ad.product.category;
       groupedAds.putIfAbsent(category, () => []).add(ad);
     }
@@ -273,6 +279,16 @@ class _ExplorePageState extends State<ExplorePage> {
       children:
           sortedCategories.map((category) {
             final categoryAds = groupedAds[category]!;
+
+            final highlighted =
+                categoryAds.where((ad) {
+                  return ad.highlightType == HighlightType.SEARCH;
+                }).toList();
+            final normal =
+                categoryAds
+                    .where((ad) => ad.highlightType != HighlightType.SEARCH)
+                    .toList();
+            final orderedCategoryAds = [...highlighted, ...normal];
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +302,7 @@ class _ExplorePageState extends State<ExplorePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ...categoryAds.map((ad) {
+                ...orderedCategoryAds.map((ad) {
                   final product = ad.product;
                   final producer = findProducerOfAd(
                     ad,
@@ -296,6 +312,10 @@ class _ExplorePageState extends State<ExplorePage> {
                   final keywordMap = {
                     for (var k in Keywords.keywords) k.name: k.icon,
                   };
+
+                  final isHighlighted =
+                      ad.highlightType == HighlightType.SEARCH;
+
                   return GestureDetector(
                     onTap:
                         () => Navigator.of(context).push(
@@ -312,98 +332,152 @@ class _ExplorePageState extends State<ExplorePage> {
                         if (producer != null)
                           Container(
                             padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    product.imageUrls.first,
-                                    width: 80,
-                                    height: 80,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        product.name,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                if (isHighlighted)
+                                  IntrinsicWidth(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.amber,
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      Text(
-                                        "${product.price.toStringAsFixed(2)} €/${product.unit.toDisplayString()}",
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
                                       ),
-                                      if (ad.keywords != null)
-                                        Container(
-                                          margin: const EdgeInsets.only(top: 4),
-                                          height: 36,
-                                          child: SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: Row(
-                                              children:
-                                                  ad.keywords!
-                                                      .map(
-                                                        (k) => Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                right: 6,
-                                                              ),
-                                                          child: Chip(
-                                                            avatar: Icon(
-                                                              keywordMap[k],
-                                                              size: 16,
-                                                              color:
-                                                                  Theme.of(
-                                                                        context,
-                                                                      )
-                                                                      .colorScheme
-                                                                      .secondary,
-                                                            ),
-                                                            label: Text(
-                                                              k,
-                                                              style: TextStyle(
-                                                                fontSize: 12,
-                                                                color:
-                                                                    Theme.of(
-                                                                          context,
-                                                                        )
-                                                                        .colorScheme
-                                                                        .secondary,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                                      .toList(),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.star,
+                                            size: 14,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.secondaryFixed,
+                                          ),
+                                          SizedBox(width: 2),
+                                          Text(
+                                            'Destacado',
+                                            style: TextStyle(
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.secondaryFixed,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                Column(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(50),
-                                      child: Image.network(
-                                        producer.imageUrl,
-                                        width: 35,
-                                        height: 35,
-                                        fit: BoxFit.cover,
+                                        ],
                                       ),
                                     ),
-                                    Text(
-                                      "${producer.firstName} ${producer.lastName}",
-                                      style: const TextStyle(fontSize: 12),
+                                  ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color:
+                                              isHighlighted
+                                                  ? Colors.amber
+                                                  : Colors.transparent,
+                                          width: 5,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          product.imageUrls.first,
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            product.name,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            "${product.price.toStringAsFixed(2)} €/${product.unit.toDisplayString()}",
+                                          ),
+                                          if (ad.keywords != null)
+                                            Container(
+                                              margin: const EdgeInsets.only(
+                                                top: 4,
+                                              ),
+                                              height: 36,
+                                              child: SingleChildScrollView(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                child: Row(
+                                                  children:
+                                                      ad.keywords!
+                                                          .map(
+                                                            (k) => Padding(
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    right: 6,
+                                                                  ),
+                                                              child: Chip(
+                                                                avatar: Icon(
+                                                                  keywordMap[k],
+                                                                  size: 16,
+                                                                  color:
+                                                                      Theme.of(
+                                                                        context,
+                                                                      ).colorScheme.secondary,
+                                                                ),
+                                                                label: Text(
+                                                                  k,
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color:
+                                                                        Theme.of(
+                                                                          context,
+                                                                        ).colorScheme.secondary,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                          .toList(),
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    Column(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            50,
+                                          ),
+                                          child: Image.network(
+                                            producer.imageUrl,
+                                            width: 35,
+                                            height: 35,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        Text(
+                                          "${producer.firstName} ${producer.lastName}",
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

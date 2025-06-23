@@ -142,15 +142,20 @@ class _BubbleSpecialThreeState extends State<BubbleSpecialThree> {
                               widget.isSender
                                   ? EdgeInsets.only(
                                     right: 2,
-                                    left: 15,
+                                    left:
+                                        widget.text.trim().length <= 10
+                                            ? 30
+                                            : 15,
                                     bottom: 12,
                                   )
                                   : EdgeInsets.only(
                                     left: 2,
                                     right:
-                                        (widget.text.trim().length <= 3)
-                                            ? 15
-                                            : 0,
+                                        widget.text.trim().length <= 10
+                                            ? 30
+                                            : (widget.text.trim().length <= 3
+                                                ? 15
+                                                : 0),
                                     bottom: 12,
                                   ),
                           child: Text(
@@ -161,8 +166,8 @@ class _BubbleSpecialThreeState extends State<BubbleSpecialThree> {
                         ),
                         Positioned(
                           bottom: 0,
-                          right: widget.isSender ? 5 : null,
-                          left: widget.isSender ? null : 5,
+                          left: widget.isSender ? null : null,
+                          right: widget.isSender ? 5 : 5,
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [

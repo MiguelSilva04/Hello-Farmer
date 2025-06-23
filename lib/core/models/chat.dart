@@ -36,7 +36,7 @@ class Chat {
   File? localImageFile;
   DateTime? createdAt;
   ChatMessage? lastMessage;
-  List<ChatMessage>? messages = [];
+  int? unreadMessages;
 
   Chat({
     required this.id,
@@ -48,7 +48,7 @@ class Chat {
     this.localImageFile,
     this.createdAt,
     this.lastMessage,
-    this.messages
+    this.unreadMessages,
   });
 
   String getName() => name ?? '';
@@ -83,7 +83,7 @@ class Chat {
       lastMessage: lastMessage,
       consumerId: data['consumerId'],
       producerId: data['producerId'],
-      
+      unreadMessages: data['unreadMessages'] ?? null,
     );
   }
 
@@ -96,6 +96,7 @@ class Chat {
       'lastMessage': lastMessage?.toMap(),
       'consumerId': consumerId,
       'producerId': producerId,
+      'unreadMessages': unreadMessages,
     };
   }
 
@@ -108,7 +109,7 @@ class Chat {
           map['createdAt'] is DateTime
               ? map['createdAt']
               : DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
-      // Add other fields as necessary
+      unreadMessages: map['unreadMessages'] ?? null
     );
   }
 }

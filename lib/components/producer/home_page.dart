@@ -269,7 +269,7 @@ class Greetings extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
-              "Olá, ${AuthService().currentUser!.firstName}!",
+              "Olá, ${AuthService().currentUser?.firstName}!",
               style: TextStyle(
                 fontSize: 34,
                 fontFamily: 'Poppins',

@@ -51,11 +51,23 @@ class ChatService with ChangeNotifier {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen((snapshot) async {
+          int updatedCount = 0;
+
           for (var doc in snapshot.docs) {
             final data = doc.data();
             if (data['seen'] == false && data['userId'] != userId) {
               await doc.reference.update({'seen': true});
+              updatedCount++;
             }
+          }
+
+          if (updatedCount > 0) {
+            await FirebaseFirestore.instance
+                .collection('chats')
+                .doc(currentChat!.id)
+                .set({
+                  'unreadMessages': FieldValue.increment(-updatedCount),
+                }, SetOptions(merge: true));
           }
         });
   }
@@ -462,62 +474,64 @@ class ChatService with ChangeNotifier {
     return onlineUsers.contains(otherId);
   }
 
-  Stream<List<Chat>> streamUserChats(String userId) {
-    final consumerStream =
-        _firestore
-            .collection('chats')
-            .where('consumerId', isEqualTo: userId)
-            .snapshots();
+  Stream<List<Chat>> streamAllChatsWithMessages(AppUser user) {
+    final chatsCollection = FirebaseFirestore.instance.collection('chats');
 
-    final producerStream =
-        _firestore
-            .collection('chats')
-            .where('producerId', isEqualTo: userId)
-            .snapshots();
+    final userChatsStream = chatsCollection
+        .where(
+          user.isProducer ? 'producerId' : 'consumerId',
+          isEqualTo: user.id,
+        )
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Chat.fromDocument(doc)).toList(),
+        );
 
-    return Rx.zip2(consumerStream, producerStream, (
-      QuerySnapshot consumerSnap,
-      QuerySnapshot producerSnap,
-    ) async {
-      final allDocs = [...consumerSnap.docs, ...producerSnap.docs];
-      final uniqueDocs = {for (var doc in allDocs) doc.id: doc}.values.toList();
+    return userChatsStream.switchMap((chats) {
+      final chatStreams = chats.map((chat) {
+        final messagesRef = chatsCollection.doc(chat.id).collection('messages');
 
-      // Para cada chat, buscar a última mensagem, desencriptar e buscar todas as mensagens
-      final chats = await Future.wait(
-        uniqueDocs.map((doc) async {
-          final chat = Chat.fromMap(doc.data() as Map<String, dynamic>);
+        final messagesStream = messagesRef
+            .orderBy('createdAt', descending: true)
+            .limit(1)
+            .snapshots()
+            .asyncMap((msgSnap) async {
+              ChatMessage? lastMsg;
+              if (msgSnap.docs.isNotEmpty) {
+                final data = msgSnap.docs.first.data();
+                String decryptedText = EncryptionService.decryptMessage(
+                  data['text'],
+                );
+                lastMsg = ChatMessage(
+                  id: msgSnap.docs.first.id,
+                  text: decryptedText,
+                  createdAt:
+                      data['createdAt'] is Timestamp
+                          ? (data['createdAt'] as Timestamp).toDate()
+                          : DateTime.parse(data['createdAt']),
+                  userId: data['userId'],
+                  userName: data['userName'] ?? 'Utilizador desconhecido',
+                  userImageUrl: data['userImageUrl'] ?? '',
+                  seen: data['seen'] ?? false,
+                );
+              }
+              chat.lastMessage = lastMsg;
 
-          // Buscar todas as mensagens da subcoleção 'messages'
-          final messagesSnapshot =
-              await _firestore
-                  .collection('chats')
-                  .doc(doc.id)
-                  .collection('messages')
-                  .orderBy('createdAt', descending: true)
-                  .get();
+              final unreadSnap =
+                  await messagesRef
+                      .where('seen', isEqualTo: false)
+                      .where('userId', isNotEqualTo: user.id)
+                      .get();
+              chat.unreadMessages = unreadSnap.docs.length;
 
-          final messages = messagesSnapshot.docs.map((msgDoc) {
-            final msgData = msgDoc.data();
-            if (msgData.containsKey('text')) {
-              msgData['text'] = EncryptionService.decryptMessage(msgData['text']);
-            }
-            return ChatMessage.fromMap(msgData);
-          }).toList();
+              return chat;
+            });
 
-          chat.messages = messages;
+        return messagesStream;
+      });
 
-          // Definir a última mensagem, se houver
-          if (messages.isNotEmpty) {
-            chat.lastMessage = messages.first;
-          } else {
-            chat.lastMessage = null;
-          }
-
-          return chat;
-        }),
-      );
-
-      return chats;
-    }).asyncMap((future) => future); // Para lidar com o Future<List<Chat>>
+      return Rx.combineLatestList<Chat>(chatStreams);
+    });
   }
 }

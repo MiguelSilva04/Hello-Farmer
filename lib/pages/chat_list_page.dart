@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import '../core/models/chat.dart';
+import '../core/models/chat_message.dart';
 import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_service.dart';
@@ -21,33 +22,44 @@ class _ChatListPageState extends State<ChatListPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return StreamBuilder<List<Chat>>(
-      stream: Provider.of<ChatService>(
-        context,
-        listen: false,
-      ).streamUserChats(currentUser.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return _buildEmptyState(context);
-        }
-        final chats = snapshot.data!;
-        return RefreshIndicator(
-          color: Theme.of(context).colorScheme.secondary,
-          onRefresh: () async {
-            setState(() {});
-          },
-          child: ListView.separated(
+    return RefreshIndicator(
+      color: Theme.of(context).colorScheme.secondary,
+      onRefresh: () async {
+        setState(() {});
+        await Future.delayed(const Duration(milliseconds: 500));
+      },
+      child: StreamBuilder<List<Chat>>(
+        stream: Provider.of<ChatService>(
+          context,
+          listen: false,
+        ).streamAllChatsWithMessages(currentUser),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return _buildEmptyState(context);
+          }
+
+          List<Chat> chats = List<Chat>.from(snapshot.data!);
+          chats.sort((a, b) {
+            if (a.lastMessage == null && b.lastMessage == null) return 0;
+            if (a.lastMessage == null) return 1;
+            if (b.lastMessage == null) return -1;
+            return b.lastMessage!.createdAt.compareTo(a.lastMessage!.createdAt);
+          });
+
+          return ListView.separated(
             itemCount: chats.length,
             separatorBuilder: (_, __) => const Divider(),
             itemBuilder: (ctx, index) {
-              return _buildChatTile(context, chats[index]);
+              final chat = chats[index];
+              return _buildChatTile(context, chat);
             },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -191,11 +203,13 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget _buildChatTile(BuildContext context, Chat chat) {
     final currentUser = AuthService().currentUser;
     final lastMessage = chat.lastMessage;
-    final AuthNotifier authNotifier = Provider.of(context, listen: false);
-    final consumer =
-        authNotifier.allUsers.where((u) => u.id == chat.consumerId).first;
-    final producer =
-        authNotifier.allUsers.where((u) => u.id == chat.producerId).first;
+    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    final consumer = authNotifier.allUsers.firstWhere(
+      (u) => u.id == chat.consumerId,
+    );
+    final producer = authNotifier.allUsers.firstWhere(
+      (u) => u.id == chat.producerId,
+    );
 
     final subtitleText =
         lastMessage == null
@@ -204,16 +218,14 @@ class _ChatListPageState extends State<ChatListPage> {
                 ? 'Eu: ${lastMessage.text}'
                 : '${lastMessage.text}');
 
-    final int unreadCount =
-        chat.messages!
-            .where((msg) => msg.userId != currentUser?.id && msg.seen == false)
-            .length;
+    final int unreadCount = chat.unreadMessages ?? 0;
 
     final trailingWidget =
         lastMessage == null
             ? null
             : Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (unreadCount > 0)
                   Container(
@@ -265,15 +277,16 @@ class _ChatListPageState extends State<ChatListPage> {
           await Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
         },
         leading: CircleAvatar(
-          backgroundImage:
-              currentUser!.id == consumer.id
-                  ? NetworkImage(producer.imageUrl)
-                  : NetworkImage(consumer.imageUrl),
+          backgroundImage: NetworkImage(
+            currentUser!.id == consumer.id
+                ? producer.imageUrl
+                : consumer.imageUrl,
+          ),
         ),
         title: Text(
           currentUser.id == consumer.id
-              ? producer.firstName + " " + producer.lastName
-              : consumer.firstName + " " + consumer.lastName,
+              ? '${producer.firstName} ${producer.lastName}'
+              : '${consumer.firstName} ${consumer.lastName}',
         ),
         subtitle: Text(subtitleText),
         trailing: trailingWidget,

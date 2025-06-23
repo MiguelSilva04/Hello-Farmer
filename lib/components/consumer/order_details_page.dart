@@ -586,7 +586,28 @@ class OrderDetailsPage extends StatelessWidget {
                                               MainAxisAlignment.end,
                                           children: [
                                             TextButton.icon(
-                                              onPressed: () {},
+                                              onPressed: () async {
+                                                await Provider.of<AuthNotifier>(
+                                                  context,
+                                                  listen: false,
+                                                ).addToCart(
+                                                  ad,
+                                                  item.qty,
+                                                ).then((_) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        "Produto adicionado ao carrinho.",
+                                                      ),
+                                                      duration:
+                                                          const Duration(
+                                                        seconds: 2,
+                                                      ),
+                                                    ),
+                                                  );
+                                                });
+                                              },
                                               icon: const Icon(
                                                 Icons.shopping_cart_checkout,
                                               ),
@@ -665,8 +686,14 @@ class OrderDetailsPage extends StatelessWidget {
         ),
       ),
     );
+
+    
   }
+
+  
 }
+
+
 
 class OrderTimeline extends StatefulWidget {
   final Order order;

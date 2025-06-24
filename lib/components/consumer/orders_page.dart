@@ -292,7 +292,7 @@ class OrderCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.surface,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],

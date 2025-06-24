@@ -164,12 +164,30 @@ class AuthService {
         .collection('stores')
         .where('ownerId', isEqualTo: userId)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs
-                  .map((doc) => Store.fromMap(doc.data(), doc.id))
-                  .toList(),
-        );
+        .asyncMap((snapshot) async {
+          final stores = await Future.wait(
+            snapshot.docs.map((doc) async {
+              final store = Store.fromMap(doc.data(), doc.id);
+
+              // Buscar todos os anúncios (ads) da subcoleção 'ads' desta store
+              final adsSnapshot =
+                  await fireStore
+                      .collection('stores')
+                      .doc(doc.id)
+                      .collection('ads')
+                      .get();
+
+              store.productsAds =
+                  adsSnapshot.docs
+                      .map((adDoc) => ProductAd.fromJson(adDoc.data()))
+                      .toList();
+
+              return store;
+            }),
+          );
+
+          return stores;
+        });
   }
 
   void listenToUserChanges() {

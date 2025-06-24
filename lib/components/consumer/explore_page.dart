@@ -930,6 +930,7 @@ class _CategoryTabsState extends State<CategoryTabs> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: ChoiceChip(
+                    checkmarkColor: Theme.of(context).colorScheme.secondary,
                     label: Text(
                       keyword,
                       style: TextStyle(

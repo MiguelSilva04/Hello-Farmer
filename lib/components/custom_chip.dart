@@ -5,16 +5,6 @@ class CustomChip extends StatelessWidget {
 
   const CustomChip({required this.text, super.key});
 
-  // Color dateChipColor(String dateText) {
-  //   if (dateText == 'Hoje') {
-  //     return Colors.green.shade300;
-  //   } else if (dateText == 'Ontem') {
-  //     return Colors.blue.shade300;
-  //   } else {
-  //     return Colors.grey.shade400;
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -25,7 +15,13 @@ class CustomChip extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(6)),
             color: Colors.grey.shade400,
           ),
-          child: Padding(padding: const EdgeInsets.all(5.0), child: Text(text)),
+          child: Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Text(
+              text,
+              style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+            ),
+          ),
         ),
       ),
     );

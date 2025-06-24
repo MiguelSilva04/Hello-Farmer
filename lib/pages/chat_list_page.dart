@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import '../core/models/chat.dart';
-import '../core/models/chat_message.dart';
 import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_service.dart';
@@ -23,7 +22,8 @@ class _ChatListPageState extends State<ChatListPage> {
     }
 
     return RefreshIndicator(
-      color: Theme.of(context).colorScheme.secondary,
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      color: Theme.of(context).colorScheme.onSurface,
       onRefresh: () async {
         setState(() {});
         await Future.delayed(const Duration(milliseconds: 500));

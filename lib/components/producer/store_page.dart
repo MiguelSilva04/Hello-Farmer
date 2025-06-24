@@ -173,7 +173,6 @@ class _StorePageState extends State<StorePage> {
   Widget build(BuildContext context) {
     final user = Provider.of<AuthNotifier>(context).currentUser;
 
-    // Se não for produtor, mostrar apenas a loja passada no widget
     if (user == null || !user.isProducer) {
       myStore = widget.store;
 
@@ -216,6 +215,9 @@ class _StorePageState extends State<StorePage> {
     return StreamBuilder<List<Store>>(
       stream: AuthService().getCurrentUserStoresStream(user.id),
       builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
         if (snapshot.hasError || !snapshot.hasData) {
           return const Center(child: Text("Erro ao carregar as bancas."));
         }

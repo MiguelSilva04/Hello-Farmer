@@ -97,7 +97,7 @@ class MyApp extends StatelessWidget {
               ),
             ),
         colorScheme: ColorScheme.fromSeed(
-          primary: const Color.fromRGBO(66, 139, 109, 1),
+          primary: const Color.fromRGBO(42, 129, 94, 1),
           surface: const Color.fromRGBO(42, 129, 94, 1),
           surfaceDim: const Color(0xFFDEF2EA),
           secondary: Colors.white,
@@ -113,7 +113,7 @@ class MyApp extends StatelessWidget {
           inverseSurface: const Color.fromRGBO(91, 152, 134, 1),
           inversePrimary: const Color.fromRGBO(40, 87, 70, 1),
           onInverseSurface: const Color.fromRGBO(232, 247, 238, 1),
-          seedColor: Colors.purple,
+          seedColor: Colors.white,
           outline: Colors.orange.shade50,
           surfaceContainerLowest: const Color.fromRGBO(168, 218, 184, 1),
           surfaceContainerLow: const Color.fromRGBO(222, 246, 228, 1),
@@ -155,7 +155,7 @@ class MyApp extends StatelessWidget {
               ),
             ),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.purple,
+          seedColor: Colors.white,
           brightness: Brightness.dark,
           primary: const Color.fromRGBO(42, 129, 94, 1),
           secondary: Colors.black,

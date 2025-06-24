@@ -169,7 +169,6 @@ class AuthService {
             snapshot.docs.map((doc) async {
               final store = Store.fromMap(doc.data(), doc.id);
 
-              // Buscar todos os anúncios (ads) da subcoleção 'ads' desta store
               final adsSnapshot =
                   await fireStore
                       .collection('stores')

@@ -943,8 +943,10 @@ import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/review.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
+import 'package:harvestly/pages/loading_page.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/auth/auth_service.dart';
 import '../../core/services/other/bottom_navigation_notifier.dart';
 import '../../core/services/other/manage_section_notifier.dart';
 import '../consumer/map_page.dart';
@@ -1023,12 +1025,43 @@ class _StorePageState extends State<StorePage> {
   @override
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final producer =
-        authNotifier.currentUser!.isProducer
-            ? authNotifier.currentUser as ProducerUser
-            : null;
-    final stores = producer?.stores;
 
+    if (!(authNotifier.currentUser?.isProducer ?? false)) {
+      return _buildStoreScaffold(context, authNotifier, selectedStore, null);
+    }
+
+    return StreamBuilder<List<Store>>(
+      stream:
+          authNotifier.currentUser != null
+              ? AuthService().getCurrentUserStoresStream(
+                authNotifier.currentUser!.id,
+              )
+              : null,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const LoadingPage();
+        }
+        if (snapshot.hasError) {
+          return const Center(child: Text("Erro ao carregar as bancas."));
+        }
+        final stores = snapshot.data!;
+        if (stores.isEmpty) {
+          return const Center(child: Text("Nenhuma banca disponível."));
+        }
+        final selectedIndex = authNotifier.selectedStoreIndex ?? 0;
+        final safeIndex = selectedIndex < stores.length ? selectedIndex : 0;
+        final storeToShow = widget.store ?? stores[safeIndex];
+        return _buildStoreScaffold(context, authNotifier, storeToShow, stores);
+      },
+    );
+  }
+
+  Widget _buildStoreScaffold(
+    BuildContext context,
+    AuthNotifier authNotifier,
+    Store? store,
+    List<Store>? stores,
+  ) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -1072,12 +1105,10 @@ class _StorePageState extends State<StorePage> {
                         height: 220,
                         decoration: BoxDecoration(color: Colors.grey.shade300),
                         child:
-                            selectedStore?.backgroundImageUrl != null &&
-                                    selectedStore!
-                                        .backgroundImageUrl!
-                                        .isNotEmpty
+                            store?.backgroundImageUrl != null &&
+                                    store!.backgroundImageUrl!.isNotEmpty
                                 ? Image.network(
-                                  selectedStore!.backgroundImageUrl!,
+                                  store.backgroundImageUrl!,
                                   width: double.infinity,
                                   height: 220,
                                   fit: BoxFit.cover,
@@ -1108,14 +1139,14 @@ class _StorePageState extends State<StorePage> {
                               child: CircleAvatar(
                                 radius: 40,
                                 backgroundImage:
-                                    (selectedStore?.imageUrl != null &&
-                                            selectedStore!.imageUrl!.isNotEmpty)
-                                        ? NetworkImage(selectedStore!.imageUrl!)
+                                    (store?.imageUrl != null &&
+                                            store!.imageUrl!.isNotEmpty)
+                                        ? NetworkImage(store.imageUrl!)
                                         : null,
                                 backgroundColor: Colors.white,
                                 child:
-                                    (selectedStore?.imageUrl == null ||
-                                            selectedStore!.imageUrl!.isEmpty)
+                                    (store?.imageUrl == null ||
+                                            store!.imageUrl!.isEmpty)
                                         ? Icon(
                                           Icons.store,
                                           size: 40,
@@ -1127,8 +1158,7 @@ class _StorePageState extends State<StorePage> {
                             const SizedBox(width: 16),
                             Builder(
                               builder: (context) {
-                                final rating =
-                                    selectedStore?.averageRating ?? 0.0;
+                                final rating = store?.averageRating ?? 0.0;
                                 return Row(
                                   children: [
                                     RatingBarIndicator(
@@ -1200,14 +1230,15 @@ class _StorePageState extends State<StorePage> {
                       Row(
                         children: [
                           if (authNotifier.currentUser!.isProducer &&
-                              stores!.length > 1)
+                              stores != null &&
+                              stores.length > 1)
                             Expanded(
                               child: DropdownButtonFormField<Store>(
                                 icon: Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   size: 40,
                                 ),
-                                value: selectedStore,
+                                value: store,
                                 isExpanded: true,
                                 decoration: const InputDecoration(
                                   border: InputBorder.none,
@@ -1222,27 +1253,32 @@ class _StorePageState extends State<StorePage> {
                                 items:
                                     stores
                                         .map(
-                                          (store) => DropdownMenuItem<Store>(
-                                            value: store,
+                                          (s) => DropdownMenuItem<Store>(
+                                            value: s,
                                             child: Row(
                                               children: [
                                                 Expanded(
                                                   child: Text(
-                                                    store.name ??
-                                                        'Nome da Banca',
+                                                    s.name ?? 'Nome da Banca',
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     maxLines: 1,
+                                                    // Diminui a fonte dos itens do dropdown
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
                                                   ),
                                                 ),
-                                                if (store != selectedStore)
+                                                if (s != store)
                                                   IconButton(
                                                     onPressed: () {
                                                       final storeToDelete =
                                                           stores.firstWhere(
-                                                            (s) =>
-                                                                s.name ==
-                                                                store.name,
+                                                            (ss) =>
+                                                                ss.name ==
+                                                                s.name,
                                                             orElse:
                                                                 () =>
                                                                     stores
@@ -1262,13 +1298,13 @@ class _StorePageState extends State<StorePage> {
                                           ),
                                         )
                                         .toList(),
-                                onChanged: (store) {
-                                  if (store != null) {
+                                onChanged: (s) {
+                                  if (s != null) {
                                     setState(() {
-                                      selectedStore = store;
+                                      selectedStore = s;
                                       showDropdown = false;
                                     });
-                                    final index = stores.indexOf(store);
+                                    final index = stores.indexOf(s);
                                     Provider.of<AuthNotifier>(
                                       context,
                                       listen: false,
@@ -1278,12 +1314,32 @@ class _StorePageState extends State<StorePage> {
                                 dropdownColor:
                                     Theme.of(context).colorScheme.secondary,
                                 autofocus: true,
+                                // Diminui a fonte dos itens do dropdown ao abrir
+                                selectedItemBuilder:
+                                    (context) =>
+                                        stores
+                                            .map(
+                                              (s) => Text(
+                                                s.name ?? 'Nome da Banca',
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .headlineLarge
+                                                    ?.copyWith(
+                                                      fontSize: 30,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                              ),
+                                            )
+                                            .toList(),
                               ),
                             )
                           else
                             Expanded(
                               child: Text(
-                                selectedStore?.name ?? 'Nome da Banca',
+                                store?.name ?? 'Nome da Banca',
                                 style: Theme.of(
                                   context,
                                 ).textTheme.headlineLarge?.copyWith(
@@ -1297,9 +1353,9 @@ class _StorePageState extends State<StorePage> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      if (selectedStore?.slogan != null)
+                      if (store?.slogan != null)
                         Text(
-                          "'${selectedStore?.slogan}'",
+                          "'${store?.slogan}'",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1307,7 +1363,7 @@ class _StorePageState extends State<StorePage> {
                         ),
                       const SizedBox(height: 15),
                       Text(
-                        selectedStore?.description ?? 'Descrição da banca...',
+                        store?.description ?? 'Descrição da banca...',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 8),
@@ -1334,7 +1390,7 @@ class _StorePageState extends State<StorePage> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  selectedStore?.city ?? "Cidade",
+                                  store?.city ?? "Cidade",
                                   style: TextStyle(
                                     color:
                                         Theme.of(context).colorScheme.secondary,
@@ -1346,9 +1402,7 @@ class _StorePageState extends State<StorePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (_) =>
-                                          MapPage(initialStore: selectedStore),
+                                  builder: (_) => MapPage(initialStore: store),
                                 ),
                               );
                             },
@@ -1373,14 +1427,9 @@ class _StorePageState extends State<StorePage> {
                         height: 170,
                         child: Builder(
                           builder: (context) {
-                            final authNotifier = Provider.of<AuthNotifier>(
-                              context,
-                              listen: false,
-                            );
                             final isProducer =
                                 authNotifier.currentUser?.isProducer ?? false;
-                            List<ProductAd> ads =
-                                selectedStore?.productsAds ?? [];
+                            List<ProductAd> ads = store?.productsAds ?? [];
 
                             if (!isProducer) {
                               ads =
@@ -1425,12 +1474,12 @@ class _StorePageState extends State<StorePage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      if ((selectedStore?.storeReviews?.isEmpty ?? true))
+                      if ((store?.storeReviews?.isEmpty ?? true))
                         Text("Ainda sem comentários"),
-                      ...((selectedStore?.storeReviews ?? [])
+                      ...((store?.storeReviews ?? [])
                           .take(3)
                           .map((review) => _ReviewCard(review: review))),
-                      if ((selectedStore?.storeReviews?.length ?? 0) > 3)
+                      if ((store?.storeReviews?.length ?? 0) > 3)
                         TextButton(
                           onPressed: () {},
                           child: const Text("Ver todos os comentários"),

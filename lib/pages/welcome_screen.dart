@@ -155,7 +155,6 @@
 //     );
 //   }
 // }
-
 import 'package:flutter/material.dart';
 
 import '../core/services/auth/auth_service.dart';
@@ -166,20 +165,26 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: theme.colorScheme.surface,
       body: Stack(
         children: [
           ClipPath(
             clipper: WaveClipper(),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.47,
+              height: size.height * 0.45,
               width: double.infinity,
-              color: const Color(0xFF2E8B57),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 100,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF2E8B57), Color(0xFF43A047)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 90),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -189,28 +194,31 @@ class WelcomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Hello Farmer',
-                        style: TextStyle(
+                        style: theme.textTheme.displaySmall?.copyWith(
                           color: Colors.white,
-                          fontSize: 50,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                          fontSize: 50,
                         ),
                       ),
+                      const SizedBox(height: 8),
                       Text(
                         'O futuro do agricultor',
-                        style: TextStyle(
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white70,
                           fontWeight: FontWeight.w400,
-                          color: Theme.of(context).colorScheme.secondary,
                           fontSize: 25,
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 10),
                   Text(
-                    'Registe-se agora e descrubra produtos ou venda na sua zona!',
-                    style: TextStyle(
+                    'Registe-se agora e descubra produtos ou venda na sua zona!',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.secondary,
-                      fontSize: 20,
+                      fontSize: 18,
                     ),
                   ),
                 ],
@@ -218,13 +226,11 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height * 0.40,
-            ),
+            padding: EdgeInsets.only(top: size.height * 0.40),
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
@@ -234,33 +240,42 @@ class WelcomeScreen extends StatelessWidget {
                           text: 'Venda de produtos',
                         ),
                       ),
+                      SizedBox(width: 8),
                       Expanded(
                         child: FeatureIcon(
                           icon: Icons.eco_outlined,
                           text: 'Produtores e consumidores',
                         ),
                       ),
+                      SizedBox(width: 8),
                       Expanded(
                         child: FeatureIcon(
                           icon: Icons.emoji_nature_outlined,
-                          text: 'Compra de produtos biológicos',
+                          text: 'Produtos biológicos',
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 28),
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.secondary,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(36),
+                        topRight: Radius.circular(36),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, -4),
+                        ),
+                      ],
                     ),
-                    padding: const EdgeInsets.all(30),
+                    padding: const EdgeInsets.all(28),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -272,33 +287,53 @@ class WelcomeScreen extends StatelessWidget {
                                 image: 'assets/images/produtor.png',
                                 title: 'Produtor',
                                 subtitle:
-                                    'Seja produtor e venda o que cultiva diretamente da sua quinta',
-                                color: Theme.of(context).colorScheme.surface,
+                                    'Venda o que cultiva diretamente da sua quinta',
+                                color: theme.colorScheme.surface,
                                 isProducer: true,
                               ),
                             ),
-                            SizedBox(width: 20),
+                            const SizedBox(width: 18),
                             Expanded(
                               child: BigOptionCard(
                                 image: 'assets/images/consumidor.png',
                                 title: 'Consumidor',
                                 subtitle:
-                                    'Encontre os melhores produtos na sua zona',
-                                color: Theme.of(context).colorScheme.surface,
+                                    'Encontre os melhores produtos locais',
+                                color: theme.colorScheme.surface,
                                 isProducer: false,
                               ),
                             ),
                           ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 0),
+                          child: Row(
+                            children: [
+                              const Expanded(child: Divider(thickness: 1.5)),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
+                                child: SizedBox(
+                                  width: 60,
+                                  child: Image.asset(
+                                    'assets/images/logo_green2.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                              const Expanded(child: Divider(thickness: 1.5)),
+                            ],
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               "Já tem conta?",
-                              style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.tertiaryFixed,
-                                fontSize: 18,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: theme.colorScheme.tertiaryFixed,
+                                fontSize: 17,
                               ),
                             ),
                             TextButton(
@@ -310,18 +345,11 @@ class WelcomeScreen extends StatelessWidget {
                               },
                               child: Text(
                                 "Entre aqui.",
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.tertiaryFixed,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
+                                style: theme.textTheme.bodyLarge?.copyWith(
+                                  color: theme.colorScheme.tertiaryFixed,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
                                   decoration: TextDecoration.underline,
-                                  decorationColor:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.tertiaryFixed,
                                 ),
                               ),
                             ),
@@ -358,41 +386,41 @@ class BigOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
+      borderRadius: BorderRadius.circular(18),
       onTap: () {
         AuthService().setLoggingInState(false);
         AuthService().setProducerState(isProducer);
         Navigator.of(context).pushNamed(AppRoutes.AUTH_PAGE);
       },
       child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        color: color,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           height: MediaQuery.of(context).size.height * 0.25,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(20),
-          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(image, width: 100, height: 100, fit: BoxFit.contain),
+              Image.asset(image, width: 90, height: 90, fit: BoxFit.contain),
+              const SizedBox(height: 10),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 20,
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.secondary,
+                  color: theme.colorScheme.secondary,
+                  fontSize: 20,
                 ),
               ),
-              Center(
-                child: Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.secondary,
+                  fontSize: 13,
                 ),
               ),
             ],
@@ -411,26 +439,22 @@ class FeatureIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       children: [
         CircleAvatar(
           backgroundColor: Colors.white,
-          radius: 40,
-          child: Icon(
-            icon,
-            color: Theme.of(context).colorScheme.primary,
-            size: 50,
-          ),
+          radius: 32,
+          child: Icon(icon, color: theme.colorScheme.primary, size: 34),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 7),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text(
             text,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: const TextStyle(color: Colors.white, fontSize: 13),
             textAlign: TextAlign.center,
             softWrap: true,
-            overflow: TextOverflow.visible,
           ),
         ),
       ],
@@ -445,7 +469,7 @@ class WaveClipper extends CustomClipper<Path> {
     path.lineTo(0, size.height - 40);
     path.quadraticBezierTo(
       size.width / 2,
-      size.height,
+      size.height + 30,
       size.width,
       size.height - 40,
     );

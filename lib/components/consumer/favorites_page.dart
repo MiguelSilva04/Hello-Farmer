@@ -309,8 +309,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                                   .stores[storeIndex!]
                                                   .imageUrl ??
                                               producer.imageUrl,
-                                          width: 30,
-                                          height: 30,
+                                          width: 40,
+                                          height: 40,
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) =>

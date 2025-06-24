@@ -508,8 +508,8 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                 borderRadius: BorderRadius.circular(50),
                                 child: Image.network(
                                   store.imageUrl!,
-                                  width: 50,
-                                  height: 50,
+                                  width: 75,
+                                  height: 75,
                                   fit: BoxFit.cover,
                                 ),
                               ),

@@ -60,7 +60,7 @@ class ProductAd {
            "${product.price.toStringAsFixed(2)}€ | ${product.unit.toDisplayString()}" {}
 
   String get highlight {
-    if (highlightDate != null) {
+    if (highlightDate != null && highlightType != null) {
       final now = DateTime.now();
       final diff = now.difference(highlightDate!);
       if (diff.inDays >= 1) {

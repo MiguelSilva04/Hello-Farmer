@@ -206,7 +206,6 @@ class _MainMenuState extends State<MainMenu>
       SellPage(),
       ChatListPage(),
       ManagePage(),
-      StorePage(),
     ];
 
     final List<Widget> _consumerPages = [
@@ -215,7 +214,6 @@ class _MainMenuState extends State<MainMenu>
       ExplorePage(),
       ChatListPage(),
       MapPage(),
-      OffersPage(),
     ];
 
     return _isLoading
@@ -225,18 +223,6 @@ class _MainMenuState extends State<MainMenu>
             centerTitle: false,
             title: Row(
               children: [
-                if (Provider.of<BottomNavigationNotifier>(
-                      context,
-                    ).currentIndex ==
-                    5)
-                  InkWell(
-                    onTap:
-                        () => Provider.of<BottomNavigationNotifier>(
-                          context,
-                          listen: false,
-                        ).setIndex(0),
-                    child: const Icon(Icons.arrow_back),
-                  ),
                 if (!_isSearching && _showLogo)
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
@@ -322,10 +308,15 @@ class _MainMenuState extends State<MainMenu>
                         ).pushNamed(AppRoutes.NOTIFICATION_PAGE);
                         break;
                       case "Alt":
-                        Provider.of<BottomNavigationNotifier>(
-                          context,
-                          listen: false,
-                        ).setIndex(5);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (ctx) =>
+                                    (user.isProducer)
+                                        ? StorePage()
+                                        : OffersPage(),
+                          ),
+                        );
                         break;
                       case "Profile":
                         _navigateToPage(AppRoutes.PROFILE_PAGE);

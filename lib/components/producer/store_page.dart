@@ -177,7 +177,8 @@ class _StorePageState extends State<StorePage> {
       myStore = widget.store;
 
       return Scaffold(
-        appBar: AppBar(),
+        extendBodyBehindAppBar: widget.store != null,
+        appBar: AppBar(title: Text("")),
         backgroundColor: Theme.of(context).colorScheme.surface,
         body: Column(
           children: [

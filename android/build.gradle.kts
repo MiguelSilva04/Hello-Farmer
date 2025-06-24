@@ -13,6 +13,17 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 subprojects {
+    afterEvaluate {
+        if (project.plugins.hasPlugin("com.android.application") || project.plugins.hasPlugin("com.android.library")) {
+            extensions.configure<com.android.build.gradle.BaseExtension> {
+                compileSdkVersion(34)
+                buildToolsVersion("34.0.0")
+            }
+        }
+    }
+}
+
+subprojects {
     project.evaluationDependsOn(":app")
 }
 
@@ -21,8 +32,6 @@ tasks.register<Delete>("clean") {
 }
 
 plugins {
-
-  id("com.google.gms.google-services") version "4.3.15" apply false
-  id("org.jetbrains.kotlin.android") version "2.1.0" apply false
-
-} 
+    id("com.google.gms.google-services") version "4.3.15" apply false
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+}

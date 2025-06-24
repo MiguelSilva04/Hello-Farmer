@@ -1089,408 +1089,487 @@ class _StorePageState extends State<StorePage> {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 260,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        height: 220,
-                        decoration: BoxDecoration(color: Colors.grey.shade300),
-                        child:
-                            store?.backgroundImageUrl != null &&
-                                    store!.backgroundImageUrl!.isNotEmpty
-                                ? Image.network(
-                                  store.backgroundImageUrl!,
-                                  width: double.infinity,
-                                  height: 220,
-                                  fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (_, __, ___) => Container(
-                                        color: Colors.grey.shade300,
-                                      ),
-                                )
-                                : null,
-                      ),
-                      Positioned(
-                        left: 20,
-                        top: 180,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 8,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: CircleAvatar(
-                                radius: 40,
-                                backgroundImage:
-                                    (store?.imageUrl != null &&
-                                            store!.imageUrl!.isNotEmpty)
-                                        ? NetworkImage(store.imageUrl!)
-                                        : null,
-                                backgroundColor: Colors.white,
-                                child:
-                                    (store?.imageUrl == null ||
-                                            store!.imageUrl!.isEmpty)
-                                        ? Icon(
-                                          Icons.store,
-                                          size: 40,
-                                          color: Colors.grey,
-                                        )
-                                        : null,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Builder(
-                              builder: (context) {
-                                final rating = store?.averageRating ?? 0.0;
-                                return Row(
-                                  children: [
-                                    RatingBarIndicator(
-                                      rating: rating,
-                                      itemBuilder:
-                                          (context, index) => const Icon(
-                                            Icons.star,
-                                            color: Colors.amber,
-                                          ),
-                                      itemCount: 5,
-                                      itemSize: 28,
-                                      unratedColor: Colors.white,
-                                      direction: Axis.horizontal,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Força o rebuild do StreamBuilder
+          setState(() {});
+          await Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: SingleChildScrollView(
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 260,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 220,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                          ),
+                          child:
+                              store?.backgroundImageUrl != null &&
+                                      store!.backgroundImageUrl!.isNotEmpty
+                                  ? Image.network(
+                                    store.backgroundImageUrl!,
+                                    width: double.infinity,
+                                    height: 220,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => Container(
+                                          color: Colors.grey.shade300,
+                                        ),
+                                  )
+                                  : null,
+                        ),
+                        Positioned(
+                          left: 20,
+                          top: 180,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 8,
+                                      offset: Offset(0, 4),
                                     ),
-                                    const SizedBox(width: 10),
-                                    Container(
-                                      padding: const EdgeInsets.all(5),
-                                      decoration: BoxDecoration(
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                        borderRadius: BorderRadius.circular(5),
+                                  ],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 50,
+                                  backgroundImage:
+                                      (store?.imageUrl != null &&
+                                              store!.imageUrl!.isNotEmpty)
+                                          ? NetworkImage(store.imageUrl!)
+                                          : null,
+                                  backgroundColor: Colors.white,
+                                  child:
+                                      (store?.imageUrl == null ||
+                                              store!.imageUrl!.isEmpty)
+                                          ? Icon(
+                                            Icons.store,
+                                            size: 40,
+                                            color: Colors.grey,
+                                          )
+                                          : null,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Builder(
+                                builder: (context) {
+                                  // Calcula o rating médio dos anúncios da store
+                                  double rating = 0.0;
+                                  final ads = store?.productsAds ?? [];
+                                  if (ads.isNotEmpty) {
+                                    double total = 0.0;
+                                    int count = 0;
+                                    for (final ad in ads) {
+                                      if (ad.adReviews != null &&
+                                          ad.adReviews!.isNotEmpty) {
+                                        for (final review in ad.adReviews!) {
+                                          if (review.rating != null) {
+                                            total += review.rating!;
+                                            count++;
+                                          }
+                                        }
+                                      }
+                                    }
+                                    if (count > 0) {
+                                      rating = total / count;
+                                    }
+                                  }
+                                  return Row(
+                                    children: [
+                                      RatingBarIndicator(
+                                        rating: rating,
+                                        itemBuilder:
+                                            (context, index) => const Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                        itemCount: 5,
+                                        itemSize: 28,
+                                        unratedColor: Colors.white,
+                                        direction: Axis.horizontal,
                                       ),
-                                      child: Text(
-                                        rating.toStringAsFixed(2),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
+                                      const SizedBox(width: 10),
+                                      Container(
+                                        padding: const EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
                                           color:
                                               Theme.of(
                                                 context,
-                                              ).colorScheme.secondary,
+                                              ).colorScheme.primary,
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          rating.toStringAsFixed(2),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.secondary,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  if (authNotifier.currentUser!.isProducer)
+                    TextButton(
+                      onPressed: () {
+                        Provider.of<BottomNavigationNotifier>(
+                          context,
+                          listen: false,
+                        ).setIndex(4);
+                        Provider.of<ManageSectionNotifier>(
+                          context,
+                          listen: false,
+                        ).setIndex(1);
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("Editar banca"),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            if (authNotifier.currentUser!.isProducer &&
+                                stores != null &&
+                                stores.length > 1)
+                              Expanded(
+                                child: DropdownButtonFormField<Store>(
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 40,
+                                  ),
+                                  value: store,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineLarge?.copyWith(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  items:
+                                      stores
+                                          .map(
+                                            (s) => DropdownMenuItem<Store>(
+                                              value: s,
+                                              child: Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      s.name ?? 'Nome da Banca',
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (s != store)
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        final storeToDelete =
+                                                            stores.firstWhere(
+                                                              (ss) =>
+                                                                  ss.name ==
+                                                                  s.name,
+                                                              orElse:
+                                                                  () =>
+                                                                      stores
+                                                                          .first,
+                                                            );
+                                                        _confirmDeleteStore(
+                                                          storeToDelete,
+                                                        );
+                                                      },
+                                                      icon: Icon(
+                                                        Icons.delete,
+                                                        color: Colors.red,
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                  onChanged: (s) {
+                                    if (s != null) {
+                                      setState(() {
+                                        selectedStore = s;
+                                        showDropdown = false;
+                                      });
+                                      final index = stores.indexOf(s);
+                                      Provider.of<AuthNotifier>(
+                                        context,
+                                        listen: false,
+                                      ).saveSelectedStoreIndex(index);
+                                    }
+                                  },
+                                  dropdownColor:
+                                      Theme.of(context).colorScheme.secondary,
+                                  autofocus: true,
+                                  // Diminui a fonte dos itens do dropdown ao abrir
+                                  selectedItemBuilder:
+                                      (context) =>
+                                          stores
+                                              .map(
+                                                (s) => Text(
+                                                  s.name ?? 'Nome da Banca',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .headlineLarge
+                                                      ?.copyWith(
+                                                        fontSize: 30,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                ),
+                                              )
+                                              .toList(),
+                                ),
+                              )
+                            else
+                              Expanded(
+                                child: Text(
+                                  store?.name ?? 'Nome da Banca',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineLarge?.copyWith(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        if (store?.slogan != null)
+                          Text(
+                            "'${store?.slogan}'",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        const SizedBox(height: 15),
+                        Text(
+                          store?.description ?? 'Descrição da banca...',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            ActionChip(
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              labelPadding: EdgeInsets.zero,
+                              label: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.pin_drop,
+                                    size: 20,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    store?.city ?? "Cidade",
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
                                     ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => MapPage(initialStore: store),
+                                  ),
                                 );
                               },
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (authNotifier.currentUser!.isProducer)
-                  TextButton(
-                    onPressed: () {
-                      Provider.of<BottomNavigationNotifier>(
-                        context,
-                        listen: false,
-                      ).setIndex(4);
-                      Provider.of<ManageSectionNotifier>(
-                        context,
-                        listen: false,
-                      ).setIndex(1);
-                      Navigator.of(context).pop();
-                    },
-                    child: Text("Editar banca"),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          if (authNotifier.currentUser!.isProducer &&
-                              stores != null &&
-                              stores.length > 1)
-                            Expanded(
-                              child: DropdownButtonFormField<Store>(
-                                icon: Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  size: 40,
-                                ),
-                                value: store,
-                                isExpanded: true,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineLarge?.copyWith(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                items:
-                                    stores
-                                        .map(
-                                          (s) => DropdownMenuItem<Store>(
-                                            value: s,
-                                            child: Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    s.name ?? 'Nome da Banca',
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                    // Diminui a fonte dos itens do dropdown
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ),
-                                                if (s != store)
-                                                  IconButton(
-                                                    onPressed: () {
-                                                      final storeToDelete =
-                                                          stores.firstWhere(
-                                                            (ss) =>
-                                                                ss.name ==
-                                                                s.name,
-                                                            orElse:
-                                                                () =>
-                                                                    stores
-                                                                        .first,
-                                                          );
-                                                      _confirmDeleteStore(
-                                                        storeToDelete,
-                                                      );
-                                                    },
-                                                    icon: Icon(
-                                                      Icons.delete,
-                                                      color: Colors.red,
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                onChanged: (s) {
-                                  if (s != null) {
-                                    setState(() {
-                                      selectedStore = s;
-                                      showDropdown = false;
-                                    });
-                                    final index = stores.indexOf(s);
-                                    Provider.of<AuthNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).saveSelectedStoreIndex(index);
-                                  }
-                                },
-                                dropdownColor:
-                                    Theme.of(context).colorScheme.secondary,
-                                autofocus: true,
-                                // Diminui a fonte dos itens do dropdown ao abrir
-                                selectedItemBuilder:
-                                    (context) =>
-                                        stores
-                                            .map(
-                                              (s) => Text(
-                                                s.name ?? 'Nome da Banca',
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .headlineLarge
-                                                    ?.copyWith(
-                                                      fontSize: 30,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                              ),
-                                            )
-                                            .toList(),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Anúncios publicados",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.surface,
                               ),
-                            )
-                          else
-                            Expanded(
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                               child: Text(
-                                store?.name ?? 'Nome da Banca',
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineLarge?.copyWith(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      if (store?.slogan != null)
-                        Text(
-                          "'${store?.slogan}'",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      const SizedBox(height: 15),
-                      Text(
-                        store?.description ?? 'Descrição da banca...',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          ActionChip(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 8,
-                            ),
-                            labelPadding: EdgeInsets.zero,
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.pin_drop,
-                                  size: 20,
+                                "${store?.productsAds?.length ?? 0}",
+                                style: TextStyle(
                                   color:
                                       Theme.of(context).colorScheme.secondary,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  store?.city ?? "Cidade",
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.secondary,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MapPage(initialStore: store),
-                                ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          height: 170,
+                          child: Builder(
+                            builder: (context) {
+                              final isProducer =
+                                  authNotifier.currentUser?.isProducer ?? false;
+                              List<ProductAd> ads = store?.productsAds ?? [];
+
+                              if (!isProducer) {
+                                ads =
+                                    ads
+                                        .where((ad) => ad.visibility == true)
+                                        .toList();
+                              }
+
+                              ads.sort((a, b) {
+                                final aDate = a.createdAt;
+                                final bDate = b.createdAt;
+                                return bDate.compareTo(aDate);
+                              });
+
+                              if (ads.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    "Sem anúncios publicados",
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                );
+                              }
+
+                              return ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: ads.length,
+                                itemBuilder: (ctx, index) {
+                                  final ad = ads[index];
+                                  return _ProductCard(ad: ad);
+                                },
                               );
                             },
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Anúncios publicados",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Theme.of(context).colorScheme.surface,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Avaliações",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.surface,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 170,
-                        child: Builder(
-                          builder: (context) {
-                            final isProducer =
-                                authNotifier.currentUser?.isProducer ?? false;
-                            List<ProductAd> ads = store?.productsAds ?? [];
-
-                            if (!isProducer) {
-                              ads =
-                                  ads
-                                      .where((ad) => ad.visibility == true)
-                                      .toList();
-                            }
-
-                            ads.sort((a, b) {
-                              final aDate = a.createdAt;
-                              final bDate = b.createdAt;
-                              return bDate.compareTo(aDate);
-                            });
-
-                            if (ads.isEmpty) {
-                              return Center(
-                                child: Text(
-                                  "Sem anúncios publicados",
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                "${store?.storeReviews?.length ?? 0}",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
-                            }
-
-                            return ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: ads.length,
-                              itemBuilder: (ctx, index) {
-                                final ad = ads[index];
-                                return _ProductCard(ad: ad);
-                              },
-                            );
-                          },
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "Comentários",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if ((store?.storeReviews?.isEmpty ?? true))
-                        Text("Ainda sem comentários"),
-                      ...((store?.storeReviews ?? [])
-                          .take(3)
-                          .map((review) => _ReviewCard(review: review))),
-                      if ((store?.storeReviews?.length ?? 0) > 3)
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text("Ver todos os comentários"),
-                        ),
-                    ],
+                        const SizedBox(height: 8),
+                        if ((store?.storeReviews?.isEmpty ?? true))
+                          Text("Ainda sem comentários"),
+                        ...((store?.storeReviews ?? [])
+                            .take(3)
+                            .map((review) => _ReviewCard(review: review))),
+                        if ((store?.storeReviews?.length ?? 0) > 3)
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text("Ver todos os comentários"),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
       floatingActionButton:
           authNotifier.currentUser!.isProducer

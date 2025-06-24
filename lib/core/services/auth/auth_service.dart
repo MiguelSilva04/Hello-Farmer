@@ -176,10 +176,28 @@ class AuthService {
                       .collection('ads')
                       .get();
 
-              store.productsAds =
-                  adsSnapshot.docs
-                      .map((adDoc) => ProductAd.fromJson(adDoc.data()))
-                      .toList();
+              store.productsAds = await Future.wait(
+                adsSnapshot.docs.map((adDoc) async {
+                  final productAd = ProductAd.fromJson(adDoc.data());
+
+                  // Fetch reviews for this ad
+                  final reviewsSnapshot =
+                      await fireStore
+                          .collection('stores')
+                          .doc(doc.id)
+                          .collection('ads')
+                          .doc(adDoc.id)
+                          .collection('reviews')
+                          .get();
+
+                  productAd.adReviews =
+                      reviewsSnapshot.docs
+                          .map((reviewDoc) => Review.fromJson(reviewDoc.data()))
+                          .toList();
+
+                  return productAd;
+                }),
+              );
 
               return store;
             }),

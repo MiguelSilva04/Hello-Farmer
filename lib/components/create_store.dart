@@ -133,7 +133,7 @@ class _CreateStoreState extends State<CreateStore> {
         deliveryMethods:
             selectedDeliveryMethods.map((m) => m.toDisplayString()).toList(),
         coordinates: coordinates!,
-        billingAddress: billingAddressController.text.trim()
+        billingAddress: billingAddressController.text.trim(),
       );
 
       authNotifier.addStore(store);
@@ -184,12 +184,6 @@ class _CreateStoreState extends State<CreateStore> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Text(
-                  "Criação de Banca",
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
-                ),
-              ),
               if (widget.isFirstTime == true) ...[
                 const SizedBox(height: 10),
                 Text(

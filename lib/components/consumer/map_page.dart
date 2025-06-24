@@ -52,7 +52,11 @@ class _MapPageState extends State<MapPage> {
                 });
                 _goToStore(coords);
               },
-              icon: _shopIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+              icon:
+                  _shopIcon ??
+                  BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor.hueGreen,
+                  ),
             ),
           );
           markerId++;
@@ -81,18 +85,18 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _loadCustomMarker() async {
-  final BitmapDescriptor bitmap = await BitmapDescriptor.asset(
-    const ImageConfiguration(size: Size(48, 48)),
-    'assets/images/shop.png',
-  );
-  if (mounted) {
-    setState(() {
-      _shopIcon = bitmap;
-    });
-    final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    _loadMarkers(authNotifier.producerUsers);
+    final BitmapDescriptor bitmap = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/images/shop.png',
+    );
+    if (mounted) {
+      setState(() {
+        _shopIcon = bitmap;
+      });
+      final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+      _loadMarkers(authNotifier.producerUsers);
+    }
   }
-}
 
   Future<void> _determinePosition() async {
     var status = await Permission.location.request();
@@ -168,7 +172,7 @@ class _MapPageState extends State<MapPage> {
               backgroundColor: Theme.of(context).colorScheme.surface,
               child: Icon(
                 Icons.arrow_back,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: Theme.of(context).colorScheme.secondary,
                 size: 20,
               ),
             ),
@@ -188,10 +192,10 @@ class _MapPageState extends State<MapPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      color: Theme.of(context).colorScheme.background,
+                      color: Theme.of(context).colorScheme.secondary,
                       shadowColor: Theme.of(
                         context,
-                      ).shadowColor.withOpacity(0.2),
+                      ).shadowColor.withValues(alpha: 0.2),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -229,7 +233,7 @@ class _MapPageState extends State<MapPage> {
                                       color:
                                           Theme.of(
                                             context,
-                                          ).colorScheme.onBackground,
+                                          ).colorScheme.tertiaryFixed,
                                     ),
                                   ),
                                 ),
@@ -244,9 +248,10 @@ class _MapPageState extends State<MapPage> {
                                   style: Theme.of(
                                     context,
                                   ).textTheme.bodyMedium?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onBackground.withOpacity(0.7),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .tertiaryFixed
+                                        .withValues(alpha: 0.7),
                                   ),
                                   maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
@@ -256,7 +261,11 @@ class _MapPageState extends State<MapPage> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: ElevatedButton.icon(
-                                icon: const Icon(Icons.storefront_outlined),
+                                icon: Icon(
+                                  Icons.storefront_outlined,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
                                 label: const Text('Ver Banca'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:

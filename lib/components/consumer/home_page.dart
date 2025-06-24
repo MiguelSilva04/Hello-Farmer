@@ -144,14 +144,16 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
           final seenIds = <String>{};
           final uniqueAds = allAds.where((ad) => seenIds.add(ad.id)).toList();
 
-          // Ordenar: primeiro os com highlight HOME, depois os restantes
-          uniqueAds.sort((a, b) {
+          final visibleAds =
+              uniqueAds.where((ad) => ad.visibility == true).toList();
+
+          visibleAds.sort((a, b) {
             final aHighlight = a.highlightType == HighlightType.HOME ? 0 : 1;
             final bHighlight = b.highlightType == HighlightType.HOME ? 0 : 1;
             return aHighlight.compareTo(bHighlight);
           });
 
-          final top5Ads = uniqueAds.take(5).toList();
+          final top10Ads = visibleAds.take(10).toList();
 
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: 20.0),
@@ -196,9 +198,9 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: top5Ads.length,
+                      itemCount: top10Ads.length,
                       itemBuilder: (context, index) {
-                        final ad = top5Ads[index];
+                        final ad = top10Ads[index];
                         return _buildProductItem(ad);
                       },
                     ),
@@ -379,9 +381,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                       shape: BoxShape.circle,
                       border: Border.all(
                         color:
-                            isHighlighted
-                                ? Colors.amber
-                                : Colors.transparent,
+                            isHighlighted ? Colors.amber : Colors.transparent,
                         width: 5,
                       ),
                     ),

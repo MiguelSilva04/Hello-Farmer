@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "pt.com.ms.harvestly"
     //compileSdk = flutter.compileSdkVersion
-    compileSdk = 34
+    compileSdk = 35
     // ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
 
@@ -30,7 +30,7 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // minSdk = flutter.minSdkVersion
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35
         //targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

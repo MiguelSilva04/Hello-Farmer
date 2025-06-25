@@ -81,6 +81,8 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   }
 
   Widget _buildStoreItem(ProducerUser user, Store store) {
+    final double rating = calculateStoreRating(store);
+
     return InkWell(
       onTap:
           () => Navigator.of(
@@ -112,7 +114,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  user.rating.toString(),
+                  rating.toStringAsFixed(1),
                   style: const TextStyle(fontSize: 10),
                 ),
                 const Icon(Icons.star, size: 12, color: Colors.amber),
@@ -466,5 +468,24 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
         ),
       ),
     );
+  }
+
+  double calculateStoreRating(Store store) {
+    final ads = store.productsAds ?? [];
+    double total = 0.0;
+    int count = 0;
+
+    for (final ad in ads) {
+      if (ad.adReviews != null && ad.adReviews!.isNotEmpty) {
+        for (final review in ad.adReviews!) {
+          if (review.rating != null) {
+            total += review.rating!;
+            count++;
+          }
+        }
+      }
+    }
+
+    return count > 0 ? total / count : 0.0;
   }
 }

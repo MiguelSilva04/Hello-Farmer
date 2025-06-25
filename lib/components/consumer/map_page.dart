@@ -131,7 +131,14 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     if (_currentPosition == null) {
-      return const Center(child: CircularProgressIndicator());
+      return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        body: const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
+      );
     }
     return Stack(
       children: [

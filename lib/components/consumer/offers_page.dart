@@ -90,6 +90,6 @@ class OffersPage extends StatelessWidget {
             );
           },
         )
-        : Center(child: Text("Sem ofertas"));
+        : Scaffold(appBar: AppBar(), body: Center(child: Text("Sem ofertas")));
   }
 }

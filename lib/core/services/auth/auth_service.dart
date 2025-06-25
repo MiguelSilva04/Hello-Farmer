@@ -966,46 +966,42 @@ class AuthService {
     });
   }
 
-  Future<void> sendOffer(String discount, String adId)async{
-    // Busca todos os usuários consumidores (isProducer == false)
-    final usersSnapshot = await fireStore
-      .collection('users')
-      .where('isProducer', isEqualTo: false)
-      .get();
+  Future<void> sendOffer(String discount, String adId) async {
+    final usersSnapshot =
+        await fireStore
+            .collection('users')
+            .where('isProducer', isEqualTo: false)
+            .get();
 
-    // Define datas de início e fim (20 dias de validade)
     final now = DateTime.now();
     final startDate = now;
     final endDate = now.add(Duration(days: 20));
 
-    // Cria um ID único para a oferta
     final offerId = fireStore.collection('offers').doc().id;
 
-    // Cria o objeto Offer
     final offer = Offer(
       id: offerId,
       discountValue: DiscountValueExtension.fromString(discount),
       productAdId: adId,
       startDate: startDate,
       endDate: endDate,
-      discountCode: offerId, // ou gere um código diferente se desejar
+      discountCode: offerId,
     );
 
-    // Adiciona a oferta à subcoleção 'offers' de cada consumidor
     for (final userDoc in usersSnapshot.docs) {
       await fireStore
-        .collection('users')
-        .doc(userDoc.id)
-        .collection('offers')
-        .doc(offerId)
-        .set({
-      'id': offer.id,
-      'discountValue': offer.discountValue.toJson(), // ajuste conforme seu modelo
-      'productAdId': offer.productAdId,
-      'startDate': offer.startDate.toIso8601String(),
-      'endDate': offer.endDate.toIso8601String(),
-      'discountCode': offer.discountCode,
-      });
+          .collection('users')
+          .doc(userDoc.id)
+          .collection('offers')
+          .doc(offerId)
+          .set({
+            'id': offer.id,
+            'discountValue': offer.discountValue.toJson(),
+            'productAdId': offer.productAdId,
+            'startDate': offer.startDate.toIso8601String(),
+            'endDate': offer.endDate.toIso8601String(),
+            'discountCode': offer.discountCode,
+          });
     }
   }
 }

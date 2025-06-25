@@ -938,7 +938,12 @@ class _EditAdSectionState extends State<EditAdSection> {
   }
 
   Future<void> sendOffer(String discount) async {
-    await AuthService().sendOffer(discount);
+    await AuthService().sendOffer(discount, widget.ad.id);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Promoção de $discount aplicada!'),
+      ),
+    );
   }
 
   @override
@@ -971,7 +976,6 @@ class _EditAdSectionState extends State<EditAdSection> {
                   children: [
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        // Calculate the number of columns (max 3, but fewer if not enough width)
                         int crossAxisCount = 3;
                         double minButtonWidth = 120;
                         if (constraints.maxWidth < 3 * minButtonWidth) {
@@ -1007,6 +1011,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                                   label: Text(
                                     "${discount.toDisplayString()}",
                                     style: TextStyle(
+                                      fontSize: 14,
                                       color:
                                           Theme.of(
                                             context,
@@ -1045,15 +1050,6 @@ class _EditAdSectionState extends State<EditAdSection> {
                                       await sendOffer(
                                         discount.toDisplayString(),
                                       );
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Promoção de ${discount.toDisplayString()} aplicada!',
-                                          ),
-                                        ),
-                                      );
                                     }
                                   },
                                 );
@@ -1066,7 +1062,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                 SizedBox(height: 12),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text("Cancelar"),
+                  child: Text("Voltar"),
                 ),
               ],
             ),

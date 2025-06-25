@@ -137,13 +137,9 @@ class _CreateStoreState extends State<CreateStore> {
       );
 
       authNotifier.addStore(store);
-      print("A carregar a selectedStoreIndex");
       await authNotifier.updateSelectedStoreIndex();
-      print("selectedStoreIndex carregada: ${authNotifier.selectedStoreIndex}");
-      print("Lojas a carregar...");
       final storeService = Provider.of<StoreService>(context, listen: false);
       await storeService.loadStores();
-      print("Lojas carregadas!");
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final newIndex = authNotifier.stores.length - 1;

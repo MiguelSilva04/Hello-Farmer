@@ -93,9 +93,6 @@ class NotificationNotifier extends ChangeNotifier {
     }
 
     FirebaseMessaging.onMessage.listen((message) {
-      print('Mensagem recebida em foreground!');
-      print('Título: ${message.notification?.title}');
-      print('Corpo: ${message.notification?.body}');
       if (message.notification != null) _showLocalNotification(message);
     });
   }

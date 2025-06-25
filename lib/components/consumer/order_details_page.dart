@@ -7,7 +7,6 @@ import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/store.dart';
-import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines_plus/timelines_plus.dart';
@@ -719,24 +718,12 @@ class _OrderTimelineState extends State<OrderTimeline> {
   }
 
   Future<void> updateOrderState() async {
-    final store =
-        Provider.of<AuthNotifier>(context, listen: false).stores
-            .where(
-              (s) => s.orders?.any((o) => o.id == widget.order.id) ?? false,
-            )
-            .first;
     setState(() => _isLoading = true);
     final newOrderState = steps[currentStep];
     await Provider.of<AuthNotifier>(
       context,
       listen: false,
     ).changeOrderState(widget.order.id, newOrderState);
-    print(newOrderState);
-    // if (newOrderState == OrderState.Sent)
-    //   await Provider.of<NotificationNotifier>(
-    //     context,
-    //     listen: false,
-    //   ).addOrderSentNotification(store, widget.order.consumerId);
     setState(() => _isLoading = false);
   }
 

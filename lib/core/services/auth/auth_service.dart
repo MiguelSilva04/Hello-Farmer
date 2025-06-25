@@ -829,7 +829,6 @@ class AuthService {
   }
 
   Future<void> changeOrderState(String orderId, OrderState state) async {
-    print("Cheguei aqui");
     try {
       final docRef = fireStore.collection('orders').doc(orderId);
 

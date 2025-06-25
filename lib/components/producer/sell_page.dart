@@ -610,11 +610,9 @@ class SellPageState extends State<SellPage> {
                   physics: NeverScrollableScrollPhysics(),
                   onReorder: (oldIndex, newIndex) {
                     setState(() {
-                      print('Reordering from $oldIndex to $newIndex');
                       if (newIndex > oldIndex) newIndex--;
                       final image = images.removeAt(oldIndex);
                       images.insert(newIndex, image);
-                      print('Updated images list: $images');
                     });
                   },
                   children: List.generate(

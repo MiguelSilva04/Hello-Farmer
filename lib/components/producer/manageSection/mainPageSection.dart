@@ -810,7 +810,6 @@ class _EditAdSectionState extends State<EditAdSection> {
     isSearch = widget.ad.highlightType == HighlightType.SEARCH;
     if (widget.ad.highlightType == null) isSearch = false;
     isVisible = widget.ad.visibility == true;
-    print(widget.ad.updatedAt);
   }
 
   Widget imageBox(int index) {

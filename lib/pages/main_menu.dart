@@ -6,6 +6,7 @@ import 'package:harvestly/components/consumer/shopping_cart_page.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/producer_user.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
@@ -355,13 +356,35 @@ class _MainMenuState extends State<MainMenu>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Icon(
-                                user.isProducer
-                                    ? FontAwesomeIcons.buildingUser
-                                    : FontAwesomeIcons.gift,
-                                color:
-                                    Theme.of(context).colorScheme.tertiaryFixed,
-                              ),
+                              user.isProducer
+                                  ? Icon(
+                                    FontAwesomeIcons.buildingUser,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.tertiaryFixed,
+                                  )
+                                  : StreamBuilder<List>(
+                                    stream: AuthService().getUserOffersStream(
+                                      user.id,
+                                    ),
+                                    builder: (context, snapshot) {
+                                      final offersCount =
+                                          snapshot.hasData
+                                              ? snapshot.data!.length
+                                              : 0;
+                                      return Badge.count(
+                                        count: offersCount,
+                                        child: Icon(
+                                          FontAwesomeIcons.gift,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.tertiaryFixed,
+                                        ),
+                                      );
+                                    },
+                                  ),
                               SizedBox(width: 10),
                               Text(user.isProducer ? "Banca" : "Ofertas"),
                             ],

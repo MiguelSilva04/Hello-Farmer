@@ -308,6 +308,8 @@ class NotificationNotifier extends ChangeNotifier {
         body: 'Recebeste uma nova avaliação de um cliente.',
       );
 
+  
+
   Future<void> addNewMessageNotification(
     String receiverId,
     String senderId, {

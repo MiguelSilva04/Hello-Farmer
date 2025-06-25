@@ -68,7 +68,11 @@ class OrderDetailsPage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundImage: NetworkImage(displayedUser.imageUrl),
+                    backgroundImage: NetworkImage(
+                      displayedUser is ConsumerUser
+                          ? displayedUser.imageUrl
+                          : store!.imageUrl!,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -590,18 +594,17 @@ class OrderDetailsPage extends StatelessWidget {
                                                 await Provider.of<AuthNotifier>(
                                                   context,
                                                   listen: false,
-                                                ).addToCart(
-                                                  ad,
-                                                  item.qty,
-                                                ).then((_) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
+                                                ).addToCart(ad, item.qty).then((
+                                                  _,
+                                                ) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
                                                     SnackBar(
                                                       content: Text(
                                                         "Produto adicionado ao carrinho.",
                                                       ),
-                                                      duration:
-                                                          const Duration(
+                                                      duration: const Duration(
                                                         seconds: 2,
                                                       ),
                                                     ),
@@ -686,14 +689,8 @@ class OrderDetailsPage extends StatelessWidget {
         ),
       ),
     );
-
-    
   }
-
-  
 }
-
-
 
 class OrderTimeline extends StatefulWidget {
   final Order order;

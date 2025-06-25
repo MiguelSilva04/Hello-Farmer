@@ -182,12 +182,15 @@ class _CreateStoreState extends State<CreateStore> {
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (widget.isFirstTime == true) ...[
                 const SizedBox(height: 10),
                 Text(
-                  "Ainda não tem nenhuma banca criada, preencha os dados abaixo para começar a usar a aplicação!",
+                  "Criar uma nova banca",
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w600),
+                ),
+                Text(
+                  "Ainda não tem nenhuma banca criada, preencha os dados abaixo para começar a usar a aplicação como produtor!",
                   style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),

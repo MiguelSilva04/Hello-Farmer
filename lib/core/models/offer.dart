@@ -18,6 +18,23 @@ extension DiscountValueExtension on DiscountValue {
     }
   }
 
+  int toValue() {
+    switch (this) {
+      case DiscountValue.FIVE:
+        return 5;
+      case DiscountValue.TEN:
+        return 10;
+      case DiscountValue.TWENTY_FIVE:
+        return 25;
+      case DiscountValue.FIFTY:
+        return 50;
+      case DiscountValue.SEVENTY_FIVE:
+        return 75;
+      case DiscountValue.NINETY:
+        return 90;
+    }
+  }
+
   String get imagePath {
     switch (this) {
       case DiscountValue.FIVE:
@@ -91,5 +108,16 @@ class Offer {
       case DiscountValue.NINETY:
         return 90;
     }
+  }
+
+  factory Offer.fromJson(Map<String, dynamic> json) {
+    return Offer(
+      id: json['id'] as String,
+      discountValue: DiscountValueExtension.fromString(json['discountValue'] as String),
+      productAdId: json['productAdId'] as String,
+      startDate: DateTime.parse(json['startDate'] as String),
+      endDate: DateTime.parse(json['endDate'] as String),
+      discountCode: json['discountCode'] as String,
+    );
   }
 }

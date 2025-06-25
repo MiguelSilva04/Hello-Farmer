@@ -89,6 +89,19 @@ class AuthService {
     }
   });
 
+  Future<Map<String, dynamic>?> getCurrentUserData(String userId) async {
+    final querySnapshot = await fireStore
+        .collection('stores')
+        .where('ownerId', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      return querySnapshot.docs.first.data();
+    }
+    return null;
+  }
+
   void listenToMyStores() {
     if (_currentUser is ProducerUser) {
       _storesSubscription?.cancel();
@@ -967,10 +980,39 @@ class AuthService {
   }
 
   Future<void> sendOffer(String discount, String adId) async {
+    // Procurar o anúncio (ad) dentro da coleção 'stores' e subcoleção 'ads' pelo adId
+    String? storeId;
+    final storesSnapshot = await fireStore.collection('stores').get();
+    for (final storeDoc in storesSnapshot.docs) {
+      final adsSnapshot =
+          await storeDoc.reference
+              .collection('ads')
+              .where('id', isEqualTo: adId)
+              .limit(1)
+              .get();
+      if (adsSnapshot.docs.isNotEmpty) {
+        storeId = storeDoc.id;
+        break;
+      }
+    }
+
+    if (storeId == null) {
+      return;
+    }
+
+    final storeSnapshot =
+        await fireStore.collection('stores').doc(storeId).get();
+    if (!storeSnapshot.exists) {
+      print('Store not found');
+      return;
+    }
+    final storeCity = storeSnapshot.data()?['city'];
+
     final usersSnapshot =
         await fireStore
             .collection('users')
             .where('isProducer', isEqualTo: false)
+            .where('city', isEqualTo: storeCity)
             .get();
 
     final now = DateTime.now();
@@ -1003,5 +1045,17 @@ class AuthService {
             'discountCode': offer.discountCode,
           });
     }
+  }
+
+  Stream<List<Offer>> getUserOffersStream(String userId) {
+    return fireStore
+        .collection('users')
+        .doc(userId)
+        .collection('offers')
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Offer.fromJson(doc.data())).toList(),
+        );
   }
 }

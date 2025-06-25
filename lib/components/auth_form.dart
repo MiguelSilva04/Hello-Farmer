@@ -3,6 +3,7 @@ import 'dart:io';
 // import 'package:harvestly/components/gender_picker.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/components/user_image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
@@ -304,9 +305,28 @@ class _AuthFormState extends State<AuthForm> {
         (_formData.isLogin || _formData.isSignup) &&
         !_isRecovery) {
       if (mounted)
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil(AppRoutes.MAIN_MENU, (route) => false);
+        if (AuthService().currentUser != null) {
+          final user = await AuthService().getCurrentUserData(
+            AuthService().currentUser!.id,
+          );
+          if (user != null && user['type'] == 'producer') {
+            final hasBanca =
+                user['bancaId'] != null &&
+                user['bancaId'].toString().isNotEmpty;
+            if (!hasBanca) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (ctx) => CreateStore(isFirstTime: true),
+                ),
+                (route) => false,
+              );
+              return;
+            }
+          }
+        }
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.MAIN_MENU, (route) => false);
     }
   }
 

@@ -219,14 +219,37 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
                   height: 120,
                   child: Builder(
                     builder: (context) {
-                      final nearbyStores = getNearbyStores();
+                      final nearbyStores =
+                          getNearbyStores()
+                              .where((item) => item['store'] != null)
+                              .toList();
+
+                      final uniqueOwnerIds = <String>{};
+                      final filteredNearbyStores = <Map<String, dynamic>>[];
+
+                      for (final item in nearbyStores) {
+                        final store = item['store'] as Store;
+                        if (!uniqueOwnerIds.contains(store.ownerId)) {
+                          uniqueOwnerIds.add(store.ownerId);
+                          filteredNearbyStores.add(item);
+                        }
+                      }
+
+                      final storesWithUniqueId =
+                          filteredNearbyStores.asMap().entries.map((entry) {
+                            final item = entry.value;
+                            item['uniqueId'] = 'nearby_store_${entry.key}';
+                            return item;
+                          }).toList();
                       return ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: nearbyStores.length,
+                        itemCount: storesWithUniqueId.length,
                         itemBuilder: (context, index) {
                           final producer =
-                              nearbyStores[index]['producer'] as ProducerUser;
-                          final store = nearbyStores[index]['store'] as Store;
+                              storesWithUniqueId[index]['producer']
+                                  as ProducerUser;
+                          final store =
+                              storesWithUniqueId[index]['store'] as Store;
                           return _buildStoreItem(producer, store);
                         },
                       );

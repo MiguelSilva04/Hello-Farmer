@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
 import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/producer_user.dart';
@@ -230,7 +231,8 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
       SearchResultItem(
         title: 'Ofertas',
         section: 'Geral',
-        onTap: () => navNotifier.setIndex(5),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) => const OffersPage()))
       ),
     ]);
 

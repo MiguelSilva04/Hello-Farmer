@@ -42,9 +42,13 @@ class ProductAd {
   List<String>? keywords;
   bool? visibility;
   List<Review>? adReviews;
+  final DateTime? updatedAt;
+  final DateTime? stockChangedDate;
   ProductAd({
     required this.id,
     required this.createdAt,
+    required this.updatedAt,
+    required this.stockChangedDate,
     required this.product,
     String? description,
     String? price,
@@ -137,6 +141,14 @@ class ProductAd {
           (json['createdAt'] is cf.Timestamp)
               ? (json['createdAt'] as cf.Timestamp).toDate()
               : json['createdAt'],
+      updatedAt:
+          (json['updatedAt'] is cf.Timestamp)
+              ? (json['updatedAt'] as cf.Timestamp).toDate()
+              : null,
+      stockChangedDate:
+          (json['stockChangedDate'] is cf.Timestamp)
+              ? (json['stockChangedDate'] as cf.Timestamp).toDate()
+              : null,
       product: Product(
         name: json['title'] ?? '',
         imageUrls:

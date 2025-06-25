@@ -34,6 +34,29 @@ extension DiscountValueExtension on DiscountValue {
         return "assets/images/discounts_images/90%PT.png";
     }
   }
+
+  static DiscountValue fromString(String value) {
+    switch (value) {
+      case "5%":
+        return DiscountValue.FIVE;
+      case "10%":
+        return DiscountValue.TEN;
+      case "25%":
+        return DiscountValue.TWENTY_FIVE;
+      case "50%":
+        return DiscountValue.FIFTY;
+      case "75%":
+        return DiscountValue.SEVENTY_FIVE;
+      case "90%":
+        return DiscountValue.NINETY;
+      default:
+        throw ArgumentError('Unknown discount value: $value');
+    }
+  }
+
+  String toJson() {
+    return toDisplayString();
+  }
 }
 
 class Offer {

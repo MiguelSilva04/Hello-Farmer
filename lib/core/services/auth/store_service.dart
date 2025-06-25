@@ -239,7 +239,7 @@ class StoreService with ChangeNotifier {
     return await ref.getDownloadURL();
   }
 
-  Future<void> editProductAd(ProductAd ad, String storeId) async {
+  Future<void> editProductAd(ProductAd ad, String storeId, bool stockChanged) async {
     final FirebaseStorage _storage = FirebaseStorage.instance;
 
     try {
@@ -281,6 +281,7 @@ class StoreService with ChangeNotifier {
         'highlightDate': ad.highlightDate,
         'keywords': ad.keywords,
         'updatedAt': cf.FieldValue.serverTimestamp(),
+        if (stockChanged) 'stockChangedDate': cf.FieldValue.serverTimestamp(),
       }, cf.SetOptions(merge: true));
     } catch (e) {
       print("Erro ao editar anúncio: $e");

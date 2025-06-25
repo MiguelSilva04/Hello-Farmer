@@ -193,7 +193,8 @@ class _ExplorePageState extends State<ExplorePage> {
       }
     }
 
-    final filtered = [...matching, ...others];
+    final filtered =
+        [...matching, ...others].where((ad) => ad.visibility == true).toList();
 
     final refinedFiltered =
         _selectedCity.isNotEmpty

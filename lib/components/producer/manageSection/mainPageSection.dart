@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/models/offer.dart';
 import '../../../core/models/producer_user.dart';
 import '../../../core/models/product.dart';
 import '../../../core/models/product_ad.dart';
@@ -44,6 +46,7 @@ class _MainPageSectionState extends State<MainPageSection> {
 
   bool _isLoading = false;
   bool _dataChanged = false;
+  bool lowStock = false;
 
   @override
   void initState() {
@@ -141,6 +144,7 @@ class _MainPageSectionState extends State<MainPageSection> {
           ad: _currentAd!,
           onCancel: () => setState(() => _isEditingAd = false),
           onSave: (val) {},
+          lowStock: lowStock,
         )
         : SingleChildScrollView(
           child: Column(
@@ -543,7 +547,23 @@ class _MainPageSectionState extends State<MainPageSection> {
                                   itemCount: ads.length,
                                   itemBuilder: (context, index) {
                                     final ad = ads[index];
+                                    final stockLow =
+                                        ad.stockChangedDate != null &&
+                                        DateTime.now()
+                                                .difference(
+                                                  ad.stockChangedDate!,
+                                                )
+                                                .inDays >
+                                            2;
+
                                     return ListTile(
+                                      onTap: () {
+                                        setState(() {
+                                          _isEditingAd = true;
+                                          _currentAd = ad;
+                                          lowStock = stockLow;
+                                        });
+                                      },
                                       leading: Stack(
                                         children: [
                                           ClipRRect(
@@ -689,15 +709,17 @@ class _MainPageSectionState extends State<MainPageSection> {
                                           ),
                                         ],
                                       ),
-                                      trailing: IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _isEditingAd = true;
-                                            _currentAd = ad;
-                                          });
-                                        },
-                                        icon: Icon(Icons.edit),
-                                      ),
+                                      trailing:
+                                          (stockLow)
+                                              ? Tooltip(
+                                                message:
+                                                    "Stock estagnado há mais de 2 dias. Considere promover este anúncio.",
+                                                child: Icon(
+                                                  Icons.warning_amber_rounded,
+                                                  color: Colors.red,
+                                                ),
+                                              )
+                                              : null,
                                     );
                                   },
                                   separatorBuilder:
@@ -722,6 +744,7 @@ class EditAdSection extends StatefulWidget {
   final ProductAd ad;
   final Function(ProductAd) onSave;
   final VoidCallback onCancel;
+  final bool lowStock;
 
   const EditAdSection({
     super.key,
@@ -729,6 +752,7 @@ class EditAdSection extends StatefulWidget {
     required this.ad,
     required this.onSave,
     required this.onCancel,
+    required this.lowStock,
   });
 
   @override
@@ -751,6 +775,7 @@ class _EditAdSectionState extends State<EditAdSection> {
   bool _isRemoving = false;
   DateTime? highlightDate;
   bool _dataChanged = false;
+  bool _stockChanged = false;
   Set<String> _selectedKeywords = {};
 
   @override
@@ -785,6 +810,7 @@ class _EditAdSectionState extends State<EditAdSection> {
     isSearch = widget.ad.highlightType == HighlightType.SEARCH;
     if (widget.ad.highlightType == null) isSearch = false;
     isVisible = widget.ad.visibility == true;
+    print(widget.ad.updatedAt);
   }
 
   Widget imageBox(int index) {
@@ -865,6 +891,8 @@ class _EditAdSectionState extends State<EditAdSection> {
       );
       return;
     }
+    if (widget.ad.product.stock != newStock)
+      setState(() => _stockChanged = true);
     widget.ad.description = descController.text;
     widget.ad.product.price = newPrice;
     widget.ad.product.name = nameController.text;
@@ -895,7 +923,7 @@ class _EditAdSectionState extends State<EditAdSection> {
     await Provider.of<StoreService>(
       context,
       listen: false,
-    ).editProductAd(widget.ad, widget.storeId);
+    ).editProductAd(widget.ad, widget.storeId, _stockChanged);
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Anúncio editado com sucesso')));
@@ -909,14 +937,225 @@ class _EditAdSectionState extends State<EditAdSection> {
     ).deleteProductAd(storeId, adId);
   }
 
+  Future<void> sendOffer(String discount) async {
+    await AuthService().sendOffer(discount);
+  }
+
   @override
   Widget build(BuildContext context) {
+    void showPromotionDialog() {
+      showModalBottomSheet(
+        context: context,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) {
+          return Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.local_offer,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 40,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  "Escolha o desconto para a promoção",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  children: [
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Calculate the number of columns (max 3, but fewer if not enough width)
+                        int crossAxisCount = 3;
+                        double minButtonWidth = 120;
+                        if (constraints.maxWidth < 3 * minButtonWidth) {
+                          crossAxisCount = (constraints.maxWidth ~/
+                                  minButtonWidth)
+                              .clamp(1, 3);
+                        }
+                        return GridView.count(
+                          crossAxisCount: crossAxisCount,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 2.2,
+                          children:
+                              DiscountValue.values.map((discount) {
+                                return ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.secondary,
+                                    foregroundColor: Colors.white,
+                                    shape: StadiumBorder(),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  icon: Image.asset(
+                                    discount.imagePath,
+                                    width: 32,
+                                    height: 32,
+                                  ),
+                                  label: Text(
+                                    "${discount.toDisplayString()}",
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.tertiaryFixed,
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    final confirmed = await showDialog<bool>(
+                                      context: context,
+                                      builder:
+                                          (ctx) => AlertDialog(
+                                            title: Text("Confirmar promoção"),
+                                            content: Text(
+                                              "Tem a certeza que pretende aplicar a promoção de ${discount.toDisplayString()} neste anúncio?",
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed:
+                                                    () => Navigator.of(
+                                                      ctx,
+                                                    ).pop(false),
+                                                child: Text("Cancelar"),
+                                              ),
+                                              TextButton(
+                                                onPressed:
+                                                    () => Navigator.of(
+                                                      ctx,
+                                                    ).pop(true),
+                                                child: Text("Sim"),
+                                              ),
+                                            ],
+                                          ),
+                                    );
+                                    if (confirmed == true) {
+                                      Navigator.pop(context);
+                                      await sendOffer(
+                                        discount.toDisplayString(),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Promoção de ${discount.toDisplayString()} aplicada!',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              }).toList(),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cancelar"),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.lowStock)
+              Container(
+                margin: const EdgeInsets.only(bottom: 18),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.secondary,
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.secondary.withOpacity(0.10),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      color: Theme.of(context).colorScheme.secondary,
+                      size: 32,
+                    ),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Stock estagnado há mais de 2 dias",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Quer publicar uma promoção para este anúncio?",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary,
+                        foregroundColor: Colors.white,
+                        shape: StadiumBorder(),
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                      ),
+                      onPressed: showPromotionDialog,
+                      icon: Icon(Icons.local_offer, size: 18),
+                      label: Text(
+                        "Promover",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Container(
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(12),
@@ -1020,7 +1259,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Preço: ${widget.ad.price}",
+                          "Preço: ${widget.ad.price}/${widget.ad.product.unit.toDisplayString()}",
                           style: const TextStyle(fontSize: 14),
                         ),
                         Text(
@@ -1155,7 +1394,9 @@ class _EditAdSectionState extends State<EditAdSection> {
               decoration: InputDecoration(labelText: 'Stock ($unit)'),
               keyboardType: TextInputType.number,
               onChanged: (_) {
-                _dataChanged = true;
+                setState(() {
+                  _dataChanged = true;
+                });
               },
             ),
 

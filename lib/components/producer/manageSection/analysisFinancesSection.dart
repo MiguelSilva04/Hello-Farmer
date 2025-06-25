@@ -54,8 +54,7 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
     final ordersFiltrados =
         orders != null
             ? orders.where((order) {
-              return 
-                  !order.deliveryDate.isBefore(startDate) &&
+              return !order.deliveryDate.isBefore(startDate) &&
                   !order.deliveryDate.isAfter(endDate);
             }).toList()
             : [];
@@ -81,50 +80,52 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
 
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const Text("Visualizar por:"),
-              const SizedBox(width: 10),
-              DropdownButton<String>(
-                dropdownColor: Theme.of(context).colorScheme.secondary,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.tertiaryFixed,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Text("Visualizar por:"),
+                const SizedBox(width: 10),
+                DropdownButton<String>(
+                  dropdownColor: Theme.of(context).colorScheme.secondary,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.tertiaryFixed,
+                  ),
+                  value: filtroSelecionado,
+                  items: const [
+                    DropdownMenuItem(value: 'Semana', child: Text('Semana')),
+                    DropdownMenuItem(value: 'Mês', child: Text('Mês')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        filtroSelecionado = val;
+                      });
+                    }
+                  },
                 ),
-                value: filtroSelecionado,
-                items: const [
-                  DropdownMenuItem(value: 'Semana', child: Text('Semana')),
-                  DropdownMenuItem(value: 'Mês', child: Text('Mês')),
-                ],
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      filtroSelecionado = val;
-                    });
-                  }
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _buildMetric(
-            "Receitas deste ${filtroSelecionado.toLowerCase()}",
-            totalReceitas,
-          ),
-          const SizedBox(height: 8),
-          _buildMetric("Despesas Operacionais", despesasOperacionais),
-          const SizedBox(height: 8),
-          _buildMetric("Lucro Líquido", lucroLiquido),
-          const SizedBox(height: 16),
-          _buildMetric("Saldo Disponível", saldoDisponivel),
-          const SizedBox(height: 16),
-          _buildBarChart(receitasPorDia, filtroSelecionado, startDate),
-          const SizedBox(height: 16),
-          _buildButton("Ver pagamentos recebidos"),
-          _buildButton("Emitir fatura"),
-          _buildButton("Transferir Saldo"),
-        ],
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildMetric(
+              "Receitas deste ${filtroSelecionado.toLowerCase()}",
+              totalReceitas,
+            ),
+            const SizedBox(height: 8),
+            _buildMetric("Despesas Operacionais", despesasOperacionais),
+            const SizedBox(height: 8),
+            _buildMetric("Lucro Líquido", lucroLiquido),
+            const SizedBox(height: 16),
+            _buildMetric("Saldo Disponível", saldoDisponivel),
+            const SizedBox(height: 16),
+            _buildBarChart(receitasPorDia, filtroSelecionado, startDate),
+            const SizedBox(height: 16),
+            _buildButton("Ver pagamentos recebidos"),
+            _buildButton("Emitir fatura"),
+            _buildButton("Transferir Saldo"),
+          ],
+        ),
       ),
     );
   }
@@ -180,53 +181,51 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
 
     return SizedBox(
       height: 150,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(valores.length, (i) {
-          final heightFactor = maxValor > 0 ? valores[i] / maxValor : 0;
-          return Expanded(
-            child: Column(
-              children: [
-                if (filtroSelecionado == 'Semana')
-                  Text(
-                    "~${valores[i].toStringAsFixed(0)}€",
-                    style: TextStyle(
-                      fontSize: filtroSelecionado == 'Semana' ? 11 : 8,
-                      fontWeight:
-                          filtroSelecionado == 'Semana'
-                              ? FontWeight.w700
-                              : FontWeight.bold,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: List.generate(valores.length, (i) {
+            final heightFactor = maxValor > 0 ? valores[i] / maxValor : 0;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (filtroSelecionado == 'Semana')
+                    Text(
+                      "~${valores[i].toStringAsFixed(0)}€",
+                      style: TextStyle(
+                        fontSize: filtroSelecionado == 'Semana' ? 11 : 8,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      width: filtroSelecionado == 'Semana' ? 24 : 8,
-                      height: (100 * heightFactor).toDouble(),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF428B6D),
-                        borderRadius: BorderRadius.circular(8),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        width: filtroSelecionado == 'Semana' ? 24 : 8,
+                        height: (100 * heightFactor).toDouble(),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF428B6D),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-
-                Text(
-                  labels[i],
-                  style: TextStyle(
-                    fontSize: filtroSelecionado == 'Semana' ? 10 : 8,
-                    fontWeight:
-                        filtroSelecionado == 'Semana'
-                            ? FontWeight.w700
-                            : FontWeight.bold,
+                  const SizedBox(height: 8),
+                  Text(
+                    labels[i],
+                    style: TextStyle(
+                      fontSize: filtroSelecionado == 'Semana' ? 10 : 8,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        }),
+                ],
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
@@ -245,10 +244,12 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
         ),
         child: Text(
           label,
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Theme.of(context).colorScheme.tertiaryFixed,
             fontWeight: FontWeight.w600,

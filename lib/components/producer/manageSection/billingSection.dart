@@ -233,75 +233,63 @@ class _BillingSectionState extends State<BillingSection> {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Text(
-                      'Filtrar desde:',
-                      style: TextStyle(fontSize: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text('Filtrar desde:', style: TextStyle(fontSize: 12)),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () => _selectFilterDate(context),
+                    icon: Icon(
+                      Icons.calendar_today,
+                      size: 13,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
-                    const SizedBox(width: 5),
-                    ElevatedButton.icon(
-                      onPressed: () => _selectFilterDate(context),
-                      icon: Icon(
-                        Icons.calendar_today,
-                        size: 13,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      label: Text(
-                        Provider.of<ManageSectionNotifier>(
-                                  context,
-                                  listen: false,
-                                ).billingFromDate !=
-                                (AuthService().currentUser! as ProducerUser)
-                                    .stores[Provider.of<AuthNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).selectedStoreIndex!]
-                                    .createdAt
-                            ? DateFormat.yMMMd().format(
-                              Provider.of<ManageSectionNotifier>(
-                                context,
-                                listen: false,
-                              ).billingFromDate,
-                            )
-                            : 'Escolher data',
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.secondary,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
+                    label: Text(
+                      provider.billingFromDate !=
+                              (AuthService().currentUser! as ProducerUser)
+                                  .stores[Provider.of<AuthNotifier>(
+                                    context,
+                                    listen: false,
+                                  ).selectedStoreIndex!]
+                                  .createdAt
+                          ? DateFormat.yMMMd().format(provider.billingFromDate)
+                          : 'Escolher data',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      foregroundColor: Theme.of(context).colorScheme.secondary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                  ],
-                ),
-                DropdownButton<DateRangeOption>(
-                  value: _selectedRange,
-                  onChanged: _onRangeSelected,
-                  items:
-                      DateRangeOption.values
-                          .map(
-                            (option) => DropdownMenuItem<DateRangeOption>(
-                              value: option,
-                              child: Text(option.label),
-                            ),
-                          )
-                          .toList(),
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondaryFixed,
-                    fontSize: 13,
                   ),
-                  dropdownColor: Theme.of(context).colorScheme.secondary,
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  DropdownButton<DateRangeOption>(
+                    value: _selectedRange,
+                    onChanged: _onRangeSelected,
+                    items:
+                        DateRangeOption.values
+                            .map(
+                              (option) => DropdownMenuItem<DateRangeOption>(
+                                value: option,
+                                child: Text(option.label),
+                              ),
+                            )
+                            .toList(),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondaryFixed,
+                      fontSize: 13,
+                    ),
+                    dropdownColor: Theme.of(context).colorScheme.secondary,
+                  ),
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),

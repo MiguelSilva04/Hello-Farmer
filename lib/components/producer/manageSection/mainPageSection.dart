@@ -939,11 +939,9 @@ class _EditAdSectionState extends State<EditAdSection> {
 
   Future<void> sendOffer(String discount) async {
     await AuthService().sendOffer(discount, widget.ad.id);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Promoção de $discount aplicada!'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Promoção de $discount aplicada!')));
   }
 
   @override
@@ -958,6 +956,7 @@ class _EditAdSectionState extends State<EditAdSection> {
           return Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
@@ -966,9 +965,11 @@ class _EditAdSectionState extends State<EditAdSection> {
                   size: 40,
                 ),
                 SizedBox(height: 12),
-                Text(
-                  "Escolha o desconto para a promoção",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                Center(
+                  child: Text(
+                    "Escolha o desconto para a promoção",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
                 ),
                 SizedBox(height: 16),
                 Wrap(
@@ -1059,7 +1060,6 @@ class _EditAdSectionState extends State<EditAdSection> {
                     ),
                   ],
                 ),
-                SizedBox(height: 12),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: Text("Voltar"),

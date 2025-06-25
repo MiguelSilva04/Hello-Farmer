@@ -250,6 +250,48 @@ class OffersPage extends StatelessWidget {
                                     fontSize: 13,
                                   ),
                                 ),
+                                const SizedBox(height: 2),
+                                Builder(
+                                  builder: (context) {
+                                    final now = DateTime.now();
+                                    final end = offer.endDate;
+                                    final difference = end.difference(now);
+                                    if (difference.isNegative) {
+                                      return Text(
+                                        'Promoção terminada',
+                                        style: TextStyle(
+                                          color: Colors.red.shade700,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      );
+                                    } else if (difference.inDays > 0) {
+                                      return Text(
+                                        'Termina em ${difference.inDays} dia${difference.inDays == 1 ? '' : 's'}',
+                                        style: const TextStyle(
+                                          color: Colors.orange,
+                                          fontSize: 13,
+                                        ),
+                                      );
+                                    } else if (difference.inHours > 0) {
+                                      return Text(
+                                        'Termina em ${difference.inHours} hora${difference.inHours == 1 ? '' : 's'}',
+                                        style: const TextStyle(
+                                          color: Colors.orange,
+                                          fontSize: 13,
+                                        ),
+                                      );
+                                    } else {
+                                      return Text(
+                                        'Termina em menos de 1 hora',
+                                        style: const TextStyle(
+                                          color: Colors.orange,
+                                          fontSize: 13,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
                               ],
                             ),
                             trailing: const Icon(

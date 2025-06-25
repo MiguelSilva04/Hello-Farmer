@@ -732,11 +732,11 @@ class _OrderTimelineState extends State<OrderTimeline> {
       listen: false,
     ).changeOrderState(widget.order.id, newOrderState);
     print(newOrderState);
-    if (newOrderState == OrderState.Sent)
-      await Provider.of<NotificationNotifier>(
-        context,
-        listen: false,
-      ).addOrderSentNotification(store, widget.order.consumerId);
+    // if (newOrderState == OrderState.Sent)
+    //   await Provider.of<NotificationNotifier>(
+    //     context,
+    //     listen: false,
+    //   ).addOrderSentNotification(store, widget.order.consumerId);
     setState(() => _isLoading = false);
   }
 

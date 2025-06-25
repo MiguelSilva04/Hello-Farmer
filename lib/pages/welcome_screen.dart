@@ -155,6 +155,7 @@
 //     );
 //   }
 // }
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import '../core/services/auth/auth_service.dart';
@@ -170,199 +171,226 @@ class WelcomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: Stack(
-        children: [
-          ClipPath(
-            clipper: WaveClipper(),
-            child: Container(
-              height: size.height * 0.45,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF2E8B57), Color(0xFF43A047)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            ClipPath(
+              clipper: WaveClipper(),
+              child: Container(
+                height: size.height * 0.45,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF2E8B57), Color(0xFF43A047)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 90,
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    double maxTitleFont = constraints.maxHeight * 0.4;
+                    double maxSubtitleFont = constraints.maxHeight * 0.07;
+                    double maxDescFont = constraints.maxHeight * 0.045;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AutoSizeText(
+                              'Hello Farmer',
+                              style: theme.textTheme.displaySmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              minFontSize: 50,
+                              maxFontSize:
+                                  maxTitleFont.clamp(50, 70).roundToDouble(),
+                            ),
+                            AutoSizeText(
+                              'O futuro do agricultor',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 25,
+                              maxFontSize:
+                                  maxSubtitleFont.clamp(28, 34).roundToDouble(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        AutoSizeText(
+                          'Registe-se agora e descubra produtos ou venda na sua zona!',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          minFontSize: 14,
+                          maxFontSize:
+                              maxDescFont.clamp(14, 22).roundToDouble(),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 90),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: size.height * 0.40),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hello Farmer',
-                        style: theme.textTheme.displaySmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                          fontSize: 50,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Expanded(
+                          child: FeatureIcon(
+                            icon: Icons.shopping_cart_outlined,
+                            text: 'Venda de produtos',
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'O futuro do agricultor',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 25,
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: FeatureIcon(
+                            icon: Icons.eco_outlined,
+                            text: 'Produtores e consumidores',
+                          ),
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: FeatureIcon(
+                            icon: Icons.emoji_nature_outlined,
+                            text: 'Produtos biológicos',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Registe-se agora e descubra produtos ou venda na sua zona!',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 18,
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    height: size.height * 0.45,
+                    width: double.infinity,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondary,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(36),
+                          topRight: Radius.circular(36),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, -4),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: BigOptionCard(
+                                  image: 'assets/images/produtor.png',
+                                  title: 'Produtor',
+                                  subtitle: 'Venda o que cultiva da sua quinta',
+                                  color: theme.colorScheme.surface,
+                                  isProducer: true,
+                                ),
+                              ),
+                              const SizedBox(width: 18),
+                              Expanded(
+                                child: BigOptionCard(
+                                  image: 'assets/images/consumidor.png',
+                                  title: 'Consumidor',
+                                  subtitle:
+                                      'Encontre os melhores produtos locais',
+                                  color: theme.colorScheme.surface,
+                                  isProducer: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 0),
+                            child: Row(
+                              children: [
+                                const Expanded(child: Divider(thickness: 1.5)),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  child: SizedBox(
+                                    width: 60,
+                                    child: Image.asset(
+                                      'assets/images/logo_green2.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                                const Expanded(child: Divider(thickness: 1.5)),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: AutoSizeText(
+                                  "Já tem conta?",
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: theme.colorScheme.tertiaryFixed,
+                                    fontSize: 17,
+                                  ),
+                                  maxLines: 1,
+                                  minFontSize: 12,
+                                  maxFontSize: 18,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  AuthService().setLoggingInState(true);
+                                  Navigator.of(
+                                    context,
+                                  ).pushNamed(AppRoutes.AUTH_PAGE);
+                                },
+                                child: AutoSizeText(
+                                  "Entre aqui.",
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: theme.colorScheme.tertiaryFixed,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  maxLines: 1,
+                                  minFontSize: 12,
+                                  maxFontSize: 18,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: size.height * 0.40),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Expanded(
-                        child: FeatureIcon(
-                          icon: Icons.shopping_cart_outlined,
-                          text: 'Venda de produtos',
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: FeatureIcon(
-                          icon: Icons.eco_outlined,
-                          text: 'Produtores e consumidores',
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: FeatureIcon(
-                          icon: Icons.emoji_nature_outlined,
-                          text: 'Produtos biológicos',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.secondary,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(36),
-                        topRight: Radius.circular(36),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 12,
-                          offset: const Offset(0, -4),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(28),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: BigOptionCard(
-                                image: 'assets/images/produtor.png',
-                                title: 'Produtor',
-                                subtitle:
-                                    'Venda o que cultiva diretamente da sua quinta',
-                                color: theme.colorScheme.surface,
-                                isProducer: true,
-                              ),
-                            ),
-                            const SizedBox(width: 18),
-                            Expanded(
-                              child: BigOptionCard(
-                                image: 'assets/images/consumidor.png',
-                                title: 'Consumidor',
-                                subtitle:
-                                    'Encontre os melhores produtos locais',
-                                color: theme.colorScheme.surface,
-                                isProducer: false,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 0),
-                          child: Row(
-                            children: [
-                              const Expanded(child: Divider(thickness: 1.5)),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                child: SizedBox(
-                                  width: 60,
-                                  child: Image.asset(
-                                    'assets/images/logo_green2.png',
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                              const Expanded(child: Divider(thickness: 1.5)),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Já tem conta?",
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.colorScheme.tertiaryFixed,
-                                fontSize: 17,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                AuthService().setLoggingInState(true);
-                                Navigator.of(
-                                  context,
-                                ).pushNamed(AppRoutes.AUTH_PAGE);
-                              },
-                              child: Text(
-                                "Entre aqui.",
-                                style: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.colorScheme.tertiaryFixed,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 17,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -400,28 +428,39 @@ class BigOptionCard extends StatelessWidget {
         color: color,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          height: MediaQuery.of(context).size.height * 0.25,
+          height:
+              MediaQuery.of(context).size.height *
+              (MediaQuery.of(context).orientation == Orientation.portrait
+                  ? 0.22
+                  : 0.32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(image, width: 90, height: 90, fit: BoxFit.contain),
               const SizedBox(height: 10),
-              Text(
+              AutoSizeText(
                 title,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.secondary,
                   fontSize: 20,
                 ),
+                maxLines: 1,
+                minFontSize: 14,
+                maxFontSize: 22,
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 6),
-              Text(
+              AutoSizeText(
                 subtitle,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.secondary,
                   fontSize: 13,
                 ),
+                maxLines: 2,
+                minFontSize: 10,
+                maxFontSize: 15,
               ),
             ],
           ),

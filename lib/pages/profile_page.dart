@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/order.dart';
@@ -9,17 +10,18 @@ import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:provider/provider.dart';
-
 import '../components/country_state_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/models/app_user.dart';
 import '../core/models/product_ad.dart';
+import '../core/models/store.dart';
 import '../core/services/auth/auth_service.dart';
 import '../core/services/chat/chat_service.dart';
 import '../utils/app_routes.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:collection/collection.dart';
 
 class ProfilePage extends StatefulWidget {
   final AppUser? user;
@@ -656,7 +658,9 @@ class _ProfilePageState extends State<ProfilePage> {
             fontStyle: FontStyle.italic,
           ),
         ),
-        if (user!.isProducer && (user as ProducerUser).stores.isNotEmpty) ...[
+        if (user!.isProducer &&
+            (user as ProducerUser).stores.isNotEmpty &&
+            widget.user != null) ...[
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -687,9 +691,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           height: 75,
                           child: Image(
                             image: NetworkImage(store.imageUrl!),
-                            fit:
-                                BoxFit
-                                    .cover,
+                            fit: BoxFit.cover,
                           ),
                         ),
 
@@ -824,9 +826,212 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (orders != null && orders!.isNotEmpty) ...[
+              if (user != null && user!.isProducer) ...[
+                // Mostrar produtos em destaque para produtores
                 Text(
-                  user!.isProducer ? "Produtos em destaque" : 'Últimas compras',
+                  "Produtos em destaque",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Column(
+                  children:
+                      (user as ProducerUser).stores
+                          .expand(
+                            (store) =>
+                                store.productsAds?.map(
+                                  (ad) => {'ad': ad, 'store': store},
+                                ) ??
+                                [],
+                          )
+                          .where(
+                            (map) =>
+                                map != null &&
+                                (map as Map)['ad']?.highlightType != null,
+                          )
+                          .map((map) {
+                            final ad = (map as Map)['ad'] as ProductAd;
+                            final producer = Provider.of<AuthNotifier>(
+                              context,
+                              listen: false,
+                            ).producerUsers.firstWhereOrNull(
+                              (producer) => producer.stores.any(
+                                (store) =>
+                                    store.productsAds?.any(
+                                      (a) => a.id == ad.id,
+                                    ) ??
+                                    false,
+                              ),
+                            );
+                            final store = map['store'] as Store;
+                            return InkWell(
+                              onTap:
+                                  () =>
+                                      (widget.user != null)
+                                          ? Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (ctx) =>
+                                                      ProductAdDetailScreen(
+                                                        ad: ad,
+                                                        producer: producer!,
+                                                      ),
+                                            ),
+                                          )
+                                          : null,
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Stack(
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            border:
+                                                ad.highlightType != null
+                                                    ? Border.all(
+                                                      color:
+                                                          Colors.amber.shade700,
+                                                      width: 5,
+                                                    )
+                                                    : null,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            child: Image.network(
+                                              ad.product.imageUrls.first,
+                                              height: 100,
+                                              width: 120,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (_, __, ___) => Container(
+                                                    height: 100,
+                                                    width: 120,
+                                                    color: Colors.grey.shade300,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        if (ad.highlightType != null)
+                                          Positioned(
+                                            top: -5,
+                                            left: 0,
+                                            child: Chip(
+                                              backgroundColor:
+                                                  Colors.amber.shade700,
+                                              label: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.star,
+                                                    color: Colors.white,
+                                                    size: 16,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    ad.highlightType! ==
+                                                            HighlightType.HOME
+                                                        ? "Pagina Principal"
+                                                        : "Pesquisa",
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 10,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 0,
+                                                    vertical: 0,
+                                                  ),
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            ad.product.name,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  ad.description,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              if (store.imageUrl != null)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 6.0,
+                                                      ),
+                                                  child: CircleAvatar(
+                                                    radius: 20,
+                                                    backgroundImage:
+                                                        NetworkImage(
+                                                          store.imageUrl!,
+                                                        ),
+                                                    backgroundColor:
+                                                        Colors.grey.shade200,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                          Text(
+                                            '${ad.product.price}€/${ad.product.unit.toDisplayString()}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          })
+                          .toList(),
+                ),
+              ] else if (orders != null && orders!.isNotEmpty) ...[
+                Text(
+                  'Últimas compras',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),

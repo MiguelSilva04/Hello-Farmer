@@ -638,7 +638,7 @@ class _StorePageState extends State<StorePage> {
                                     Padding(
                                       padding: const EdgeInsets.only(
                                         left: 32.0,
-                                        top: 4.0,
+                                        top: 0,
                                       ),
                                       child: Card(
                                         color: Theme.of(context)
@@ -681,7 +681,6 @@ class _StorePageState extends State<StorePage> {
                                                       ),
                                                     ),
                                                   ),
-                                                  // Tempo do comentário alinhado à direita
                                                   Builder(
                                                     builder: (context) {
                                                       final now =

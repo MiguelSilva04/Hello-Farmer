@@ -109,13 +109,24 @@ class _StorePageState extends State<StorePage> {
         if (snapshot.hasError) {
           return const Center(child: Text("Erro ao carregar as bancas."));
         }
+
         final stores = snapshot.data!;
         if (stores.isEmpty) {
           return const Center(child: Text("Nenhuma banca disponível."));
         }
+
         final selectedIndex = authNotifier.selectedStoreIndex ?? 0;
         final safeIndex = selectedIndex < stores.length ? selectedIndex : 0;
-        final storeToShow = widget.store ?? stores[safeIndex];
+
+        final isOwnStore =
+            widget.store != null &&
+            widget.store!.ownerId == authNotifier.currentUser!.id;
+
+        final storeToShow =
+            isOwnStore
+                ? stores[safeIndex]
+                : (widget.store ?? stores[safeIndex]);
+
         return _buildStoreScaffold(context, authNotifier, storeToShow, stores);
       },
     );

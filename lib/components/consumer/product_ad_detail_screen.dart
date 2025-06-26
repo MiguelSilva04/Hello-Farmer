@@ -531,7 +531,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                       Row(
                                         children: [
                                           RatingBarIndicator(
-                                            rating: rating,
+                                            rating: curStore.averageRating,
                                             itemBuilder:
                                                 (context, index) => Icon(
                                                   Icons.star,
@@ -542,7 +542,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                             direction: Axis.horizontal,
                                           ),
                                           Text(
-                                            "(${rating.toStringAsFixed(1)}) ",
+                                            "(${curStore.averageRating.toStringAsFixed(1)}) ",
                                             style: TextStyle(
                                               fontSize: 15,
                                               color:

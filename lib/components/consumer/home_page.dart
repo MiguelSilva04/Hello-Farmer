@@ -81,7 +81,7 @@ class _ConsumerHomePageState extends State<ConsumerHomePage> {
   }
 
   Widget _buildStoreItem(ProducerUser user, Store store) {
-    final double rating = calculateStoreRating(store);
+    final double rating = store.averageRating;
 
     return InkWell(
       onTap:

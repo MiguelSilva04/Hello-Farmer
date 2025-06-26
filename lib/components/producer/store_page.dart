@@ -241,26 +241,28 @@ class _StorePageState extends State<StorePage> {
                               const SizedBox(width: 16),
                               Builder(
                                 builder: (context) {
-                                  double rating = 0.0;
-                                  final ads = store?.productsAds ?? [];
-                                  if (ads.isNotEmpty) {
-                                    double total = 0.0;
-                                    int count = 0;
-                                    for (final ad in ads) {
-                                      if (ad.adReviews != null &&
-                                          ad.adReviews!.isNotEmpty) {
-                                        for (final review in ad.adReviews!) {
-                                          if (review.rating != null) {
-                                            total += review.rating!;
-                                            count++;
-                                          }
-                                        }
-                                      }
-                                    }
-                                    if (count > 0) {
-                                      rating = total / count;
-                                    }
-                                  }
+                                  final rating = store!.averageRating;
+                                  // double rating = 0.0;
+                                  // final ads = store?.productsAds ?? [];
+                                  // if (ads.isNotEmpty) {
+                                  //   double total = 0.0;
+                                  //   int count = 0;
+                                  //   for (final ad in ads) {
+                                  //     if (ad.adReviews != null &&
+                                  //         ad.adReviews!.isNotEmpty) {
+                                  //       for (final review in ad.adReviews!) {
+                                  //         if (review.rating != null &&
+                                  //             (review.replyTo!.isEmpty)) {
+                                  //           total += review.rating!;
+                                  //           count++;
+                                  //         }
+                                  //       }
+                                  //     }
+                                  //   }
+                                  //   if (count > 0) {
+                                  //     rating = total / count;
+                                  //   }
+                                  // }
                                   return Row(
                                     children: [
                                       RatingBarIndicator(

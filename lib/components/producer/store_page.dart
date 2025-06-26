@@ -10,7 +10,8 @@ import 'package:harvestly/core/models/review.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/pages/loading_page.dart';
 import 'package:provider/provider.dart';
-
+import 'package:collection/collection.dart';
+import '../../core/models/app_user.dart';
 import '../../core/services/auth/auth_service.dart';
 import '../../core/services/other/bottom_navigation_notifier.dart';
 import '../../core/services/other/manage_section_notifier.dart';
@@ -609,8 +610,152 @@ class _StorePageState extends State<StorePage> {
                         if ((store?.storeReviews?.isEmpty ?? true))
                           Text("Ainda sem comentários"),
                         ...((store?.storeReviews ?? [])
+                            .where(
+                              (review) => (review.replyTo?.isEmpty ?? true),
+                            )
                             .take(3)
-                            .map((review) => _ReviewCard(review: review))),
+                            .map((review) {
+                              final reply = (store?.storeReviews ?? [])
+                                  .firstWhereOrNull(
+                                    (r) =>
+                                        (r.replyTo?.isNotEmpty ?? false) &&
+                                        r.replyTo == review.reviewerId,
+                                  );
+                              AppUser? reviewer;
+                              if (reply != null)
+                                reviewer =
+                                    Provider.of<AuthNotifier>(
+                                          context,
+                                          listen: false,
+                                        ).allUsers
+                                        .where((u) => u.id == reply.reviewerId)
+                                        .first;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _ReviewCard(review: review),
+                                  if (reply != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 32.0,
+                                        top: 4.0,
+                                      ),
+                                      child: Card(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                            .withValues(alpha: 0.8),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  CircleAvatar(
+                                                    backgroundImage:
+                                                        NetworkImage(
+                                                          reviewer!.imageUrl,
+                                                        ),
+                                                    radius: 20,
+                                                    backgroundColor:
+                                                        Colors.grey.shade200,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Expanded(
+                                                    child: Text(
+                                                      reviewer.firstName +
+                                                          " " +
+                                                          reviewer.lastName,
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            Theme.of(context)
+                                                                .colorScheme
+                                                                .primary,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  // Tempo do comentário alinhado à direita
+                                                  Builder(
+                                                    builder: (context) {
+                                                      final now =
+                                                          DateTime.now();
+                                                      final createdAt =
+                                                          reply.dateTime;
+                                                      final diff = now
+                                                          .difference(
+                                                            createdAt!,
+                                                          );
+
+                                                      String timeText;
+                                                      if (diff.inSeconds < 60) {
+                                                        timeText =
+                                                            "${diff.inSeconds}s atrás";
+                                                      } else if (diff
+                                                              .inMinutes <
+                                                          60) {
+                                                        timeText =
+                                                            "${diff.inMinutes}m atrás";
+                                                      } else if (diff.inHours <
+                                                              24 &&
+                                                          now.day ==
+                                                              createdAt.day) {
+                                                        timeText =
+                                                            "${diff.inHours}h atrás";
+                                                      } else if (now
+                                                              .difference(
+                                                                DateTime(
+                                                                  createdAt
+                                                                      .year,
+                                                                  createdAt
+                                                                      .month,
+                                                                  createdAt.day,
+                                                                ),
+                                                              )
+                                                              .inDays ==
+                                                          1) {
+                                                        timeText = "Ontem";
+                                                      } else {
+                                                        timeText =
+                                                            "${createdAt.day.toString().padLeft(2, '0')}/${createdAt.month.toString().padLeft(2, '0')}";
+                                                      }
+                                                      return Text(
+                                                        timeText,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodySmall
+                                                            ?.copyWith(
+                                                              color:
+                                                                  Colors
+                                                                      .grey[700],
+                                                            ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                reply.description ?? "",
+                                                style:
+                                                    Theme.of(
+                                                      context,
+                                                    ).textTheme.bodyMedium,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            })),
                         if ((store?.storeReviews?.length ?? 0) > 3)
                           TextButton(
                             onPressed: () {},
@@ -793,8 +938,52 @@ class _ReviewCard extends StatelessWidget {
                   child: Text(reviewer.firstName + " " + reviewer.lastName),
                 ),
                 const SizedBox(width: 4),
-                Icon(Icons.star, color: Colors.amber, size: 16),
-                Text("${review.rating?.toStringAsFixed(1) ?? ""}"),
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.star, color: Colors.amber, size: 16),
+                        Text("${review.rating?.toStringAsFixed(1) ?? ""}"),
+                      ],
+                    ),
+                    Builder(
+                      builder: (context) {
+                        final now = DateTime.now();
+                        final createdAt = review.dateTime;
+                        final diff = now.difference(createdAt!);
+
+                        String timeText;
+                        if (diff.inSeconds < 60) {
+                          timeText = "${diff.inSeconds}s atrás";
+                        } else if (diff.inMinutes < 60) {
+                          timeText = "${diff.inMinutes}m atrás";
+                        } else if (diff.inHours < 24 &&
+                            now.day == createdAt.day) {
+                          timeText = "${diff.inHours}h atrás";
+                        } else if (now
+                                .difference(
+                                  DateTime(
+                                    createdAt.year,
+                                    createdAt.month,
+                                    createdAt.day,
+                                  ),
+                                )
+                                .inDays ==
+                            1) {
+                          timeText = "Ontem";
+                        } else {
+                          timeText =
+                              "${createdAt.day.toString().padLeft(2, '0')}/${createdAt.month.toString().padLeft(2, '0')}";
+                        }
+                        return Text(
+                          timeText,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey[700]),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 6),

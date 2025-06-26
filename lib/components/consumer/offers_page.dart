@@ -15,7 +15,6 @@ class OffersPage extends StatelessWidget {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final producers = authNotifier.producerUsers;
 
-    // State for filter
     final ValueNotifier<OfferSortOption> sortOption = ValueNotifier(
       OfferSortOption.expiryAsc,
     );

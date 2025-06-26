@@ -530,7 +530,6 @@ class _AnalysisStoreViewsSectionState extends State<AnalysisStoreViewsSection> {
                           return const SizedBox.shrink();
                         }
                         if (_selectedPeriod.toDisplayString() == 'Hoje') {
-                          // Exibe apenas algumas horas para não poluir
                           if (index % 2 != 0 && xLabels.length > 12)
                             return const SizedBox.shrink();
                           final hour = xLabels[index].hour;

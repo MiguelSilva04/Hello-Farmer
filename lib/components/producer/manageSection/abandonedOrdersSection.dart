@@ -247,7 +247,6 @@ class AbandonedOrdersPage extends StatelessWidget {
                       },
                     ),
                   ),
-                  // const Spacer(),
                   Text(
                     "${order.totalPrice.toStringAsFixed(2)} €",
                     style: const TextStyle(

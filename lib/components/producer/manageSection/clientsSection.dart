@@ -250,7 +250,6 @@ class _ClientsSectionState extends State<ClientsSection> {
                       chatService.updateCurrentChat(existingChat);
                       Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
 
-                      // Criar nova conversa
                       final _messageController = TextEditingController();
                       final result = await showDialog<String>(
                         context: context,

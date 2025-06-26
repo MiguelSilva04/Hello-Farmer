@@ -202,7 +202,6 @@ class PreferencesNotifier with ChangeNotifier {
 
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    // Carregar tema
     _autoTheme = prefs.getBool('autoTheme') ?? false;
     if (_autoTheme) {
       await _updateThemeBasedOnLightSensor();
@@ -210,8 +209,6 @@ class PreferencesNotifier with ChangeNotifier {
       final isDark = prefs.getBool('isDark') ?? false;
       _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
     }
-
-    // Carregar linguagem
     final langString = prefs.getString('language');
     if (langString != null) {
       language = Language.values.firstWhere(

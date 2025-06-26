@@ -45,8 +45,6 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isEditingPassword = false;
   bool _isLoading = false;
   bool _isEditingBackgroundImage = false;
-  // bool _isEditingNickname = false;
-  // bool _isEditingAboutMe = false;
   bool _isEditingEmail = false;
   bool _dataChanged = false;
 
@@ -55,11 +53,8 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _backgroundImage;
   File? _profileImage;
 
-  // String? _errorMessage;
-  // String? _currentPopUpTextMessage;
   final _formKey = GlobalKey<FormState>();
   final _textController = TextEditingController();
-  // final _lastNameTextController = TextEditingController();
 
   late AppUser? user;
   late List<Order>? orders;
@@ -287,8 +282,6 @@ class _ProfilePageState extends State<ProfilePage> {
       await AuthService().updateSingleUserField(email: user?.recoveryEmail);
     }
     if (_isEditingPassword) {
-      // criar um metodo para enviar email de recuperação para o seu email
-      // await AuthService().updateSingleUserField(email: _textController.text);
       _showAlert(
         "Verificação necessária",
         "Um e-mail de recuperação irá ser enviado para o seu email, ${_textController.text}. A sua sessão irá expirar depois disso.",
@@ -696,7 +689,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             image: NetworkImage(store.imageUrl!),
                             fit:
                                 BoxFit
-                                    .cover, // opcional, para ajustar a imagem ao container
+                                    .cover,
                           ),
                         ),
 
@@ -737,7 +730,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 return;
               }
 
-              // Criar nova conversa
               final _messageController = TextEditingController();
               final result = await showDialog<String>(
                 context: context,

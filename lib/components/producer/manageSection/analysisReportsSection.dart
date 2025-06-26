@@ -18,13 +18,11 @@ class AnalysisReportsSection extends StatelessWidget {
       required int numDias,
     }) {
       if (products.length == 0) return 0.0;
-      // Soma o stock total de todos os produtos
       final double stockTotal = products.fold(
         0.0,
         (soma, produto) => soma + produto.stock!,
       );
 
-      // Soma a quantidade total vendida em todos os pedidos
       double totalVendido = 0.0;
       for (var order in orders) {
         for (var produtoAd in order.ordersItems) {
@@ -32,12 +30,9 @@ class AnalysisReportsSection extends StatelessWidget {
         }
       }
 
-      // Calcula a média de vendas por dia
       final double mediaVendasPorDia = totalVendido / numDias;
 
-      // Evita divisão por zero
       if (mediaVendasPorDia == 0) return double.infinity;
-      // Calcula dias restantes de stock
       final double diasRestantes = stockTotal / mediaVendasPorDia;
 
       return diasRestantes;

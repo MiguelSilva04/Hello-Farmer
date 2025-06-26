@@ -1,6 +1,4 @@
 import 'dart:io';
-
-// import 'package:harvestly/components/gender_picker.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:harvestly/components/create_store.dart';
@@ -347,7 +345,6 @@ class _AuthFormState extends State<AuthForm> {
       decoration: InputDecoration(
         suffixIcon: suffixIcon,
         suffixIconColor: Theme.of(context).colorScheme.tertiary,
-        // prefixIcon: Icon(prefixIcon),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -763,25 +760,6 @@ class _AuthFormState extends State<AuthForm> {
                                 ),
                               ),
                             ),
-
-                          // if (_formData.isSignup)
-                          //   Opacity(
-                          //     opacity: !_isThirdInfoSignup ? 1 : 0,
-                          //     child: IconButton(
-                          //       onPressed:
-                          //           () => setState(() {
-                          //             if (_isFirstInfoSignup) {
-                          //               _isFirstInfoSignup = false;
-                          //               _isSecondInfoSignup = true;
-                          //             } else if (_isSecondInfoSignup) {
-                          //               _isSecondInfoSignup = false;
-                          //               _isThirdInfoSignup = true;
-                          //             }
-                          //           }),
-                          //       icon: Icon(Icons.arrow_circle_right_rounded),
-                          //       alignment: Alignment.centerRight,
-                          //     ),
-                          //   ),
                         ],
                       ),
                   if (_formData.isLogin && !_isRecovery) ...[

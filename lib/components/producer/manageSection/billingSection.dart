@@ -51,7 +51,6 @@ class _BillingSectionState extends State<BillingSection> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Atualiza o dropdown se billingFromDate mudar externamente
     final currentRange = _getRangeFromDate(provider.billingFromDate);
     if (_selectedRange != currentRange) {
       setState(() {

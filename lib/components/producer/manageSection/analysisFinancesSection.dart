@@ -36,7 +36,6 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
     int diasIntervalo;
 
     if (filtroSelecionado == 'Semana') {
-      // De 7 dias atrás até ontem
       endDate = DateTime(
         now.year,
         now.month,
@@ -45,9 +44,8 @@ class _AnalysisFinancesSectionState extends State<AnalysisFinancesSection> {
       startDate = endDate.subtract(const Duration(days: 6));
       diasIntervalo = 7;
     } else {
-      // Mostrar todos os dias do mês atual
       startDate = DateTime(now.year, now.month, 1);
-      endDate = DateTime(now.year, now.month + 1, 0); // último dia do mês atual
+      endDate = DateTime(now.year, now.month + 1, 0);
       diasIntervalo = endDate.day;
     }
 

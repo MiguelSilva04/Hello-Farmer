@@ -206,9 +206,6 @@ class _BubbleSpecialThreeState extends State<BubbleSpecialThree> {
   }
 }
 
-///custom painter use to create the shape of the chat bubble
-///
-/// [color],[alignment] and [tail] can be changed
 
 class _SpecialChatBubbleThree extends CustomPainter {
   final Color color;

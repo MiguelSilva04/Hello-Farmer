@@ -175,7 +175,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: themeNotifier.themeMode,
-      // home: const AuthOrAppPage(),
       debugShowCheckedModeBanner: false,
       routes: {
         AppRoutes.AUTH_OR_APP_PAGE: (ctx) => AuthOrAppPage(),

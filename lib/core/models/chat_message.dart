@@ -19,7 +19,6 @@ class ChatMessage {
     required this.seen,
   });
 
-  // Método para criar um ChatMessage a partir de um Map (como o Firestore retorna)
   factory ChatMessage.fromMap(Map<String, dynamic> map) {
     return ChatMessage(
       id: map['id'] ?? '',

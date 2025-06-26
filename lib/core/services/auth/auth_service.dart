@@ -193,7 +193,6 @@ class AuthService {
                 adsSnapshot.docs.map((adDoc) async {
                   final productAd = ProductAd.fromJson(adDoc.data());
 
-                  // Fetch reviews for this ad
                   final reviewsSnapshot =
                       await fireStore
                           .collection('stores')
@@ -979,7 +978,6 @@ class AuthService {
   }
 
   Future<void> sendOffer(String discount, String adId) async {
-    // Procurar o anúncio (ad) dentro da coleção 'stores' e subcoleção 'ads' pelo adId
     String? storeId;
     final storesSnapshot = await fireStore.collection('stores').get();
     for (final storeDoc in storesSnapshot.docs) {

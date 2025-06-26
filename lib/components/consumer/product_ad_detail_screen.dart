@@ -16,11 +16,10 @@ import '../../core/services/chat/chat_list_notifier.dart';
 import '../../core/services/chat/chat_service.dart';
 import '../../utils/app_routes.dart';
 
-// ignore: must_be_immutable
 class ProductAdDetailScreen extends StatefulWidget {
   final ProductAd ad;
   final ProducerUser producer;
-  int? promotion;
+  final int? promotion;
 
   ProductAdDetailScreen({
     Key? key,
@@ -592,7 +591,6 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                 return;
                               }
 
-                              // Criar nova conversa
                               final _messageController =
                                   TextEditingController();
                               final result = await showDialog<String>(
@@ -1018,17 +1016,6 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                 ],
                                               ),
                                             ),
-                                            // RatingBarIndicator(
-                                            //   rating: getReplyUser(mainReviews[i].id)!.rating!,
-                                            //   itemBuilder:
-                                            //       (context, index) => Icon(
-                                            //         Icons.star,
-                                            //         color: Colors.amber.shade700,
-                                            //       ),
-                                            //   itemCount: 5,
-                                            //   itemSize: 18,
-                                            //   direction: Axis.horizontal,
-                                            // ),
                                           ],
                                         ),
                                       ),

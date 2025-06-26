@@ -45,13 +45,11 @@ class AuthNotifier extends ChangeNotifier {
   final fireStore = cf.FirebaseFirestore.instance;
   bool get isOrdersLoading => _isOrdersLoading;
 
-  // Salvar o ID da loja em vez do índice
   Future<void> saveSelectedStoreId(String storeId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedStoreId', storeId);
   }
 
-  // Atualiza o índice da loja com base no ID salvo
   Future<void> updateSelectedStoreIndexFromId() async {
     final prefs = await SharedPreferences.getInstance();
     final storeId = prefs.getString('selectedStoreId');
@@ -779,7 +777,6 @@ class AuthNotifier extends ChangeNotifier {
       });
     }
 
-    // Atualizar o carrinho local e remoto para manter apenas os itens NÃO encomendados
     final shoppingCartQuery =
         await fireStore
             .collection('shoppingCarts')
@@ -824,7 +821,6 @@ class AuthNotifier extends ChangeNotifier {
 
       double newTotal = 0;
       for (final item in productsQty) {
-        // Se o preço não estiver salvo no carrinho, você pode precisar buscar o preço do produto
         newTotal +=
             (item['quantity'] as num) * ((item['productPrice'] ?? 0) as num);
       }

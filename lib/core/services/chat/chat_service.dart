@@ -388,7 +388,6 @@ class ChatService with ChangeNotifier {
     ) {
       final allDocs = [...consumerSnap.docs, ...producerSnap.docs];
 
-      // Remover duplicados com base no ID do documento
       final uniqueDocs = {for (var doc in allDocs) doc.id: doc}.values.toList();
 
       return uniqueDocs.map((doc) {

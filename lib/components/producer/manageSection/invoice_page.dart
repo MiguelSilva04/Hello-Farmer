@@ -58,7 +58,6 @@ class InvoicePage extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    // Text("Data: ${DateFormat.yMMMMd('pt_PT').format(DateTime.now())}"),
                     const Divider(),
                     const SizedBox(height: 40),
                     Column(

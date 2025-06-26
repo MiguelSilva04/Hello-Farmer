@@ -145,7 +145,6 @@ class BillingPage extends StatelessWidget {
                 elevation: 0,
               ),
               onPressed: () {
-                // Salvar lógica aqui, por exemplo:
                 notifier.setReceiptMessage(notifier.receiptMessage);
                 ScaffoldMessenger.of(
                   context,

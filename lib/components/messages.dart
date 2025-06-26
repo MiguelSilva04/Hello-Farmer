@@ -126,10 +126,8 @@ class _MessagesState extends State<Messages> {
           );
         }
 
-        // Ordenar por data
         timelineEntries.sort((a, b) => a.key.compareTo(b.key));
 
-        // Construir a lista de widgets ordenados
         final widgetsToDisplay = timelineEntries.map((e) => e.value).toList();
 
         return Stack(

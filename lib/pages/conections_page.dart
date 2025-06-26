@@ -22,12 +22,6 @@ class _ConectionsPageState extends State<ConectionsPage> {
   void initState() {
     super.initState();
     allUsers = AuthService().users;
-    // if (currentUser.friendsIds != null)
-    //   friends =
-    //       allUsers
-    //           .where((user) => currentUser.friendsIds!.contains(user.id))
-    //           .toList();
-    // else
     friends = [];
   }
 
@@ -87,18 +81,6 @@ class _ConectionsPageState extends State<ConectionsPage> {
                         ),
                         title: Text(user.firstName),
                         trailing: Icon(Icons.change_circle),
-                        // currentUser.friendsIds!.contains(user.id)
-                        //     ? Icon(Icons.check, color: Colors.green)
-                        //     : IconButton(
-                        //       icon: Icon(Icons.person_add),
-                        //       onPressed: () async {
-                        //         await AuthService().addFriend(user.id);
-                        //         setState(() {
-                        //           currentUser.friendsIds!.add(user.id);
-                        //           friends.add(user);
-                        //         });
-                        //       },
-                        //     ),
                       ),
                     );
                   }).toList(),
@@ -128,7 +110,6 @@ class _ConectionsPageState extends State<ConectionsPage> {
               itemBuilder: (context, index) {
                 friends.sort((a, b) => a.firstName.compareTo(b.firstName));
                 final friend = friends[index];
-                // final followsBack = friend.friendsIds!.contains(currentUser.id);
 
                 return ListTile(
                   onTap:

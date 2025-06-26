@@ -3,12 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-// ignore: must_be_immutable
 class UserImagePicker extends StatefulWidget {
   final void Function(File image) onImagePick;
   final double avatarRadius;
-  File? image;
-  bool isSignup;
+  final File? image;
+  final bool isSignup;
 
   UserImagePicker({
     super.key,
@@ -78,7 +77,6 @@ class _UserImagePickerState extends State<UserImagePicker> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icon(Icons.image),
               Text(
                 'Toque para escolher\n uma imagem',
                 textAlign: TextAlign.center,

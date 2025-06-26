@@ -21,9 +21,8 @@ class StoreService with ChangeNotifier {
   final List<Store> _allStores = [];
   List<Store> get allStores => List.unmodifiable(_allStores);
 
-  /// LIGA o listener para as lojas (com ads e reviews)
   Future<void> startStoresListener() async {
-    _storeListener?.cancel(); // garantir que não há listener duplicado
+    _storeListener?.cancel();
 
     _storeListener = firestore.collection('stores').snapshots().listen((
       snapshot,
@@ -36,7 +35,6 @@ class StoreService with ChangeNotifier {
 
         final store = Store.fromJson({...storeData, 'id': storeId});
 
-        // Carregar anúncios e reviews da loja
         final adsSnapshot =
             await firestore
                 .collection('stores')
@@ -75,14 +73,13 @@ class StoreService with ChangeNotifier {
         store.productsAds = ads;
 
         _allStores.add(store);
-        listenToOrdersForStore(store); // ativar listener de encomendas
+        listenToOrdersForStore(store);
       }
 
       notifyListeners();
     });
   }
 
-  /// DESLIGA o listener e limpa as lojas
   Future<void> stopStoresListener() async {
     await _storeListener?.cancel();
     _storeListener = null;

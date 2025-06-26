@@ -102,12 +102,10 @@ class GenderPickerWithImage extends StatefulWidget {
     ),
     this.showOtherGender = false,
 
-    // Images asset can be network images,
     this.maleImage = const AssetImage("assets/images/male.png"),
     this.femaleImage = const AssetImage("assets/images/female.png"),
     this.otherGenderImage = const AssetImage("assets/images/other.png"),
 
-    // by default text to show
     this.maleText = "Homem",
     this.femaleText = "Mulher",
     this.otherGenderText = "Outro",

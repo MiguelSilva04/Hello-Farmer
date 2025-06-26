@@ -15,10 +15,9 @@ import 'package:provider/provider.dart';
 
 import '../core/services/auth/store_service.dart';
 
-// ignore: must_be_immutable
 class CreateStore extends StatefulWidget {
   final bool isFirstTime;
-  Function()? onClick;
+  final Function()? onClick;
   CreateStore({super.key, required this.isFirstTime, this.onClick});
 
   @override
@@ -381,7 +380,7 @@ class _CreateStoreState extends State<CreateStore> {
 
 class MapPageProducer extends StatefulWidget {
   final Function(LatLng position, Placemark placemark) onLocationSelected;
-  final LatLng? initialPosition; // coordenadas iniciais opcionais
+  final LatLng? initialPosition;
 
   const MapPageProducer({
     super.key,

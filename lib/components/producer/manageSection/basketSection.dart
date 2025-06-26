@@ -28,12 +28,6 @@ class _BasketSectionState extends State<BasketSection> {
         [];
     Basket? _editingBasket = null;
 
-    // void startEdit(Basket basket) {
-    //   setState(() {
-    //     _editingBasket = basket;
-    //   });
-    // }
-
     void stopEdit() {
       setState(() {
         _editingBasket = null;

@@ -50,8 +50,6 @@ class _MainMenuState extends State<MainMenu>
   late AuthNotifier authNotifier;
   String _searchQuery = "";
   Timer? _debounce;
-  // bool _hasStore = false;
-  // late Future<AppUser> _initFuture;
   bool _isLoading = false;
   bool _showLogo = true;
 

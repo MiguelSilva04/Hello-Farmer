@@ -62,7 +62,6 @@ class _SelectStateState extends State<SelectState> {
   }
 
   Future<void> getCountryFromPhone(String phone) async {
-    // PhoneNumber number = await PhoneNumber.getRegionInfoFromPhoneNumber(phone);
 
     final userPhone = AuthService().currentUser!.phone;
     PhoneNumber info = await PhoneNumber.getRegionInfoFromPhoneNumber(

@@ -772,7 +772,10 @@ class AuthNotifier extends ChangeNotifier {
             currentStock,
           );
 
-          transaction.update(adRef, {'stock': newStock, 'stockChangedDate': cf.FieldValue.serverTimestamp()});
+          transaction.update(adRef, {
+            'stock': newStock,
+            'stockChangedDate': cf.FieldValue.serverTimestamp(),
+          });
         }
       });
     }

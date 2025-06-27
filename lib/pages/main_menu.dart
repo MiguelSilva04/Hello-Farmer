@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
@@ -29,7 +28,7 @@ import '../components/producer/sell_page.dart';
 import '../components/producer/orders_page.dart';
 import '../components/producer/store_page.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
+import '../utils/presence_service.dart';
 import 'chat_list_page.dart';
 import 'new_chat_page.dart';
 import 'profile_page.dart';
@@ -82,6 +81,8 @@ class _MainMenuState extends State<MainMenu>
         _isLoading = true;
       });
     user = await authNotifier.loadUser();
+    final presenceService = PresenceService(user.id);
+    presenceService.initializePresence();
 
     if (user.isProducer) {
       await authNotifier.updateSelectedStoreIndex();

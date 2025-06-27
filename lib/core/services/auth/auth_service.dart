@@ -89,12 +89,27 @@ class AuthService {
     }
   });
 
+  Future<void> registLog() async {
+    final userDoc = fireStore.collection('users').doc(currentUser!.id);
+    await userDoc.update({
+      'isOnline': true,
+      'lastSeen': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> setUserOnlineStatus(String userId, bool isOnline) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'isOnline': isOnline,
+    });
+  }
+
   Future<Map<String, dynamic>?> getCurrentUserData(String userId) async {
-    final querySnapshot = await fireStore
-        .collection('stores')
-        .where('ownerId', isEqualTo: userId)
-        .limit(1)
-        .get();
+    final querySnapshot =
+        await fireStore
+            .collection('stores')
+            .where('ownerId', isEqualTo: userId)
+            .limit(1)
+            .get();
 
     if (querySnapshot.docs.isNotEmpty) {
       return querySnapshot.docs.first.data();

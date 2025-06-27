@@ -934,7 +934,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                                   ),
                                                   const SizedBox(width: 4),
                                                   Text(
-                                                    ad.highlightType! ==
+                                                    widget.user != null
+                                                        ? "Destacado"
+                                                        : ad.highlightType! ==
                                                             HighlightType.HOME
                                                         ? "Pagina Principal"
                                                         : "Pesquisa",

@@ -288,7 +288,7 @@ class _ChatListPageState extends State<ChatListPage> {
               ? '${producer.firstName} ${producer.lastName}'
               : '${consumer.firstName} ${consumer.lastName}',
         ),
-        subtitle: Text(subtitleText),
+        subtitle: Text(subtitleText, overflow: TextOverflow.ellipsis),
         trailing: trailingWidget,
       ),
     );

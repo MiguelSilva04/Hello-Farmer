@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:harvestly/components/messages.dart';
 import 'package:harvestly/components/new_message.dart';
 import 'package:harvestly/core/models/app_user.dart';
@@ -61,6 +62,38 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Future<String> getUserOnlineStatus(String userId) async {
+    final ref = FirebaseDatabase.instance.ref("userStatus/$userId");
+    final snapshot = await ref.get();
+
+    if (snapshot.exists) {
+      final data = snapshot.value as Map<dynamic, dynamic>?;
+
+      final isOnline = data?['isOnline'] as bool? ?? false;
+      if (isOnline) {
+        return "Online";
+      } else {
+        final lastSeenMillis = data?['lastSeen'] as int?;
+        if (lastSeenMillis != null) {
+          final lastSeen = DateTime.fromMillisecondsSinceEpoch(lastSeenMillis);
+          final now = DateTime.now();
+          final difference = now.difference(lastSeen);
+
+          if (difference.inSeconds < 60) {
+            return "Online há poucos segundos";
+          } else if (difference.inMinutes < 60) {
+            return "Online há ${difference.inMinutes} min";
+          } else if (difference.inHours < 24) {
+            return "Online há ${difference.inHours} h";
+          } else {
+            return "Online há ${difference.inDays} d";
+          }
+        }
+      }
+    }
+    return "Offline";
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
@@ -91,10 +124,67 @@ class _ChatPageState extends State<ChatPage> {
           appBar: AppBar(
             leadingWidth: 70,
             leading: getLeadingAppBarWidget(context, consumer!, producer!),
-            title: Text(
-              (authNotifier.currentUser!.id == consumer.id)
-                  ? '${producer.firstName} ${producer.lastName}'
-                  : '${consumer.firstName} ${consumer.lastName}',
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  (authNotifier.currentUser!.id == consumer.id)
+                      ? '${producer.firstName} ${producer.lastName}'
+                      : '${consumer.firstName} ${consumer.lastName}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                FutureBuilder<String>(
+                  future: getUserOnlineStatus(
+                    (authNotifier.currentUser!.id == consumer.id)
+                        ? producer.id
+                        : consumer.id,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Text(
+                        "A carregar...",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      );
+                    }
+                    final isOnline = snapshot.data == "Online";
+                    return Row(
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: isOnline ? Colors.green : Colors.red,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          snapshot.data ?? "Offline",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ),
             centerTitle: false,
             titleSpacing: 5,

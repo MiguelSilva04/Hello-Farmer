@@ -507,7 +507,15 @@ class AuthService {
     }
 
     if (email != null) {
-      await user.verifyBeforeUpdateEmail(email);
+      try {
+        await user.verifyBeforeUpdateEmail(email);
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'requires-recent-login') {
+          throw Exception('Please re-authenticate to update your email.');
+        } else {
+          rethrow;
+        }
+      }
     }
 
     if (phone != null) {

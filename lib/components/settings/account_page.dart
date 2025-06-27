@@ -76,6 +76,42 @@ class AccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = AuthService().currentUser!;
+    void _showAlert(String title, String message, bool isEditingEmail) {
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => AlertDialog(
+              title: Text(title),
+              content: Text(message),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("Cancelar"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    (isEditingEmail)
+                        ? await AuthService().updateSingleUserField(
+                          email: currentUser.recoveryEmail,
+                        )
+                        : await AuthService().recoverPassword(
+                          currentUser.email,
+                        );
+                    ;
+                    Navigator.of(ctx).pushNamedAndRemoveUntil(
+                      AppRoutes.WELCOME_SCREEN,
+                      (Route<dynamic> route) => false,
+                    );
+                    AuthService().logout();
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+      );
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -96,18 +132,27 @@ class AccountPage extends StatelessWidget {
             ],
           ),
           const Divider(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Email",
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-              ),
-              Text(
-                "${currentUser.email}",
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
-              ),
-            ],
+          InkWell(
+            onTap: () async {
+              _showAlert(
+                "Verificação necessária",
+                "Um e-mail de confirmação irá ser enviado para ${currentUser.recoveryEmail}. A sua sessão irá depois disso expirar.",
+                true,
+              );
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Email",
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+                ),
+                Text(
+                  "${currentUser.email}",
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+                ),
+              ],
+            ),
           ),
 
           const Divider(),
@@ -140,7 +185,13 @@ class AccountPage extends StatelessWidget {
           ),
           Center(
             child: TextButton(
-              onPressed: () {},
+              onPressed: () {
+                _showAlert(
+                  "Verificação necessária",
+                  "Um e-mail de recuperação de palavra-passe irá ser enviado para o seu email, ${currentUser.email}. A sua sessão irá expirar depois disso.",
+                  false,
+                );
+              },
               child: Text(
                 "Mudar palavra-passe",
                 style: TextStyle(fontSize: 16),

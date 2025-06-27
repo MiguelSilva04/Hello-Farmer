@@ -56,7 +56,6 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _profileImage;
 
   final _formKey = GlobalKey<FormState>();
-  final _textController = TextEditingController();
 
   late AppUser? user;
   late List<Order>? orders;
@@ -121,35 +120,6 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     }
     _isEditingBackgroundImage = false;
-  }
-
-  void _showAlert(String title, String message) {
-    showDialog(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("Cancelar"),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(ctx).pushNamedAndRemoveUntil(
-                    AppRoutes.AUTH_OR_APP_PAGE,
-                    (Route<dynamic> route) => false,
-                  );
-                  AuthService().logout();
-                },
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-    );
   }
 
   Widget _buildTextField(
@@ -273,20 +243,6 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao atualizar informações pessoais: $e')),
-      );
-    }
-
-    if (_isEditingEmail) {
-      _showAlert(
-        "Verificação necessária",
-        "Um e-mail de confirmação irá ser enviado para ${user?.recoveryEmail}. A sua sessão irá depois disso expirar.",
-      );
-      await AuthService().updateSingleUserField(email: user?.recoveryEmail);
-    }
-    if (_isEditingPassword) {
-      _showAlert(
-        "Verificação necessária",
-        "Um e-mail de recuperação irá ser enviado para o seu email, ${_textController.text}. A sua sessão irá expirar depois disso.",
       );
     }
 

@@ -63,8 +63,10 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<String> getUserOnlineStatus(String userId) async {
+    print(userId);
     final ref = FirebaseDatabase.instance.ref("userStatus/$userId");
     final snapshot = await ref.get();
+    print(snapshot);
 
     if (snapshot.exists) {
       final data = snapshot.value as Map<dynamic, dynamic>?;

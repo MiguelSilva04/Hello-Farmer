@@ -22,6 +22,7 @@ class _ClientsSectionState extends State<ClientsSection> {
   List<AppUser> _consumers = [];
   Map<String, List<Order>> _ordersByConsumer = {};
   bool _isLoaded = false;
+  int _selectedTab = 0;
 
   @override
   void didChangeDependencies() {
@@ -139,34 +140,105 @@ class _ClientsSectionState extends State<ClientsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final frequentes =
+        _consumers.where((c) => _ordersByConsumer[c.id]!.length > 3).toList();
+    final recentes =
+        _consumers.where((c) {
+          final orders = _ordersByConsumer[c.id]!;
+          final nonNullDates =
+              orders.map((o) => o.deliveryDate).whereType<DateTime>().toList();
+          if (nonNullDates.isEmpty) return false;
+          final last = nonNullDates.reduce((a, b) => a.isAfter(b) ? a : b);
+          return DateTime.now().difference(last).inDays <= 7;
+        }).toList();
+
+    List<AppUser> filteredConsumers;
+    if (_selectedTab == 1) {
+      filteredConsumers = frequentes;
+    } else if (_selectedTab == 2) {
+      filteredConsumers = recentes;
+    } else {
+      filteredConsumers = _consumers;
+    }
+
+    filteredConsumers.sort((a, b) {
+      final aDates =
+          _ordersByConsumer[a.id]!
+              .map((o) => o.deliveryDate)
+              .whereType<DateTime>()
+              .toList();
+      final bDates =
+          _ordersByConsumer[b.id]!
+              .map((o) => o.deliveryDate)
+              .whereType<DateTime>()
+              .toList();
+
+      final aLast =
+          aDates.isNotEmpty
+              ? aDates.reduce((a, b) => a.isAfter(b) ? a : b)
+              : DateTime.fromMillisecondsSinceEpoch(0);
+      final bLast =
+          bDates.isNotEmpty
+              ? bDates.reduce((a, b) => a.isAfter(b) ? a : b)
+              : DateTime.fromMillisecondsSinceEpoch(0);
+
+      return bLast.compareTo(aLast); // Mais recente primeiro
+    });
+
     return SingleChildScrollView(
       child: Column(
         children: [
           _buildHeader(),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: ToggleButtons(
+                borderRadius: BorderRadius.circular(12),
+                isSelected: [
+                  _selectedTab == 0,
+                  _selectedTab == 1,
+                  _selectedTab == 2,
+                ],
+                onPressed: (index) {
+                  setState(() {
+                    _selectedTab = index;
+                  });
+                },
+                selectedColor: Theme.of(context).colorScheme.onSecondary,
+                fillColor: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.primary,
+                constraints: const BoxConstraints(minWidth: 90, minHeight: 36),
+                children: const [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text("Todos"),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text("Frequentes"),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text("Recentes"),
+                  ),
+                ],
+              ),
+            ),
+          ),
           ListView.builder(
-            itemCount: _consumers.length,
+            itemCount: filteredConsumers.length,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
-              _consumers.sort(
+              filteredConsumers.sort(
                 (a, b) => _ordersByConsumer[b.id]!.length.compareTo(
                   _ordersByConsumer[a.id]!.length,
                 ),
               );
-              final client = _consumers[index];
+              final client = filteredConsumers[index];
               final orders = _ordersByConsumer[client.id]!;
-              final nonNullDates =
-                  orders.map((o) => o.deliveryDate).cast<DateTime>().toList();
               final totalRecipe = orders.fold(0.0, (a, b) => a + b.totalPrice);
-              final lastOrderDate =
-                  nonNullDates.isNotEmpty
-                      ? nonNullDates.reduce((a, b) => a.isAfter(b) ? a : b)
-                      : null;
-              final formattedDate =
-                  lastOrderDate != null
-                      ? DateFormat.yMMMd().format(lastOrderDate)
-                      : 'Abandonada';
 
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),

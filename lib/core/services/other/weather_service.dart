@@ -3,7 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WeatherService {
-  final String? _apiKey = dotenv.env['OPENWEATHER_API_KEY'];
+  final String _apiKey =
+      const String.fromEnvironment('OPENWEATHER_API_KEY').isNotEmpty
+          ? const String.fromEnvironment('OPENWEATHER_API_KEY')
+          : dotenv.env['OPENWEATHER_API_KEY']!;
 
   Future<List<Map<String, dynamic>>> get5DayForecast({
     required double lat,
@@ -52,9 +55,14 @@ class WeatherService {
             if (tempMin < minTemp) minTemp = tempMin;
             if (tempMax > maxTemp) maxTemp = tempMax;
 
-            if (icon.isEmpty && item['weather'] != null && item['weather'].isNotEmpty) {
+            if (icon.isEmpty &&
+                item['weather'] != null &&
+                item['weather'].isNotEmpty) {
               var rawIcon = item['weather'][0]['icon'] as String? ?? '';
-              icon = rawIcon.isNotEmpty ? rawIcon.substring(0, rawIcon.length - 1) + 'd' : '';
+              icon =
+                  rawIcon.isNotEmpty
+                      ? rawIcon.substring(0, rawIcon.length - 1) + 'd'
+                      : '';
               description = item['weather'][0]['description'] ?? '';
             }
           }

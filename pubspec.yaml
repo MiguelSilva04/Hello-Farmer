@@ -81,6 +81,7 @@ dependencies:
   cloud_functions: ^5.5.2
   flutter_local_notifications: ^19.2.1
   firebase_database: ^11.3.7
+  flutter_dotenv: ^5.2.1
   # flutter_facebook_auth: '^3.5.0'
 
 dev_dependencies:
@@ -132,6 +133,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - api.env
     - assets/data/country.json
     - assets/images/avatar.png
     - assets/images/group_image.png

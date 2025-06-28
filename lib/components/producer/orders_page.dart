@@ -179,35 +179,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          color: Theme.of(context).colorScheme.surface,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Column(
-              children: [
-                TabBar(
-                  isScrollable: true,
-                  labelStyle: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  controller: _tabController,
-                  labelColor: Theme.of(context).colorScheme.secondary,
-                  unselectedLabelColor:
-                      Theme.of(context).colorScheme.secondaryFixed,
-                  indicatorColor: Theme.of(context).colorScheme.secondary,
-                  tabs: const [
-                    Tab(text: 'Todas'),
-                    Tab(text: 'Pendentes'),
-                    Tab(text: 'Enviadas'),
-                    Tab(text: 'Prontas para recolha'),
-                    Tab(text: 'Entregues'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+        _buildTabBar(context),
         Expanded(
           child: Container(
             color: Theme.of(context).colorScheme.surface,
@@ -225,5 +197,37 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
         ),
       ],
     );
+  }
+
+  Widget _buildTabBar(BuildContext context) {
+    return Container(
+        color: Theme.of(context).colorScheme.surface,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Column(
+            children: [
+              TabBar(
+                isScrollable: true,
+                labelStyle: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                controller: _tabController,
+                labelColor: Theme.of(context).colorScheme.secondary,
+                unselectedLabelColor:
+                    Theme.of(context).colorScheme.secondaryFixed,
+                indicatorColor: Theme.of(context).colorScheme.secondary,
+                tabs: const [
+                  Tab(text: 'Todas'),
+                  Tab(text: 'Pendentes'),
+                  Tab(text: 'Enviadas'),
+                  Tab(text: 'Prontas para recolha'),
+                  Tab(text: 'Entregues'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
   }
 }

@@ -125,19 +125,28 @@ class _OrdersPageState extends State<OrdersPage>
   Widget _buildTabBar(BuildContext context) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
-      child: TabBar(
-        controller: _tabController,
-        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        labelColor: Theme.of(context).colorScheme.tertiaryFixed,
-        unselectedLabelColor: Theme.of(context).colorScheme.secondaryFixed,
-        indicatorColor: Theme.of(context).colorScheme.tertiaryFixed,
-        tabs: const [
-          Tab(text: 'Todas'),
-          Tab(text: 'Pendentes'),
-          Tab(text: 'Enviadas'),
-          Tab(text: 'Pronta para recolha'),
-          Tab(text: 'Entregues'),
-        ],
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Column(
+          children: [
+            TabBar(
+              isScrollable: true,
+              labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              controller: _tabController,
+              labelColor: Theme.of(context).colorScheme.tertiaryFixed,
+              unselectedLabelColor:
+                  Theme.of(context).colorScheme.secondaryFixed,
+              indicatorColor: Theme.of(context).colorScheme.tertiaryFixed,
+              tabs: const [
+                Tab(text: 'Todas'),
+                Tab(text: 'Pendentes'),
+                Tab(text: 'Enviadas'),
+                Tab(text: 'Prontas para recolha'),
+                Tab(text: 'Entregues'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

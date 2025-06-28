@@ -12,7 +12,7 @@ class WeatherService {
     required double lat,
     required double lon,
   }) async {
-    if (_apiKey == null || _apiKey.isEmpty) {
+    if (_apiKey.isEmpty) {
       throw Exception("API Key não está definida");
     }
 

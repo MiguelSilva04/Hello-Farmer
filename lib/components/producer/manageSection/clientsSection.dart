@@ -118,14 +118,7 @@ class _ClientsSectionState extends State<ClientsSection> {
       width: MediaQuery.of(context).size.width * 0.25,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.tertiaryFixedDim,
-            Theme.of(context).colorScheme.tertiary,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Theme.of(context).colorScheme.secondary,
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -165,6 +158,7 @@ class _ClientsSectionState extends State<ClientsSection> {
               final orders = _ordersByConsumer[client.id]!;
               final nonNullDates =
                   orders.map((o) => o.deliveryDate).cast<DateTime>().toList();
+              final totalRecipe = orders.fold(0.0, (a, b) => a + b.totalPrice);
               final lastOrderDate =
                   nonNullDates.isNotEmpty
                       ? nonNullDates.reduce((a, b) => a.isAfter(b) ? a : b)
@@ -177,22 +171,8 @@ class _ClientsSectionState extends State<ClientsSection> {
               return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.tertiaryFixedDim,
-                      Theme.of(context).colorScheme.tertiary,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 6,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
@@ -200,107 +180,164 @@ class _ClientsSectionState extends State<ClientsSection> {
                     backgroundImage: NetworkImage(client.imageUrl),
                     radius: 28,
                   ),
-                  title: Row(
-                    children: [
-                      Text(
-                        "${client.firstName} ${client.lastName}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(width: 2),
-                      if (orders.length > 3)
-                        const Icon(Icons.star, color: Colors.amber, size: 25),
-                    ],
-                  ),
-
-                  subtitle: Column(
+                  title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          Text(
+                            "${client.firstName} ${client.lastName}",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 2),
+                          if (orders.length > 3)
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 20,
+                            ),
+                        ],
+                      ),
                       const SizedBox(height: 4),
-                      Text("Telefone: ${client.phone}"),
-                      Text("Encomendas: ${orders.length}"),
-                      Text("Última encomenda: $formattedDate"),
+                      Text(
+                        "Total gasto: ${NumberFormat.simpleCurrency(locale: 'pt_PT').format(totalRecipe)}",
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                        ),
+                      ),
                     ],
                   ),
-                  trailing: IconButton(
-                    icon: Icon(
-                      Icons.message_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    onPressed: () async {
-                      final chatService = Provider.of<ChatService>(
-                        context,
-                        listen: false,
-                      );
-                      final currentUser =
-                          AuthService().currentUser! as ProducerUser;
-                      final otherUser = client;
-
-                      final chatList =
-                          Provider.of<ChatListNotifier>(
+                  subtitle: null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${orders.length}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color:
+                                  Theme.of(context).colorScheme.tertiaryFixed,
+                            ),
+                          ),
+                          const Text(
+                            "Encomendas",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(
+                          Icons.message_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        onPressed: () async {
+                          final chatService = Provider.of<ChatService>(
                             context,
                             listen: false,
-                          ).chats;
-                      final existingChat = chatList.firstWhere(
-                        (chat) =>
-                            (chat.consumerId == currentUser.id &&
-                                chat.producerId == otherUser.id) ||
-                            (chat.producerId == currentUser.id &&
-                                chat.consumerId == otherUser.id),
-                      );
-                      chatService.updateCurrentChat(existingChat);
-                      Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+                          );
+                          final currentUser =
+                              Provider.of<AuthNotifier>(
+                                context,
+                                listen: false,
+                              ).currentUser!;
+                          final otherUser = client;
 
-                      final _messageController = TextEditingController();
-                      final result = await showDialog<String>(
-                        context: context,
-                        builder:
-                            (ctx) => AlertDialog(
-                              title: Text("Enviar mensagem"),
-                              content: TextField(
-                                controller: _messageController,
-                                decoration: const InputDecoration(
-                                  hintText: "Escreve a tua mensagem...",
+                          final chatList =
+                              Provider.of<ChatListNotifier>(
+                                context,
+                                listen: false,
+                              ).chats;
+
+                          final alreadyExists = chatList.any(
+                            (chat) =>
+                                (chat.consumerId == currentUser.id &&
+                                    chat.producerId == otherUser.id) ||
+                                (chat.producerId == currentUser.id &&
+                                    chat.consumerId == otherUser.id),
+                          );
+
+                          if (alreadyExists) {
+                            final existingChat = chatList.firstWhere(
+                              (chat) =>
+                                  (chat.consumerId == currentUser.id &&
+                                      chat.producerId == otherUser.id) ||
+                                  (chat.producerId == currentUser.id &&
+                                      chat.consumerId == otherUser.id),
+                            );
+                            chatService.updateCurrentChat(existingChat);
+                            Navigator.of(
+                              context,
+                            ).pushNamed(AppRoutes.CHAT_PAGE);
+                            return;
+                          }
+
+                          final _messageController = TextEditingController();
+                          final result = await showDialog<String>(
+                            context: context,
+                            builder:
+                                (ctx) => AlertDialog(
+                                  title: const Text("Enviar mensagem"),
+                                  content: TextField(
+                                    controller: _messageController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Escreve a tua mensagem...",
+                                    ),
+                                    maxLines: null,
+                                    autofocus: true,
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(ctx).pop(),
+                                      child: const Text("Fechar"),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(
+                                            ctx,
+                                          ).pop(_messageController.text.trim()),
+                                      child: const Text("Enviar"),
+                                    ),
+                                  ],
                                 ),
-                                maxLines: null,
-                                autofocus: true,
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(ctx).pop(),
-                                  child: const Text("Fechar"),
-                                ),
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.of(
-                                        ctx,
-                                      ).pop(_messageController.text.trim()),
-                                  child: const Text("Enviar"),
-                                ),
-                              ],
-                            ),
-                      );
-                      if (result != null && result.isNotEmpty) {
-                        final newChat = await chatService.createChat(
-                          currentUser.isProducer
-                              ? otherUser.id
-                              : currentUser.id,
-                          currentUser.isProducer
-                              ? currentUser.id
-                              : otherUser.id,
-                        );
+                          );
 
-                        await chatService.save(result, currentUser, newChat.id);
+                          if (result != null && result.isNotEmpty) {
+                            final newChat = await chatService.createChat(
+                              currentUser.isProducer
+                                  ? otherUser.id
+                                  : currentUser.id,
+                              currentUser.isProducer
+                                  ? currentUser.id
+                                  : otherUser.id,
+                            );
 
-                        Provider.of<ChatListNotifier>(
-                          context,
-                          listen: false,
-                        ).addChat(newChat);
+                            await chatService.save(
+                              result,
+                              currentUser,
+                              newChat.id,
+                            );
 
-                        chatService.updateCurrentChat(newChat);
-
-                        Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-                      }
-                    },
+                            Provider.of<ChatListNotifier>(
+                              context,
+                              listen: false,
+                            ).addChat(newChat);
+                            chatService.updateCurrentChat(newChat);
+                            Navigator.of(
+                              context,
+                            ).pushNamed(AppRoutes.CHAT_PAGE);
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );

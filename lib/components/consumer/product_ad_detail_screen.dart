@@ -42,7 +42,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   late List<Review> reviews;
   String? replyToUserId;
   bool _isFavorite = false;
-  bool userHasOrderedThisProduct = false;
+  bool? userHasOrderedThisProduct; // Now nullable to indicate loading state
 
   double get rating {
     final repliedReviews = reviews.where((r) => r.replyTo != null).toList();
@@ -74,7 +74,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     setState(() => reviews = newReviews);
   }
 
-  void checkIfUserReviewed() async {
+  Future<void> checkIfUserReviewed() async {
     final userId = authNotifier.currentUser?.id;
 
     if (userId != null) {
@@ -83,17 +83,23 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
           return review.reviewerId == userId;
         });
       });
+    }
+  }
 
-      if (!authNotifier.currentUser!.isProducer) {
-        final hasOrderedProduct = await authNotifier.checkIfUserAlreadyOrdered(
-          userId,
-          widget.ad.id,
-        );
-
-        setState(() {
-          userHasOrderedThisProduct = hasOrderedProduct;
-        });
-      }
+  Future<void> loadUserHasOrdered() async {
+    final userId = authNotifier.currentUser?.id;
+    if (userId != null && !authNotifier.currentUser!.isProducer) {
+      final hasOrdered = await authNotifier.checkIfUserAlreadyOrdered(
+        userId,
+        widget.ad.id,
+      );
+      setState(() {
+        userHasOrderedThisProduct = hasOrdered;
+      });
+    } else {
+      setState(() {
+        userHasOrderedThisProduct = false;
+      });
     }
   }
 
@@ -134,8 +140,9 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
               store.productsAds?.any((ad) => ad.id == widget.ad.id) ?? false,
         );
     reviews = widget.ad.adReviews ?? [];
-    checkIfUserReviewed();
     getStoreAd();
+    checkIfUserReviewed();
+    loadUserHasOrdered(); // Load the hasOrdered value asynchronously
     if (widget.producer.id != authNotifier.currentUser!.id) {
       try {
         authNotifier.addAdVisit(store!.id, widget.ad.id);
@@ -175,6 +182,14 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Wait for userHasOrderedThisProduct to be loaded
+    if (userHasOrderedThisProduct == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text("")),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final currentUser = authNotifier.currentUser!;
     final otherUser = widget.producer;
     final alreadyExists = verifyIfAlreadyExistsConversation(
@@ -275,6 +290,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
           );
           setReviews(reviews);
           checkIfUserReviewed();
+          await loadUserHasOrdered();
         },
         child: SingleChildScrollView(
           child: Column(
@@ -714,6 +730,9 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     String Function(DateTime date) getTimeReviewPosted,
     Future<void> Function() submitReview,
   ) {
+    print(
+      "Pode dar review: ${userHasOrderedThisProduct == true && !hasReviewed && authNotifier.currentUser!.id != widget.producer.id}",
+    );
     final mainReviews = reviews.where((r) => r.replyTo == "").toList();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1123,7 +1142,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                       );
                     },
                   ),
-                  if (userHasOrderedThisProduct &&
+                  if (userHasOrderedThisProduct == true &&
                       !hasReviewed &&
                       authNotifier.currentUser!.id != widget.producer.id) ...[
                     Padding(

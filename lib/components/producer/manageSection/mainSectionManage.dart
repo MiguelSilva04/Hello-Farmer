@@ -126,6 +126,10 @@ class MainSectionPage extends StatelessWidget {
                 title: "Finanças",
                 onTap: onClicks["analysisFinances"]!,
               ),
+              SettingsSubOption(
+                title: "Meteorologia",
+                onTap: onClicks["analysisWeather"]!,
+              ),
             ],
           ),
 

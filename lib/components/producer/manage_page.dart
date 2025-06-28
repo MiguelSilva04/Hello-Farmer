@@ -17,6 +17,7 @@ import '../../core/services/other/manage_section_notifier.dart';
 import 'manageSection/mainPageSection.dart';
 import 'manageSection/mainSectionManage.dart';
 import 'manageSection/manageProductsSection.dart';
+import 'package:harvestly/components/producer/manageSection/weatherSection.dart';
 
 class ManagePage extends StatefulWidget {
   @override
@@ -44,6 +45,7 @@ class _ManagePageState extends State<ManagePage> {
       "Visitas à Banca",
       "Finanças",
       "Canais de Venda",
+      "Meteorologia",
     ];
 
     final List<Widget> sections = [
@@ -140,6 +142,13 @@ class _ManagePageState extends State<ManagePage> {
                   listen: false,
                 ).setIndex(13),
               ),
+          "analysisWeather":
+              () => setState(
+                () => Provider.of<ManageSectionNotifier>(
+                  context,
+                  listen: false,
+                ).setIndex(14),
+              ),
         },
       ),
       MainPageSection(),
@@ -155,6 +164,7 @@ class _ManagePageState extends State<ManagePage> {
       AnalysisStoreViewsSection(),
       AnalysisFinancesSection(),
       DeliveryMethodsSection(),
+      WeatherForecastSection(), 
     ];
 
     return Consumer<ManageSectionNotifier>(

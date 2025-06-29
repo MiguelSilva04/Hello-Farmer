@@ -112,13 +112,11 @@ class SendMessageButton extends StatelessWidget {
             chatService.updateCurrentChat(newChat);
 
             Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-            await notificationNotifier
-                .addNewMessageNotification(
-                  otherUser.id,
-                  currentUser.id,
-                  isProducer: currentUser.isProducer,
-                )
-                .then((_) => print("Notifiacao enviada!"));
+            await notificationNotifier.addNewMessageNotification(
+              otherUser.id,
+              currentUser.id,
+              isProducer: currentUser.isProducer,
+            );
           }
         },
         icon: Icon(Icons.message),
@@ -179,6 +177,11 @@ class SendMessageButton extends StatelessWidget {
             );
 
             await chatService.save(result, currentUser, newChat.id);
+            await notificationNotifier.addNewMessageNotification(
+              otherUser.id,
+              currentUser.id,
+              isProducer: currentUser.isProducer,
+            );
 
             Provider.of<ChatListNotifier>(
               context,

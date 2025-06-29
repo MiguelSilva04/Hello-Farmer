@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
-import 'package:harvestly/core/services/chat/chat_service.dart';
-import 'package:harvestly/utils/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 

@@ -14,8 +14,6 @@ import 'package:collection/collection.dart';
 import '../../core/models/review.dart';
 import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
-import '../../core/services/chat/chat_service.dart';
-import '../../utils/app_routes.dart';
 import '../sendMessageButton.dart';
 
 class ProductAdDetailScreen extends StatefulWidget {

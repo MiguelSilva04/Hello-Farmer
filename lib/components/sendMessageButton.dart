@@ -3,6 +3,7 @@ import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../core/models/app_user.dart';
+import '../core/services/auth/notification_notifier.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../core/services/chat/chat_service.dart';
 import '../utils/app_routes.dart';
@@ -22,6 +23,10 @@ class SendMessageButton extends StatelessWidget {
     final currentUser =
         Provider.of<AuthNotifier>(context, listen: false).currentUser!;
     final chatService = Provider.of<ChatService>(context, listen: false);
+    final notificationNotifier = Provider.of<NotificationNotifier>(
+      context,
+      listen: false,
+    );
     bool verifyIfAlreadyExistsConversation(
       String currentUserId,
       String otherUserId,
@@ -107,6 +112,13 @@ class SendMessageButton extends StatelessWidget {
             chatService.updateCurrentChat(newChat);
 
             Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
+            await notificationNotifier
+                .addNewMessageNotification(
+                  otherUser.id,
+                  currentUser.id,
+                  isProducer: currentUser.isProducer,
+                )
+                .then((_) => print("Notifiacao enviada!"));
           }
         },
         icon: Icon(Icons.message),

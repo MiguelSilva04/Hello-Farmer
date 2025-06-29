@@ -64,7 +64,6 @@ class _WeatherForecastSectionState extends State<WeatherForecastSection> {
               }
 
               final forecast = snapshot.data!;
-              print(forecast);
               return ListView.separated(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),

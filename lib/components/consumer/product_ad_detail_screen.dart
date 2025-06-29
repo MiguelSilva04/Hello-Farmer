@@ -16,6 +16,7 @@ import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
 import '../../core/services/chat/chat_service.dart';
 import '../../utils/app_routes.dart';
+import '../sendMessageButton.dart';
 
 class ProductAdDetailScreen extends StatefulWidget {
   final ProductAd ad;
@@ -219,13 +220,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
       );
     }
 
-    final currentUser = authNotifier.currentUser!;
     final otherUser = widget.producer;
-    final alreadyExists = verifyIfAlreadyExistsConversation(
-      currentUser.id,
-      otherUser.id,
-    );
-    final chatService = Provider.of<ChatService>(context, listen: false);
     final store =
         widget.producer.stores.where((s) => s.id == curStore.id).first;
 
@@ -622,90 +617,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                               ),
                             ],
                           ),
-                          IconButton(
-                            onPressed: () async {
-                              if (alreadyExists) {
-                                final chatList =
-                                    Provider.of<ChatListNotifier>(
-                                      context,
-                                      listen: false,
-                                    ).chats;
-                                final existingChat = chatList.firstWhere(
-                                  (chat) =>
-                                      (chat.consumerId == currentUser.id &&
-                                          chat.producerId == otherUser.id) ||
-                                      (chat.producerId == currentUser.id &&
-                                          chat.consumerId == otherUser.id),
-                                );
-                                chatService.updateCurrentChat(existingChat);
-                                Navigator.of(
-                                  context,
-                                ).pushNamed(AppRoutes.CHAT_PAGE);
-                                return;
-                              }
-
-                              final _messageController =
-                                  TextEditingController();
-                              final result = await showDialog<String>(
-                                context: context,
-                                builder:
-                                    (ctx) => AlertDialog(
-                                      title: Text("Enviar mensagem"),
-                                      content: TextField(
-                                        controller: _messageController,
-                                        decoration: const InputDecoration(
-                                          hintText: "Escreve a tua mensagem...",
-                                        ),
-                                        maxLines: null,
-                                        autofocus: true,
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed:
-                                              () => Navigator.of(ctx).pop(),
-                                          child: const Text("Fechar"),
-                                        ),
-                                        TextButton(
-                                          onPressed:
-                                              () => Navigator.of(ctx).pop(
-                                                _messageController.text.trim(),
-                                              ),
-                                          child: const Text("Enviar"),
-                                        ),
-                                      ],
-                                    ),
-                              );
-
-                              if (result != null && result.isNotEmpty) {
-                                final newChat = await chatService.createChat(
-                                  currentUser.isProducer
-                                      ? otherUser.id
-                                      : currentUser.id,
-                                  currentUser.isProducer
-                                      ? currentUser.id
-                                      : otherUser.id,
-                                );
-
-                                await chatService.save(
-                                  result,
-                                  currentUser,
-                                  newChat.id,
-                                );
-
-                                Provider.of<ChatListNotifier>(
-                                  context,
-                                  listen: false,
-                                ).addChat(newChat);
-
-                                chatService.updateCurrentChat(newChat);
-
-                                Navigator.of(
-                                  context,
-                                ).pushNamed(AppRoutes.CHAT_PAGE);
-                              }
-                            },
-                            icon: Icon(Icons.message_rounded),
-                          ),
+                          SendMessageButton(otherUser: otherUser, isIconButton: true,)
                         ],
                       ),
                     ),

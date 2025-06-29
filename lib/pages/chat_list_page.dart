@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import '../components/sendMessageButton.dart';
 import '../core/models/chat.dart';
 import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/auth_service.dart';
@@ -109,64 +110,9 @@ class _ChatListPageState extends State<ChatListPage> {
                     ),
                   ),
                   title: Text(user.firstName + " " + user.lastName),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.message),
-                    onPressed: () async {
-                      final TextEditingController _messageController =
-                          TextEditingController();
-
-                      final result = await showDialog<String>(
-                        context: context,
-                        builder: (ctx) {
-                          return AlertDialog(
-                            title: Text("Enviar mensagem"),
-                            content: TextField(
-                              controller: _messageController,
-                              decoration: const InputDecoration(
-                                hintText: "Escreve a tua mensagem...",
-                              ),
-                              maxLines: null,
-                              autofocus: true,
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(ctx).pop(),
-                                child: const Text("Fechar"),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(
-                                    ctx,
-                                  ).pop(_messageController.text.trim());
-                                },
-                                child: const Text("Enviar"),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-
-                      if (result != null && result.isNotEmpty) {
-                        final chatService = Provider.of<ChatService>(
-                          context,
-                          listen: false,
-                        );
-
-                        final newChat = await chatService.createChat(
-                          isProducer ? user.id : currentUser!.id,
-                          isProducer ? currentUser!.id : user.id,
-                        );
-
-                        await chatService.save(
-                          result,
-                          currentUser!,
-                          newChat.id,
-                        );
-
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-                      }
-                    },
+                  trailing: SendMessageButton(
+                    otherUser: user,
+                    isIconButton: true,
                   ),
                 );
               },

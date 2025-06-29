@@ -8,7 +8,6 @@ import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
-import 'package:harvestly/core/services/chat/chat_list_notifier.dart';
 import 'package:harvestly/core/services/other/settings_notifier.dart';
 import 'package:provider/provider.dart';
 import '../components/country_state_picker.dart';
@@ -19,7 +18,6 @@ import '../core/models/app_user.dart';
 import '../core/models/product_ad.dart';
 import '../core/models/store.dart';
 import '../core/services/auth/auth_service.dart';
-import '../core/services/chat/chat_service.dart';
 import '../utils/app_routes.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:collection/collection.dart';
@@ -553,7 +551,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Column getOnlyViewingProfile(BuildContext context) {
     final currentUser = AuthService().currentUser!;
     final otherUser = user!;
-    final chatService = Provider.of<ChatService>(context, listen: false);
     return Column(
       children: [
         Row(

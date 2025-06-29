@@ -15,9 +15,6 @@ import '../../core/models/app_user.dart';
 import '../../core/models/consumer_user.dart';
 import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/auth/notification_notifier.dart';
-import '../../core/services/chat/chat_list_notifier.dart';
-import '../../core/services/chat/chat_service.dart';
-import '../../utils/app_routes.dart';
 import 'package:collection/collection.dart';
 
 class OrderDetailsPage extends StatelessWidget {
@@ -35,7 +32,6 @@ class OrderDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final chatService = Provider.of<ChatService>(context, listen: false);
     final Store? store = producer.stores.cast<Store?>().firstWhere(
       (s) => s?.id == order.storeId,
       orElse: () => null,

@@ -10,6 +10,7 @@ import '../../../core/models/order.dart';
 import '../../../core/models/producer_user.dart';
 import '../../../core/services/auth/auth_notifier.dart';
 import '../../../core/services/auth/auth_service.dart';
+import '../../sendMessageButton.dart';
 
 class ClientsSection extends StatefulWidget {
   const ClientsSection({super.key});
@@ -306,109 +307,7 @@ class _ClientsSectionState extends State<ClientsSection> {
                         ],
                       ),
                       const SizedBox(width: 8),
-                      IconButton(
-                        icon: Icon(
-                          Icons.message_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        onPressed: () async {
-                          final chatService = Provider.of<ChatService>(
-                            context,
-                            listen: false,
-                          );
-                          final currentUser =
-                              Provider.of<AuthNotifier>(
-                                context,
-                                listen: false,
-                              ).currentUser!;
-                          final otherUser = client;
-
-                          final chatList =
-                              Provider.of<ChatListNotifier>(
-                                context,
-                                listen: false,
-                              ).chats;
-
-                          final alreadyExists = chatList.any(
-                            (chat) =>
-                                (chat.consumerId == currentUser.id &&
-                                    chat.producerId == otherUser.id) ||
-                                (chat.producerId == currentUser.id &&
-                                    chat.consumerId == otherUser.id),
-                          );
-
-                          if (alreadyExists) {
-                            final existingChat = chatList.firstWhere(
-                              (chat) =>
-                                  (chat.consumerId == currentUser.id &&
-                                      chat.producerId == otherUser.id) ||
-                                  (chat.producerId == currentUser.id &&
-                                      chat.consumerId == otherUser.id),
-                            );
-                            chatService.updateCurrentChat(existingChat);
-                            Navigator.of(
-                              context,
-                            ).pushNamed(AppRoutes.CHAT_PAGE);
-                            return;
-                          }
-
-                          final _messageController = TextEditingController();
-                          final result = await showDialog<String>(
-                            context: context,
-                            builder:
-                                (ctx) => AlertDialog(
-                                  title: const Text("Enviar mensagem"),
-                                  content: TextField(
-                                    controller: _messageController,
-                                    decoration: const InputDecoration(
-                                      hintText: "Escreve a tua mensagem...",
-                                    ),
-                                    maxLines: null,
-                                    autofocus: true,
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.of(ctx).pop(),
-                                      child: const Text("Fechar"),
-                                    ),
-                                    TextButton(
-                                      onPressed:
-                                          () => Navigator.of(
-                                            ctx,
-                                          ).pop(_messageController.text.trim()),
-                                      child: const Text("Enviar"),
-                                    ),
-                                  ],
-                                ),
-                          );
-
-                          if (result != null && result.isNotEmpty) {
-                            final newChat = await chatService.createChat(
-                              currentUser.isProducer
-                                  ? otherUser.id
-                                  : currentUser.id,
-                              currentUser.isProducer
-                                  ? currentUser.id
-                                  : otherUser.id,
-                            );
-
-                            await chatService.save(
-                              result,
-                              currentUser,
-                              newChat.id,
-                            );
-
-                            Provider.of<ChatListNotifier>(
-                              context,
-                              listen: false,
-                            ).addChat(newChat);
-                            chatService.updateCurrentChat(newChat);
-                            Navigator.of(
-                              context,
-                            ).pushNamed(AppRoutes.CHAT_PAGE);
-                          }
-                        },
-                      ),
+                      SendMessageButton(otherUser: client, isIconButton: true,)
                     ],
                   ),
                 ),

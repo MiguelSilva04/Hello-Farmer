@@ -11,6 +11,8 @@ import 'package:harvestly/core/models/search.dart';
 import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/utils/app_routes.dart';
 
+import '../core/services/other/settings_notifier.dart';
+
 List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
   final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
   final user = authNotifier.currentUser;
@@ -33,6 +35,48 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
         title: 'Ver Vendas',
         section: 'Gestão',
         onTap: () => navNotifier.setIndex(1),
+      ),
+      SearchResultItem(
+        title: 'Publicar Anuncio',
+        section: 'Gestão',
+        onTap: () => navNotifier.setIndex(2),
+      ),
+      SearchResultItem(
+        title: 'Mensagens',
+        section: 'Gestão',
+        onTap: () => navNotifier.setIndex(3),
+      ),
+      SearchResultItem(
+        title: 'Mudar email',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(5);
+        },
+      ),
+      SearchResultItem(
+        title: 'Mudar password',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(5);
+        },
+      ),
+      SearchResultItem(
+        title: 'Terminar Sessão',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(5);
+        },
+      ),
+      SearchResultItem(
+        title: 'Dados de pagamento',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(2);
+        },
       ),
       SearchResultItem(
         title: 'Editar Banca',
@@ -201,6 +245,43 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
   } else {
     items.addAll([
       SearchResultItem(
+        title: 'Mensagens',
+        section: 'Geral',
+        onTap: () => navNotifier.setIndex(3),
+      ),
+      SearchResultItem(
+        title: 'Mudar email',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(5);
+        },
+      ),
+      SearchResultItem(
+        title: 'Mudar password',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(5);
+        },
+      ),
+      SearchResultItem(
+        title: 'Terminar Sessão',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(5);
+        },
+      ),
+      SearchResultItem(
+        title: 'Dados de pagamento',
+        section: 'Gestão',
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.SETTINGS_PAGE);
+          Provider.of<SettingsNotifier>(context, listen: false).setIndex(2);
+        },
+      ),
+      SearchResultItem(
         title: 'Explorar Produtos',
         section: 'Explorar',
         onTap: () => navNotifier.setIndex(2),
@@ -231,8 +312,10 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
       SearchResultItem(
         title: 'Ofertas',
         section: 'Geral',
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => const OffersPage()))
+        onTap:
+            () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (ctx) => const OffersPage())),
       ),
     ]);
 

@@ -20,7 +20,7 @@ class GlobalSearchResults extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'Digite algo para pesquisar.',
+            'Escreva algo para pesquisar.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Theme.of(context).colorScheme.surface,
             ),
@@ -69,41 +69,42 @@ class GlobalSearchResults extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               ...itemsInSection.map(
-                (item) => Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      if (onSelect != null) {
-                        onSelect!(item);
-                      } else {
-                        item.onTap();
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.title,
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(fontWeight: FontWeight.w500),
+                (item) => Column(
+                  children: [
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                        if (onSelect != null) {
+                          onSelect!(item);
+                        } else {
+                          item.onTap();
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item.title,
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(fontWeight: FontWeight.w500),
+                              ),
                             ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                        ],
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 16,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                    const Divider(),
+                  ],
                 ),
               ),
             ],

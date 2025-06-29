@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:harvestly/components/consumer/product_ad_detail_screen.dart';
 import 'package:harvestly/components/producer/store_page.dart';
+import 'package:harvestly/components/sendMessageButton.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/order.dart';
 import 'package:harvestly/core/models/producer_user.dart';
@@ -549,28 +550,9 @@ class _ProfilePageState extends State<ProfilePage> {
     Provider.of<SettingsNotifier>(context, listen: false).setIndex(index);
   }
 
-  bool verifyIfAlreadyExistsConversation(
-    String currentUserId,
-    String otherUserId,
-  ) {
-    final chatList =
-        Provider.of<ChatListNotifier>(context, listen: false).chats;
-
-    return chatList.any(
-      (chat) =>
-          (chat.consumerId == currentUserId &&
-              chat.producerId == otherUserId) ||
-          (chat.producerId == currentUserId && chat.consumerId == otherUserId),
-    );
-  }
-
   Column getOnlyViewingProfile(BuildContext context) {
     final currentUser = AuthService().currentUser!;
     final otherUser = user!;
-    final alreadyExists = verifyIfAlreadyExistsConversation(
-      currentUser.id,
-      otherUser.id,
-    );
     final chatService = Provider.of<ChatService>(context, listen: false);
     return Column(
       children: [
@@ -671,82 +653,7 @@ class _ProfilePageState extends State<ProfilePage> {
         const SizedBox(height: 10),
 
         if (otherUser.id != currentUser.id)
-          ElevatedButton.icon(
-            onPressed: () async {
-              if (alreadyExists) {
-                final chatList =
-                    Provider.of<ChatListNotifier>(context, listen: false).chats;
-                final existingChat = chatList.firstWhere(
-                  (chat) =>
-                      (chat.consumerId == currentUser.id &&
-                          chat.producerId == otherUser.id) ||
-                      (chat.producerId == currentUser.id &&
-                          chat.consumerId == otherUser.id),
-                );
-                chatService.updateCurrentChat(existingChat);
-                Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-                return;
-              }
-
-              final _messageController = TextEditingController();
-              final result = await showDialog<String>(
-                context: context,
-                builder:
-                    (ctx) => AlertDialog(
-                      title: Text("Enviar mensagem"),
-                      content: TextField(
-                        controller: _messageController,
-                        decoration: const InputDecoration(
-                          hintText: "Escreve a tua mensagem...",
-                        ),
-                        maxLines: null,
-                        autofocus: true,
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: const Text("Fechar"),
-                        ),
-                        TextButton(
-                          onPressed:
-                              () => Navigator.of(
-                                ctx,
-                              ).pop(_messageController.text.trim()),
-                          child: const Text("Enviar"),
-                        ),
-                      ],
-                    ),
-              );
-
-              if (result != null && result.isNotEmpty) {
-                final newChat = await chatService.createChat(
-                  currentUser.isProducer ? otherUser.id : currentUser.id,
-                  currentUser.isProducer ? currentUser.id : otherUser.id,
-                );
-
-                await chatService.save(result, currentUser, newChat.id);
-
-                Provider.of<ChatListNotifier>(
-                  context,
-                  listen: false,
-                ).addChat(newChat);
-
-                chatService.updateCurrentChat(newChat);
-
-                Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-              }
-            },
-            icon: Icon(
-              Icons.message,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-            label: Text(alreadyExists ? "Ver Conversa" : 'Enviar mensagem'),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.secondary,
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-          ),
+          SendMessageButton(otherUser: otherUser, isIconButton: false,),
         const SizedBox(width: 16),
         const SizedBox(height: 30),
         Padding(

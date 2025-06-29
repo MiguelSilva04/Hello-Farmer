@@ -62,6 +62,13 @@ class AuthNotifier extends ChangeNotifier {
     }
   }
 
+  Future<void> updateStoreRating(String storeId, double avgRating) async {
+    await fireStore.collection('stores').doc(storeId).update({
+      'averageRating': avgRating,
+    });
+    notifyListeners();
+  }
+
   Future<void> updateSelectedStoreIndex() async {
     final prefs = await SharedPreferences.getInstance();
     _selectedStoreIndex = prefs.getInt("selectedStoreIndex");

@@ -42,7 +42,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   late List<Review> reviews;
   String? replyToUserId;
   bool _isFavorite = false;
-  bool? userHasOrderedThisProduct; // Now nullable to indicate loading state
+  bool? userHasOrderedThisProduct;
 
   double get rating {
     final repliedReviews = reviews.where((r) => r.replyTo != null).toList();
@@ -142,7 +142,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     reviews = widget.ad.adReviews ?? [];
     getStoreAd();
     checkIfUserReviewed();
-    loadUserHasOrdered(); // Load the hasOrdered value asynchronously
+    loadUserHasOrdered();
     if (widget.producer.id != authNotifier.currentUser!.id) {
       try {
         authNotifier.addAdVisit(store!.id, widget.ad.id);
@@ -180,9 +180,39 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     }
   }
 
+  Future<void> updateStoreRating() async {
+    print("Nova rating: ${_rating}");
+    final allAds = curStore.productsAds ?? [];
+    List<Review> allReviews = [];
+    for (var ad in allAds) {
+      if (ad.adReviews != null) {
+        allReviews.addAll(
+          ad.adReviews!.where((r) => r.replyTo == "" && r.rating != null),
+        );
+      }
+    }
+    allReviews.add(
+      Review(
+        rating: _rating,
+        replyTo: "",
+        // outros campos podem ser nulos ou preenchidos conforme necessário
+      ),
+    );
+    if (allReviews.isEmpty) return;
+    final total = allReviews.fold<double>(
+      0.0,
+      (sum, review) => sum + (review.rating ?? 0.0),
+    );
+    final avg = total / allReviews.length;
+    print(avg);
+    await authNotifier.updateStoreRating(curStore.id, avg);
+    setState(() {
+      curStore = curStore.copyWith(averageRating: avg);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Wait for userHasOrderedThisProduct to be loaded
     if (userHasOrderedThisProduct == null) {
       return Scaffold(
         appBar: AppBar(title: Text("")),
@@ -267,6 +297,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
       reviews = await authNotifier.getReviewsForAd(curStore.id, widget.ad.id);
       setReviews(reviews);
       checkIfUserReviewed();
+      await updateStoreRating();
       setState(() {
         _isLoading = false;
         hasReviewed = true;
@@ -291,6 +322,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
           setReviews(reviews);
           checkIfUserReviewed();
           await loadUserHasOrdered();
+          await updateStoreRating();
         },
         child: SingleChildScrollView(
           child: Column(
@@ -730,9 +762,11 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     String Function(DateTime date) getTimeReviewPosted,
     Future<void> Function() submitReview,
   ) {
-    print(
-      "Pode dar review: ${userHasOrderedThisProduct == true && !hasReviewed && authNotifier.currentUser!.id != widget.producer.id}",
-    );
+    final canReview =
+        userHasOrderedThisProduct == true &&
+        !hasReviewed &&
+        authNotifier.currentUser!.id != widget.producer.id;
+    print("Pode dar review: $canReview");
     final mainReviews = reviews.where((r) => r.replyTo == "").toList();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1142,89 +1176,82 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                       );
                     },
                   ),
-                  if (userHasOrderedThisProduct == true &&
-                      !hasReviewed &&
-                      authNotifier.currentUser!.id != widget.producer.id) ...[
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Avaliação:"),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: reviewController,
-                            decoration: InputDecoration(
-                              labelText: 'Comentário',
-                              hintText: 'Escreve o teu comentário...',
-                              border: const OutlineInputBorder(),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.secondaryFixed,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  width: 0.5,
-                                ),
-                              ),
-                              alignLabelWithHint: true,
-                            ),
-                            maxLines: null,
-                            minLines: 4,
-                            keyboardType: TextInputType.multiline,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        RatingBar.builder(
-                          initialRating: _rating,
-                          minRating: 1,
-                          direction: Axis.horizontal,
-                          allowHalfRating: true,
-                          itemCount: 5,
-                          itemPadding: const EdgeInsets.symmetric(
-                            horizontal: 4.0,
-                          ),
-                          itemBuilder:
-                              (context, _) =>
-                                  Icon(Icons.star, color: Colors.amberAccent),
-                          onRatingUpdate: (rating) {
-                            setState(() {
-                              _rating = rating;
-                            });
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              (_isLoading)
-                                  ? Center(child: CircularProgressIndicator())
-                                  : ElevatedButton(
-                                    onPressed: () => submitReview(),
-                                    child: Text("Publicar"),
-                                  ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ],
               )
               : Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text("Sem comentários..."),
               ),
+          if (canReview) ...[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Avaliação:"),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: reviewController,
+                    decoration: InputDecoration(
+                      labelText: 'Comentário',
+                      hintText: 'Escreve o teu comentário...',
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.secondaryFixed,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 0.5,
+                        ),
+                      ),
+                      alignLabelWithHint: true,
+                    ),
+                    maxLines: null,
+                    minLines: 4,
+                    keyboardType: TextInputType.multiline,
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                RatingBar.builder(
+                  initialRating: _rating,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder:
+                      (context, _) =>
+                          Icon(Icons.star, color: Colors.amberAccent),
+                  onRatingUpdate: (rating) {
+                    setState(() {
+                      _rating = rating;
+                    });
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      (_isLoading)
+                          ? Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                            onPressed: () => submitReview(),
+                            child: Text("Publicar"),
+                          ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

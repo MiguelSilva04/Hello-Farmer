@@ -93,42 +93,77 @@ class _StorePageState extends State<StorePage> {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
 
     if (!(authNotifier.currentUser?.isProducer ?? false)) {
-      return _buildStoreScaffold(context, authNotifier, selectedStore, null);
+      if (widget.store != null) {
+        return StreamBuilder<Store?>(
+          stream: AuthService().getStoreByIdStream(widget.store!.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const LoadingPage();
+            }
+            if (snapshot.hasError) {
+              return const Center(child: Text("Erro ao carregar a banca."));
+            }
+            final store = snapshot.data;
+            if (store == null) {
+              return const Center(child: Text("Banca não encontrada."));
+            }
+            return _buildStoreScaffold(context, authNotifier, store, null);
+          },
+        );
+      } else {
+        return const Center(child: Text("Banca não encontrada."));
+      }
     }
 
-    return StreamBuilder<List<Store>>(
-      stream:
-          authNotifier.currentUser != null
-              ? AuthService().getCurrentUserStoresStream(
-                authNotifier.currentUser!.id,
-              )
-              : null,
+    if (widget.store == null) {
+      return StreamBuilder<List<Store>>(
+        stream:
+            authNotifier.currentUser != null
+                ? AuthService().getCurrentUserStoresStream(
+                  authNotifier.currentUser!.id,
+                )
+                : null,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const LoadingPage();
+          }
+          if (snapshot.hasError) {
+            return const Center(child: Text("Erro ao carregar as bancas."));
+          }
+
+          final stores = snapshot.data!;
+          if (stores.isEmpty) {
+            return const Center(child: Text("Nenhuma banca disponível."));
+          }
+
+          final selectedIndex = authNotifier.selectedStoreIndex ?? 0;
+          final safeIndex = selectedIndex < stores.length ? selectedIndex : 0;
+          final storeToShow = stores[safeIndex];
+
+          return _buildStoreScaffold(
+            context,
+            authNotifier,
+            storeToShow,
+            stores,
+          );
+        },
+      );
+    }
+
+    return StreamBuilder<Store?>(
+      stream: AuthService().getStoreByIdStream(widget.store!.id),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const LoadingPage();
         }
         if (snapshot.hasError) {
-          return const Center(child: Text("Erro ao carregar as bancas."));
+          return const Center(child: Text("Erro ao carregar a banca."));
         }
-
-        final stores = snapshot.data!;
-        if (stores.isEmpty) {
-          return const Center(child: Text("Nenhuma banca disponível."));
+        final store = snapshot.data;
+        if (store == null) {
+          return const Center(child: Text("Banca não encontrada."));
         }
-
-        final selectedIndex = authNotifier.selectedStoreIndex ?? 0;
-        final safeIndex = selectedIndex < stores.length ? selectedIndex : 0;
-
-        final isOwnStore =
-            widget.store != null &&
-            widget.store!.ownerId == authNotifier.currentUser!.id;
-
-        final storeToShow =
-            isOwnStore
-                ? stores[safeIndex]
-                : (widget.store ?? stores[safeIndex]);
-
-        return _buildStoreScaffold(context, authNotifier, storeToShow, stores);
+        return _buildStoreScaffold(context, authNotifier, store, null);
       },
     );
   }
@@ -167,6 +202,7 @@ class _StorePageState extends State<StorePage> {
         ),
       ),
       body: RefreshIndicator(
+        color: Theme.of(context).colorScheme.secondary,
         onRefresh: () async {
           setState(() {});
           await Future.delayed(const Duration(milliseconds: 500));
@@ -307,9 +343,9 @@ class _StorePageState extends State<StorePage> {
                       child: Text("Editar banca"),
                     ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 0,
+                      vertical: !authNotifier.currentUser!.isProducer ? 5 : 0,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

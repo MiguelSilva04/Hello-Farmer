@@ -67,6 +67,7 @@ class Store {
   List<Basket>? baskets;
   List<UserView>? viewsByUserDateTime;
   List<NotificationItem>? notifications = [];
+  double averageRating = 0.0;
 
   Store({
     required this.id,
@@ -87,6 +88,7 @@ class Store {
     this.baskets,
     this.viewsByUserDateTime,
     this.notifications,
+    required this.averageRating,
   });
 
   void set setPreferredDeliveryMethod(
@@ -110,30 +112,6 @@ class Store {
       case DeliveryMethod.PICKUP:
         return Icons.storefront;
     }
-  }
-
-  double get averageRating {
-    double rating = 0.0;
-    if (productsAds != null && productsAds!.isNotEmpty) {
-      double total = 0.0;
-      int count = 0;
-      for (final ad in productsAds!) {
-        if (ad.adReviews != null && ad.adReviews!.isNotEmpty) {
-          for (final review in ad.adReviews!) {
-            if (review.rating != null && (review.replyTo!.isEmpty)) {
-              total += review.rating!;
-              count++;
-            }
-          }
-        }
-      }
-      if (count > 0) {
-        rating = total / count;
-      }
-    }
-    ;
-
-    return rating;
   }
 
   factory Store.fromJson(Map<String, dynamic> json) {
@@ -186,6 +164,10 @@ class Store {
                   .map((x) => NotificationItem.fromJson(x))
                   .toList()
               : [],
+      averageRating:
+          json['averageRating'] != null
+              ? (json['averageRating'] as double)
+              : 0.0,
     );
   }
   factory Store.fromMap(Map<String, dynamic> map, String documentId) {
@@ -237,6 +219,31 @@ class Store {
                   .map((x) => NotificationItem.fromJson(x))
                   .toList()
               : [],
+      averageRating:
+          map['averageRating'] != null
+              ? (map['averageRating'] as double)
+              : 0.0,
+    );
+  }
+  Store copyWith({
+    String? id,
+    String? name,
+    String? imageUrl,
+    String? city,
+    double? averageRating,
+    List<ProductAd>? productsAds,
+    // add other fields as needed
+  }) {
+    return Store(
+      id: id ?? this.id,
+      ownerId: this.ownerId,
+      preferredDeliveryMethod: this.preferredDeliveryMethod,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      city: city ?? this.city,
+      averageRating: averageRating ?? this.averageRating,
+      productsAds: productsAds ?? this.productsAds,
+      // add other fields as needed
     );
   }
 }

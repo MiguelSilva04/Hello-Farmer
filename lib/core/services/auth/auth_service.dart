@@ -145,6 +145,66 @@ class AuthService {
 
   static Store? _myStore;
 
+  Stream<Store?> getStoreByIdStream(String storeId) {
+    return FirebaseFirestore.instance
+        .collection('stores')
+        .doc(storeId)
+        .snapshots()
+        .asyncMap((doc) async {
+          if (doc.exists) {
+            final data = doc.data()!;
+            final store = Store.fromJson({
+              ...data,
+              'id': doc.id,
+              if (data['createdAt'] is Timestamp)
+                'createdAt': (data['createdAt'] as Timestamp).toDate(),
+              if (data['updatedAt'] is Timestamp)
+                'updatedAt': (data['updatedAt'] as Timestamp).toDate(),
+            });
+
+            final adsSnapshot =
+                await FirebaseFirestore.instance
+                    .collection('stores')
+                    .doc(storeId)
+                    .collection('ads')
+                    .get();
+
+            store.productsAds = await Future.wait(
+              adsSnapshot.docs.map((adDoc) async {
+                final adData = adDoc.data();
+                final productAd = ProductAd.fromJson({
+                  ...adData,
+                  'id': adDoc.id,
+                  if (adData['createdAt'] is Timestamp)
+                    'createdAt': (adData['createdAt'] as Timestamp).toDate(),
+                  if (adData['updatedAt'] is Timestamp)
+                    'updatedAt': (adData['updatedAt'] as Timestamp).toDate(),
+                });
+
+                final reviewsSnapshot =
+                    await FirebaseFirestore.instance
+                        .collection('stores')
+                        .doc(storeId)
+                        .collection('ads')
+                        .doc(adDoc.id)
+                        .collection('reviews')
+                        .get();
+
+                productAd.adReviews =
+                    reviewsSnapshot.docs
+                        .map((reviewDoc) => Review.fromJson(reviewDoc.data()))
+                        .toList();
+
+                return productAd;
+              }).toList(),
+            );
+
+            return store;
+          }
+          return null;
+        });
+  }
+
   Future<AppUser?> initializeAndGetUser() async {
     final user = await getCurrentUser();
 

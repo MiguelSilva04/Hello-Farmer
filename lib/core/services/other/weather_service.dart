@@ -6,7 +6,7 @@ class WeatherService {
   final String _apiKey =
       const String.fromEnvironment('OPENWEATHER_API_KEY').isNotEmpty
           ? const String.fromEnvironment('OPENWEATHER_API_KEY')
-          : dotenv.env['OPENWEATHER_API_KEY']!;
+          : dotenv.env['OPEN_WEATHER_API_KEY']!;
 
   Future<List<Map<String, dynamic>>> get5DayForecast({
     required double lat,

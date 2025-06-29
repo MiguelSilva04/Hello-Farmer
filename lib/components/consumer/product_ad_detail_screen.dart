@@ -5,6 +5,7 @@ import 'package:harvestly/core/models/product.dart';
 import 'package:harvestly/core/models/product_ad.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/models/store.dart';
+import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/pages/profile_page.dart';
 import 'package:harvestly/utils/keywords.dart';
 import 'package:intl/intl.dart';
@@ -38,6 +39,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   final reviewController = TextEditingController();
   bool hasReviewed = false;
   late AuthNotifier authNotifier;
+  late NotificationNotifier notificationNotifier;
   late Store curStore;
   late List<Review> reviews;
   String? replyToUserId;
@@ -133,6 +135,10 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
   void initState() {
     super.initState();
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
+    notificationNotifier = Provider.of<NotificationNotifier>(
+      context,
+      listen: false,
+    );
     final store = authNotifier.producerUsers
         .expand((producer) => producer.stores)
         .firstWhereOrNull(
@@ -191,20 +197,13 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
         );
       }
     }
-    allReviews.add(
-      Review(
-        rating: _rating,
-        replyTo: "",
-        // outros campos podem ser nulos ou preenchidos conforme necessário
-      ),
-    );
+    allReviews.add(Review(rating: _rating, replyTo: ""));
     if (allReviews.isEmpty) return;
     final total = allReviews.fold<double>(
       0.0,
       (sum, review) => sum + (review.rating ?? 0.0),
     );
     final avg = total / allReviews.length;
-    print(avg);
     await authNotifier.updateStoreRating(curStore.id, avg);
     setState(() {
       curStore = curStore.copyWith(averageRating: avg);
@@ -256,6 +255,8 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
             ),
           ),
         );
+        setState(() => _isLoading = false);
+        return;
       }
 
       final confirm = await showDialog<bool>(
@@ -290,6 +291,10 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
           _rating,
           reviewController.text,
           replyToUserId,
+        );
+        await notificationNotifier.addNewReviewNotification(
+          curStore.id,
+          authNotifier.currentUser!.id,
         );
       } catch (e) {
         print("Erro $e");

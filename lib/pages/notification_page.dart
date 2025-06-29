@@ -22,80 +22,143 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final userId = user.id;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Notificações')),
-      body: StreamBuilder<List<NotificationItem>>(
-        stream:
-            (user.isProducer)
-                ? AuthService().getUserNotificationsStream(
-                  (user as ProducerUser)
-                      .stores[authNotifier.selectedStoreIndex!]
-                      .id,
-                )
-                : AuthService().getUserNotificationsStream(user.id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Sem notificações"));
-          }
-          final notifications = snapshot.data!;
-          return ListView.builder(
-            itemCount: notifications.length,
-            itemBuilder: (context, index) {
-              final notification = notifications[index];
-              return FutureBuilder<String>(
-                future: _getDynamicName(notification),
-                builder: (context, snapshot) {
-                  final dynamicName = snapshot.data ?? '';
-                  final description = _buildDescription(
-                    notification,
-                    dynamicName,
-                  );
-
-                  return Dismissible(
-                    key: Key(notification.id),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    onDismissed: (_) async {
-                      await Provider.of<NotificationNotifier>(
-                        context,
-                        listen: false,
-                      ).removeNotification(
-                        notification: notification,
-                        isProducer: user.isProducer,
-                        id: userId,
-                      );
-                    },
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: notification.type.color,
-                        child: Icon(
-                          notification.type.icon,
-                          color: Colors.white,
-                        ),
-                      ),
-                      title: Text(notification.title),
-                      subtitle: Text(description),
-                      trailing: Text(
-                        _formatDate(notification.dateTime),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+      appBar: AppBar(
+        title: const Text('Notificações'),
+        centerTitle: true,
+        elevation: 2,
+      ),
+      body: Container(
+        color: Colors.grey[100],
+        child: StreamBuilder<List<NotificationItem>>(
+          stream:
+              (user.isProducer)
+                  ? AuthService().getUserNotificationsStream(
+                    (user as ProducerUser)
+                        .stores[authNotifier.selectedStoreIndex!]
+                        .id,
+                  )
+                  : AuthService().getUserNotificationsStream(user.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_off,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Sem notificações",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                ],
               );
-            },
-          );
-        },
+            }
+            final notifications = snapshot.data!;
+            return ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+              itemCount: notifications.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 6),
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                return FutureBuilder<String>(
+                  future: _getDynamicName(notification),
+                  builder: (context, snapshot) {
+                    final dynamicName = snapshot.data ?? '';
+                    final description = _buildDescription(
+                      notification,
+                      dynamicName,
+                    );
+
+                    return Dismissible(
+                      key: Key(notification.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        decoration: BoxDecoration(color: Colors.red[400]),
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      onDismissed: (_) async {
+                        await Provider.of<NotificationNotifier>(
+                          context,
+                          listen: false,
+                        ).removeNotification(
+                          notification: notification,
+                          isProducer: user.isProducer,
+                          id: userId,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Notificação removida'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: notification.type.color.withValues(
+                            alpha: .85,
+                          ),
+                          child: Icon(
+                            notification.type.icon,
+                            color: Colors.white,
+                            size: 26,
+                          ),
+                        ),
+                        title: Text(
+                          notification.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            description,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _formatDate(notification.dateTime),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

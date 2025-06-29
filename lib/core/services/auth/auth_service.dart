@@ -15,6 +15,7 @@ import '../../models/producer_user.dart';
 import '../../models/product_ad.dart';
 import '../../models/review.dart';
 import '../../models/store.dart';
+import '../../models/notification.dart';
 import '../chat/chat_list_notifier.dart';
 
 class AuthService {
@@ -203,6 +204,21 @@ class AuthService {
           }
           return null;
         });
+  }
+
+  Stream<List<NotificationItem>> getUserNotificationsStream(String id) {
+    return fireStore
+        .collection((currentUser!.isProducer) ? 'stores' : 'users')
+        .doc(id)
+        .collection('notifications')
+        .orderBy('dateTime', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs
+                  .map((doc) => NotificationItem.fromJson(doc.data()))
+                  .toList(),
+        );
   }
 
   Future<AppUser?> initializeAndGetUser() async {

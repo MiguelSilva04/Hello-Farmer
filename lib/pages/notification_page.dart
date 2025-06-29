@@ -1,12 +1,10 @@
-
 import 'package:flutter/material.dart';
-import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
+import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/models/notification.dart';
-
-import '../core/models/consumer_user.dart';
+import '../core/models/producer_user.dart';
 import '../utils/user_store_helper.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -21,85 +19,84 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final user = authNotifier.currentUser!;
-    final notificationProvider = Provider.of<NotificationNotifier>(context);
-    final currentNotifications =
-        user.isProducer
-            ? (user as ProducerUser)
-                .stores[authNotifier.selectedStoreIndex!]
-                .notifications
-            : (user as ConsumerUser).notifications;
-    final userNotificationIds =
-        currentNotifications?.map((n) => n.id).toSet() ?? {};
-
-    final notifications =
-        notificationProvider.notifications
-            .where((n) => userNotificationIds.contains(n.id))
-            .toList();
+    final userId = user.id;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Notificações')),
-      body:
-          notifications.isNotEmpty
-              ? ListView.builder(
-                itemCount: notifications.length,
-                itemBuilder: (context, index) {
-                  final notification = notifications[index];
+      body: StreamBuilder<List<NotificationItem>>(
+        stream:
+            (user.isProducer)
+                ? AuthService().getUserNotificationsStream(
+                  (user as ProducerUser)
+                      .stores[authNotifier.selectedStoreIndex!]
+                      .id,
+                )
+                : AuthService().getUserNotificationsStream(user.id),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Sem notificações"));
+          }
+          final notifications = snapshot.data!;
+          return ListView.builder(
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notification = notifications[index];
+              return FutureBuilder<String>(
+                future: _getDynamicName(notification),
+                builder: (context, snapshot) {
+                  final dynamicName = snapshot.data ?? '';
+                  final description = _buildDescription(
+                    notification,
+                    dynamicName,
+                  );
 
-                  return FutureBuilder<String>(
-                    future: _getDynamicName(notification),
-                    builder: (context, snapshot) {
-                      final dynamicName = snapshot.data ?? '';
-                      final description = _buildDescription(
-                        notification,
-                        dynamicName,
-                      );
-
-                      return Dismissible(
-                        key: Key(notification.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          color: Colors.red,
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: const Icon(Icons.delete, color: Colors.white),
-                        ),
-                        onDismissed: (_) async {
-                          await notificationProvider.removeNotification(
-                            notification: notification,
-                            isProducer: authNotifier.currentUser!.isProducer,
-                            id:
-                                (!authNotifier.currentUser!.isProducer)
-                                    ? authNotifier.currentUser!.id
-                                    : (authNotifier.currentUser!
-                                            as ProducerUser)
-                                        .stores[authNotifier.selectedStoreIndex!]
-                                        .id,
-                          );
-                        },
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: notification.type.color,
-                            child: Icon(
-                              notification.type.icon,
-                              color: Colors.white,
-                            ),
-                          ),
-                          title: Text(notification.title),
-                          subtitle: Text(description),
-                          trailing: Text(
-                            _formatDate(notification.dateTime),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
+                  return Dismissible(
+                    key: Key(notification.id),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    onDismissed: (_) async {
+                      await Provider.of<NotificationNotifier>(
+                        context,
+                        listen: false,
+                      ).removeNotification(
+                        notification: notification,
+                        isProducer: user.isProducer,
+                        id: userId,
                       );
                     },
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: notification.type.color,
+                        child: Icon(
+                          notification.type.icon,
+                          color: Colors.white,
+                        ),
+                      ),
+                      title: Text(notification.title),
+                      subtitle: Text(description),
+                      trailing: Text(
+                        _formatDate(notification.dateTime),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
                   );
                 },
-              )
-              : const Center(child: Text("Sem notificações")),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 

@@ -59,6 +59,11 @@ class NotificationItem {
       dateTime: (json['dateTime'] as Timestamp).toDate(),
     );
   }
+
+  @override
+  String toString() {
+    return 'NotificationItem(id: $id, type: $type, dateTime: $dateTime, data: $data)';
+  }
 }
 
 enum NotificationType {

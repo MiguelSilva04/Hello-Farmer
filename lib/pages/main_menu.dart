@@ -11,12 +11,14 @@ import 'package:harvestly/core/services/other/bottom_navigation_notifier.dart';
 import 'package:harvestly/core/services/other/manage_section_notifier.dart';
 import 'package:harvestly/core/services/other/search_notifier.dart';
 import 'package:harvestly/pages/loading_page.dart';
+import 'package:harvestly/pages/notification_page.dart';
 import 'package:harvestly/pages/search_results.dart';
 import 'package:provider/provider.dart';
 import '../components/consumer/explore_page.dart';
 import '../components/consumer/home_page.dart';
 import '../components/consumer/map_page.dart';
 import '../components/consumer/orders_page.dart';
+import '../core/models/notification.dart';
 import '../core/services/auth/auth_notifier.dart';
 import '../core/services/auth/store_service.dart';
 import '../components/producer/manage_page.dart';
@@ -395,19 +397,25 @@ class _MainMenuState extends State<MainMenu>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Badge.count(
-                                  count:
-                                      (user as ConsumerUser)
-                                          .notifications
-                                          ?.length ??
-                                      0,
-                                  child: Icon(
-                                    Icons.notifications_none_rounded,
-                                    color:
-                                        Theme.of(
-                                          context,
-                                        ).colorScheme.secondaryFixed,
-                                  ),
+                                StreamBuilder<List<NotificationItem>>(
+                                  stream: AuthService()
+                                      .getUserNotificationsStream(user.id),
+                                  builder: (context, snapshot) {
+                                    final notificationsCount =
+                                        snapshot.hasData
+                                            ? snapshot.data!.length
+                                            : 0;
+                                    return Badge.count(
+                                      count: notificationsCount,
+                                      child: Icon(
+                                        Icons.notifications_none_rounded,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.secondaryFixed,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 SizedBox(width: 10),
                                 Text("Notificações"),
@@ -504,19 +512,26 @@ class _MainMenuState extends State<MainMenu>
                     );
                   }
                   if (user.isProducer)
-                    return Consumer<NotificationNotifier>(
-                      builder: (context, notificationProvider, _) {
-                        final count = notificationProvider.notifications.length;
-
+                    return StreamBuilder<List<NotificationItem>>(
+                      stream: AuthService().getUserNotificationsStream(
+                        (user as ProducerUser)
+                            .stores[authNotifier.selectedStoreIndex!]
+                            .id,
+                      ),
+                      builder: (context, snapshot) {
+                        final notificationsCount =
+                            snapshot.hasData ? snapshot.data!.length : 0;
                         return InkWell(
                           onTap:
-                              () => Navigator.of(
-                                context,
-                              ).pushNamed(AppRoutes.NOTIFICATION_PAGE),
+                              () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (ctx) => NotificationsPage(),
+                                ),
+                              ),
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.only(right: 8.0),
                             child: Badge.count(
-                              count: count,
+                              count: notificationsCount,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 4,

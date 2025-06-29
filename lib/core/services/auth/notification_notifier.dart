@@ -172,11 +172,6 @@ class NotificationNotifier extends ChangeNotifier {
     super.dispose();
   }
 
-  void addNotification(NotificationItem notification) {
-    _notifications.insert(0, notification);
-    notifyListeners();
-  }
-
   void remove(NotificationItem notification) {
     _notifications.removeWhere((n) => n.id == notification.id);
     notifyListeners();
@@ -276,6 +271,11 @@ class NotificationNotifier extends ChangeNotifier {
     }
   }
 
+  void addNotification(NotificationItem notification) {
+    _notifications.insert(0, notification);
+    notifyListeners();
+  }
+
   Future<void> addOrderPlacedNotification(AppUser consumer, String storeId) =>
       _createAndSendNotification(
         userId: storeId,
@@ -293,7 +293,7 @@ class NotificationNotifier extends ChangeNotifier {
         data: {'store': store.id},
         isProducer: false,
         title: 'A tua encomenda foi enviada!',
-        body: 'A tua encomenda da loja ${store.id} foi enviada.',
+        body: 'A tua encomenda da loja ${store.name} foi enviada.',
       );
 
   Future<void> addNewReviewNotification(String storeId, String consumerId) =>

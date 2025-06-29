@@ -151,21 +151,23 @@ class _OrdersPageState extends State<OrdersPage>
   }
 
   Widget _buildOrdersList(List<Order> orders, List<ProductAd> allAds) {
+    final sortedOrders = List<Order>.from(orders)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(12),
-      itemCount: orders.length,
+      itemCount: sortedOrders.length,
       itemBuilder: (context, index) {
-        final order = orders[index];
-        final ordersAds =
-            order.ordersItems
-                .map(
-                  (orderItem) => allAds.firstWhereOrNull(
-                    (ad) => ad.id == orderItem.productAdId,
-                  ),
-                )
-                .toList();
+        final order = sortedOrders[index];
+        final ordersAds = order.ordersItems
+            .map(
+              (orderItem) => allAds.firstWhereOrNull(
+                (ad) => ad.id == orderItem.productAdId,
+              ),
+            )
+            .toList();
 
         return OrderCard(order: order, ads: ordersAds);
       },

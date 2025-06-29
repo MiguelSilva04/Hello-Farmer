@@ -82,6 +82,8 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                   : orders
                       .where((order) => order.state == stateFilter)
                       .toList();
+          final sortedOrders = List<Order>.from(filteredOrders)
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
           return RefreshIndicator(
             color: Theme.of(context).colorScheme.secondary,
@@ -93,9 +95,9 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
             },
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: filteredOrders.length,
+              itemCount: sortedOrders.length,
               itemBuilder: (context, index) {
-                final order = filteredOrders[index];
+                final order = sortedOrders[index];
                 final consumer =
                     authNotifier.allUsers
                             .where((u) => u.id == order.consumerId)
@@ -201,33 +203,30 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
 
   Widget _buildTabBar(BuildContext context) {
     return Container(
-        color: Theme.of(context).colorScheme.surface,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Column(
-            children: [
-              TabBar(
-                isScrollable: true,
-                labelStyle: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-                controller: _tabController,
-                labelColor: Theme.of(context).colorScheme.secondary,
-                unselectedLabelColor:
-                    Theme.of(context).colorScheme.secondaryFixed,
-                indicatorColor: Theme.of(context).colorScheme.secondary,
-                tabs: const [
-                  Tab(text: 'Todas'),
-                  Tab(text: 'Pendentes'),
-                  Tab(text: 'Enviadas'),
-                  Tab(text: 'Prontas para recolha'),
-                  Tab(text: 'Entregues'),
-                ],
-              ),
-            ],
-          ),
+      color: Theme.of(context).colorScheme.surface,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Column(
+          children: [
+            TabBar(
+              isScrollable: true,
+              labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              controller: _tabController,
+              labelColor: Theme.of(context).colorScheme.secondary,
+              unselectedLabelColor:
+                  Theme.of(context).colorScheme.secondaryFixed,
+              indicatorColor: Theme.of(context).colorScheme.secondary,
+              tabs: const [
+                Tab(text: 'Todas'),
+                Tab(text: 'Pendentes'),
+                Tab(text: 'Enviadas'),
+                Tab(text: 'Prontas para recolha'),
+                Tab(text: 'Entregues'),
+              ],
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 }

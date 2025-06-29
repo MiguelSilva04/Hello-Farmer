@@ -13,9 +13,11 @@ import 'package:timelines_plus/timelines_plus.dart';
 import '../../core/models/app_user.dart';
 import '../../core/models/consumer_user.dart';
 import '../../core/services/auth/auth_notifier.dart';
+import '../../core/services/auth/notification_notifier.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
 import '../../core/services/chat/chat_service.dart';
 import '../../utils/app_routes.dart';
+import 'package:collection/collection.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final Order order;
@@ -720,6 +722,36 @@ class _OrderTimelineState extends State<OrderTimeline> {
   Future<void> updateOrderState() async {
     setState(() => _isLoading = true);
     final newOrderState = steps[currentStep];
+
+    // Enviar notificação se o novo estado for OrderState.Sent
+    if (newOrderState == OrderState.Sent) {
+      final authNotifierInstance = Provider.of<AuthNotifier>(
+        context,
+        listen: false,
+      );
+      final notificationNotifier = Provider.of<NotificationNotifier>(
+        context,
+        listen: false,
+      );
+
+      final producer = authNotifierInstance.producerUsers.firstWhereOrNull(
+        (p) => p.stores.any((s) => s.id == widget.order.storeId),
+      );
+      Store? store;
+      if (producer != null) {
+        store = producer.stores.cast<Store?>().firstWhereOrNull(
+          (s) => s?.id == widget.order.storeId,
+        );
+      }
+
+      if (store != null) {
+        await notificationNotifier.addOrderSentNotification(
+          store,
+          widget.order.consumerId,
+        );
+      }
+    }
+
     await Provider.of<AuthNotifier>(
       context,
       listen: false,

@@ -216,6 +216,7 @@ class NotificationNotifier extends ChangeNotifier {
       'sendNotification',
     );
     for (final token in tokens) {
+      print("Token a enviar notificacao: $token");
       try {
         final response = await callable.call({
           'token': token,
@@ -304,8 +305,6 @@ class NotificationNotifier extends ChangeNotifier {
         title: 'Nova avaliação!',
         body: 'Recebeste uma nova avaliação de um cliente.',
       );
-
-  
 
   Future<void> addNewMessageNotification(
     String receiverId,

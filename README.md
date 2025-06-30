@@ -6,6 +6,7 @@
 
 ## 📌 Índice
 
+- [💡 Características Únicas da Hello Farmer](#-caracteristicas)
 - [✨ Funcionalidades](#-funcionalidades)
 - [🚀 Instalação](#-instalação)
 - [📁 Estrutura do Projeto](#-estrutura-do-projeto)
@@ -14,6 +15,18 @@
 - [🤝 Contribuições](#-contribuições)
 - [📜 Licença](#-licença)
 - [👥 Autores](#-autores)
+
+
+## Características Únicas da Hello Farmer
+
+- 🌿 **Conexão direta entre produtores e consumidores**, sem intermediários.
+- 📍 **Sistema de geolocalização avançado** que recomenda produtores próximos ao utilizador.
+- 📦 **Gestão de encomendas em tempo real**, com notificações de estado da entrega.
+- ⭐ **Sistema de reputação e avaliações** que fortalece a confiança.
+- 💬 **Chat privado com encriptação ponta-a-ponta**.
+- 📈 **Estatísticas de desempenho para produtores**, ajudando na tomada de decisões.
+- ♻️ **Promoções automáticas**, promovendo a fidelização.
+
 
 ## ✨ Funcionalidades
 

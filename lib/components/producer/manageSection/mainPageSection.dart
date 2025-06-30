@@ -1091,7 +1091,7 @@ class _EditAdSectionState extends State<EditAdSection> {
                     BoxShadow(
                       color: Theme.of(
                         context,
-                      ).colorScheme.secondary.withOpacity(0.10),
+                      ).colorScheme.secondary.withValues(alpha: 0.10),
                       blurRadius: 8,
                       offset: Offset(0, 2),
                     ),

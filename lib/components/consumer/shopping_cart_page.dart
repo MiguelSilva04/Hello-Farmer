@@ -95,7 +95,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     if (cart != null && cart!.productsQty != null) {
       for (var product in cart!.productsQty!) {
         final productAd = finder.findProductAdById(product.productAdId);
-        cart!.productsQty!.forEach((p) => print(p.promotion));
         final productStore = finder.findStoreByAdId(product.productAdId);
 
         if (productAd != null && productStore != null) {
@@ -266,12 +265,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
               onSaved: (value) => _phoneNumber[store] = value,
               validator: (value) => value!.isEmpty ? "Campo obrigatório" : null,
               maxLength: 9,
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: "Código de desconto (opcional)",
-              ),
-              onSaved: (value) => _discountCode[store] = value,
             ),
             SizedBox(height: 24),
             (store.preferredDeliveryMethod.length > 1)

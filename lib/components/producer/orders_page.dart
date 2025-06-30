@@ -80,9 +80,9 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
               child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                SizedBox(
-                height: 300,
-                child: Center(
+                Center(
+                  child: SizedBox(
+                  height: 300,
                   child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -111,7 +111,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                     ),
                   ],
                   ),
-                ),
+                  ),
                 ),
               ],
               ),

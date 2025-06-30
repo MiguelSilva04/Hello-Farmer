@@ -26,7 +26,7 @@ class _OrdersPageState extends State<OrdersPage>
   void initState() {
     super.initState();
     _authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _tabController.addListener(_onTabChanged);
   }
 
@@ -48,6 +48,9 @@ class _OrdersPageState extends State<OrdersPage>
             break;
           case 4:
             _selectedState = OrderState.Delivered;
+            break;
+          case 5:
+            _selectedState = OrderState.Abandoned;
             break;
         }
       });
@@ -144,6 +147,7 @@ class _OrdersPageState extends State<OrdersPage>
             Tab(text: 'Enviadas'),
             Tab(text: 'Prontas para recolha'),
             Tab(text: 'Entregues'),
+            Tab(text: 'Abandonadas'),
           ],
         ),
       ),

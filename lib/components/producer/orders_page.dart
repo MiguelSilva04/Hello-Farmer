@@ -30,7 +30,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     authNotifier = Provider.of<AuthNotifier>(context, listen: false);
   }
 
@@ -60,12 +60,12 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
           await notificationNotifier.addAbandonedOrderNotification(
             storeId,
             orderId,
-            true
+            true,
           );
           await notificationNotifier.addAbandonedOrderNotification(
             consumerId,
             orderId,
-            false
+            false,
           );
         }),
         builder: (context, snapshot) {
@@ -247,6 +247,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                 Center(child: getAllFilter(OrderState.Sent)),
                 Center(child: getAllFilter(OrderState.Ready)),
                 Center(child: getAllFilter(OrderState.Delivered)),
+                Center(child: getAllFilter(OrderState.Abandoned)),
               ],
             ),
           ),
@@ -276,6 +277,7 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
                 Tab(text: 'Enviadas'),
                 Tab(text: 'Prontas para recolha'),
                 Tab(text: 'Entregues'),
+                Tab(text: 'Abandonadas'),
               ],
             ),
           ],

@@ -274,31 +274,31 @@ class NotificationNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addOrderPlacedNotification(AppUser consumer, String storeId) =>
+  Future<void> addOrderPlacedNotification(AppUser consumer, String storeId, String orderId) =>
       _createAndSendNotification(
         userId: storeId,
         type: NotificationType.orderPlaced,
-        data: {'consumer': consumer.id, 'store': storeId},
+        data: {'consumer': consumer.id, 'store': storeId, 'order': orderId},
         isProducer: true,
         title: 'Nova encomenda!',
         body: 'Recebeste uma nova encomenda na tua loja.',
       );
 
-  Future<void> addOrderSentNotification(Store store, String userId) =>
+  Future<void> addOrderSentNotification(Store store, String userId, String orderId) =>
       _createAndSendNotification(
         userId: userId,
         type: NotificationType.orderSent,
-        data: {'store': store.id},
+        data: {'store': store.id, 'order': orderId},
         isProducer: false,
         title: 'A tua encomenda foi enviada!',
         body: 'A tua encomenda da loja ${store.name} foi enviada.',
       );
 
-  Future<void> addNewReviewNotification(String storeId, String consumerId) =>
+  Future<void> addNewReviewNotification(String storeId, String consumerId, String productAdId) =>
       _createAndSendNotification(
         userId: storeId,
         type: NotificationType.newReview,
-        data: {'consumer': consumerId},
+        data: {'consumer': consumerId, 'productAd': productAdId},
         isProducer: true,
         title: 'Nova avaliação!',
         body: 'Recebeste uma nova avaliação de um cliente.',

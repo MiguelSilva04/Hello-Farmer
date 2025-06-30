@@ -381,8 +381,13 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addToCart(ProductAd productAd, double quantity) async {
-    await AuthService().addToCart(productAd, quantity);
+  Future<void> addToCart(
+    ProductAd productAd,
+    double quantity, [
+    int? promotion,
+  ]) async {
+    print(promotion);
+    await AuthService().addToCart(productAd, quantity, promotion);
     final consumer = _currentUser as ConsumerUser;
     final cart = consumer.shoppingCart;
     final productId = productAd.id;
@@ -390,7 +395,11 @@ class AuthNotifier extends ChangeNotifier {
     if (cart == null || cart.productsQty == null) {
       consumer.shoppingCart = ShoppingCart(
         productsQty: [
-          ProductRegist(productAdId: productId, quantity: quantity),
+          ProductRegist(
+            productAdId: productId,
+            quantity: quantity,
+            promotion: promotion ?? 0,
+          ),
         ],
         totalPrice: productAd.product.price * quantity,
       );
@@ -401,7 +410,11 @@ class AuthNotifier extends ChangeNotifier {
         existingProduct.quantity += quantity;
       } else {
         cart.productsQty!.add(
-          ProductRegist(productAdId: productId, quantity: quantity),
+          ProductRegist(
+            productAdId: productId,
+            quantity: quantity,
+            promotion: promotion ?? 0,
+          ),
         );
       }
 

@@ -1,7 +1,8 @@
 class ProductRegist {
   String productAdId;
   double quantity;
-  ProductRegist({required this.productAdId, required this.quantity});
+  int? promotion = 0;
+  ProductRegist({required this.productAdId, required this.quantity, this.promotion});
 }
 
 class ShoppingCart {

@@ -11,6 +11,7 @@ import 'package:harvestly/utils/keywords.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
+import '../../core/models/offer.dart';
 import '../../core/models/review.dart';
 import '../../core/services/auth/auth_notifier.dart';
 import '../../core/services/chat/chat_list_notifier.dart';
@@ -19,7 +20,7 @@ import '../sendMessageButton.dart';
 class ProductAdDetailScreen extends StatefulWidget {
   final ProductAd ad;
   final ProducerUser producer;
-  final int? promotion;
+  final Offer? promotion;
 
   ProductAdDetailScreen({
     Key? key,
@@ -108,7 +109,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
     await Provider.of<AuthNotifier>(
       context,
       listen: false,
-    ).addToCart(widget.ad, quantity).then((_) {
+    ).addToCart(widget.ad, quantity, widget.promotion?.value ?? 0).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Produto adicionado ao carrinho!')),
       );
@@ -398,7 +399,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              "${(widget.ad.product.price * (1 - widget.promotion! / 100)).toStringAsFixed(2)} €/${widget.ad.product.unit.toDisplayString()}",
+                              "${(widget.ad.product.price * (1 - widget.promotion!.value / 100)).toStringAsFixed(2)} €/${widget.ad.product.unit.toDisplayString()}",
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
@@ -615,7 +616,11 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                               ),
                             ],
                           ),
-                          SendMessageButton(otherUser: otherUser, isIconButton: true,store: store,)
+                          SendMessageButton(
+                            otherUser: otherUser,
+                            isIconButton: true,
+                            store: store,
+                          ),
                         ],
                       ),
                     ),

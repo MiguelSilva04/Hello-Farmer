@@ -936,7 +936,7 @@ class AuthService {
     }
   }
 
-  Future<void> addToCart(ProductAd productAd, double quantity) async {
+  Future<void> addToCart(ProductAd productAd, double quantity, int? promotion) async {
     final user = currentUser;
     if (user == null) return;
 
@@ -953,7 +953,7 @@ class AuthService {
         'ownerId': user.id,
         'createdAt': FieldValue.serverTimestamp(),
         'productsQty': [
-          {'productAdId': productAd.id, 'quantity': quantity},
+          {'productAdId': productAd.id, 'quantity': quantity, 'promotion': promotion ?? 0},
         ],
       });
     } else {
@@ -971,7 +971,7 @@ class AuthService {
       if (index != -1) {
         products[index]['quantity'] += quantity;
       } else {
-        products.add({'productAdId': productAd.id, 'quantity': quantity});
+        products.add({'productAdId': productAd.id, 'quantity': quantity, 'promotion': promotion ?? 0});
       }
 
       await cartDocRef.update({'productsQty': products});

@@ -108,7 +108,7 @@ class OrderDetailsPage extends StatelessWidget {
                   SendMessageButton(
                     otherUser: displayedUser,
                     isIconButton: true,
-                    store: store,
+                    store: authNotifier.currentUser!.id != producer.id ? store : null,
                   ),
                 ],
               ),

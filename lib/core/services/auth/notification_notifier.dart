@@ -311,7 +311,7 @@ class NotificationNotifier extends ChangeNotifier {
   }) => _createAndSendNotification(
     userId: receiverId,
     type: NotificationType.newMessage,
-    data: {'consumer': senderId},
+    data: {'sender': senderId},
     isProducer: isProducer,
     title: 'Nova mensagem',
     body: 'Recebeste uma nova mensagem.',

@@ -203,7 +203,7 @@ class _MainMenuState extends State<MainMenu>
   @override
   Widget build(BuildContext context) {
     final List<Widget> _producerPages = [
-      ProducerHomePage(),
+      ProducerHomePage(initializeApp: _initializeApp),
       OrdersProducerPage(),
       SellPage(),
       ChatListPage(),

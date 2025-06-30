@@ -96,28 +96,13 @@ class SendMessageButton extends StatelessWidget {
                 ),
           );
 
-          if (result != null && result.isNotEmpty) {
-            final newChat = await chatService.createChat(
-              currentUser.isProducer ? otherUser.id : currentUser.id,
-              currentUser.isProducer ? currentUser.id : otherUser.id,
-            );
-
-            await chatService.save(result, currentUser, newChat.id);
-
-            Provider.of<ChatListNotifier>(
-              context,
-              listen: false,
-            ).addChat(newChat);
-
-            chatService.updateCurrentChat(newChat);
-
-            Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-            await notificationNotifier.addNewMessageNotification(
-              otherUser.id,
-              currentUser.id,
-              isProducer: currentUser.isProducer,
-            );
-          }
+          await submit(
+            result,
+            chatService,
+            currentUser,
+            notificationNotifier,
+            context,
+          );
         },
         icon: Icon(Icons.message),
         tooltip: alreadyExists ? "Ver Conversa" : "Enviar mensagem",
@@ -170,28 +155,13 @@ class SendMessageButton extends StatelessWidget {
                 ),
           );
 
-          if (result != null && result.isNotEmpty) {
-            final newChat = await chatService.createChat(
-              currentUser.isProducer ? otherUser.id : currentUser.id,
-              currentUser.isProducer ? currentUser.id : otherUser.id,
-            );
-
-            await chatService.save(result, currentUser, newChat.id);
-            await notificationNotifier.addNewMessageNotification(
-              otherUser.id,
-              currentUser.id,
-              isProducer: currentUser.isProducer,
-            );
-
-            Provider.of<ChatListNotifier>(
-              context,
-              listen: false,
-            ).addChat(newChat);
-
-            chatService.updateCurrentChat(newChat);
-
-            Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
-          }
+          await submit(
+            result,
+            chatService,
+            currentUser,
+            notificationNotifier,
+            context,
+          );
         },
         icon: Icon(
           Icons.message,
@@ -204,6 +174,37 @@ class SendMessageButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
       );
+    }
+  }
+
+  Future<void> submit(
+    String? result,
+    ChatService chatService,
+    AppUser currentUser,
+    NotificationNotifier notificationNotifier,
+    BuildContext context,
+  ) async {
+    print("Cheguei aqui!");
+    if (result != null && result.isNotEmpty) {
+      final newChat = await chatService.createChat(
+        currentUser.isProducer ? otherUser.id : currentUser.id,
+        currentUser.isProducer ? currentUser.id : otherUser.id,
+      );
+
+      await chatService.save(result, currentUser, newChat.id);
+      await notificationNotifier
+          .addNewMessageNotification(
+            otherUser.id,
+            currentUser.id,
+            isProducer: currentUser.isProducer,
+          )
+          .then((_) => print("enviei a notificação"));
+
+      Provider.of<ChatListNotifier>(context, listen: false).addChat(newChat);
+
+      chatService.updateCurrentChat(newChat);
+
+      Navigator.of(context).pushNamed(AppRoutes.CHAT_PAGE);
     }
   }
 }

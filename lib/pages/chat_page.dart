@@ -105,8 +105,11 @@ class _ChatPageState extends State<ChatPage> {
           );
         }
         if (!chatSnapshot.hasData || !chatSnapshot.data!.exists) {
-          return const Scaffold(
-            body: Center(child: Text('Chat não encontrado.')),
+          return Scaffold(
+            appBar: AppBar(),
+            body: Center(
+              child: Text('Erro ao encontrar o chat. Reinicie a aplicação.'),
+            ),
           );
         }
 

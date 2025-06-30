@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../core/services/auth/auth_service.dart';
 
 class ProducerHomePage extends StatefulWidget {
-  const ProducerHomePage({super.key});
+  final Function(bool) initializeApp;
+  const ProducerHomePage({super.key, required this.initializeApp});
 
   @override
   State<ProducerHomePage> createState() => _ProducerHomePageState();
@@ -80,102 +81,106 @@ class _ProducerHomePageState extends State<ProducerHomePage> {
   @override
   Widget build(BuildContext context) {
     final totalPages = (recomendationsList.length / 3).ceil();
-    return Padding(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        children: [
-          const Greetings(),
-          const SizedBox(height: 30),
-          Row(
-            children: [
-              Text(
-                "Recomendado para si:",
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
+    return RefreshIndicator(
+      color: Theme.of(context).colorScheme.secondary,
+      onRefresh: () => widget.initializeApp(true),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          children: [
+            const Greetings(),
+            const SizedBox(height: 30),
+            Row(
+              children: [
+                Text(
+                  "Recomendado para si:",
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: totalPages,
-              itemBuilder: (ctx, pageIndex) {
-                final startIndex = pageIndex * 3;
-                final endIndex = (startIndex + 3).clamp(
-                  0,
-                  recomendationsList.length,
-                );
-                final pageItems = recomendationsList.sublist(
-                  startIndex,
-                  endIndex,
-                );
-
-                return ListView.builder(
-                  itemCount: pageItems.length,
-                  itemBuilder:
-                      (ctx, i) => Recomendation(
-                        imageUrl: pageItems[i]["imageUrl"] as String,
-                        recomendationTitle:
-                            pageItems[i]["recomendationTitle"] as String,
-                        recomendationSubTitle:
-                            pageItems[i]["recomendationSubTitle"] as String,
-                      ),
-                );
-              },
+              ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Opacity(
-                opacity: (_currentPage > 0) ? 1 : 0,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
+            const SizedBox(height: 10),
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: totalPages,
+                itemBuilder: (ctx, pageIndex) {
+                  final startIndex = pageIndex * 3;
+                  final endIndex = (startIndex + 3).clamp(
+                    0,
+                    recomendationsList.length,
+                  );
+                  final pageItems = recomendationsList.sublist(
+                    startIndex,
+                    endIndex,
+                  );
+
+                  return ListView.builder(
+                    itemCount: pageItems.length,
+                    itemBuilder:
+                        (ctx, i) => Recomendation(
+                          imageUrl: pageItems[i]["imageUrl"] as String,
+                          recomendationTitle:
+                              pageItems[i]["recomendationTitle"] as String,
+                          recomendationSubTitle:
+                              pageItems[i]["recomendationSubTitle"] as String,
+                        ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Opacity(
+                  opacity: (_currentPage > 0) ? 1 : 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                  ),
                 ),
-              ),
-              Opacity(
-                opacity: (_currentPage < totalPages - 1) ? 1 : 0,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
+                Opacity(
+                  opacity: (_currentPage < totalPages - 1) ? 1 : 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: () {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Column(
-            children: [
-              Text(
-                "Alguma dúvida?",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "Entre em contacto conosco",
-                style: TextStyle(
-                  fontSize: 18,
-                  decoration: TextDecoration.underline,
+              ],
+            ),
+            const SizedBox(height: 10),
+            Column(
+              children: [
+                Text(
+                  "Alguma dúvida?",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-        ],
+                Text(
+                  "Entre em contacto conosco",
+                  style: TextStyle(
+                    fontSize: 18,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }

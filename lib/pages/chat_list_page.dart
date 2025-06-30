@@ -24,7 +24,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
     return RefreshIndicator(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      color: Theme.of(context).colorScheme.onSurface,
+      color: Theme.of(context).colorScheme.secondary,
       onRefresh: () async {
         setState(() {});
         await Future.delayed(const Duration(milliseconds: 500));

@@ -578,6 +578,7 @@ class AuthNotifier extends ChangeNotifier {
       for (final dynamic rawItem in rawList) {
         final productAdId = rawItem['productAdId'];
         final quantity = rawItem['quantity'];
+        final promotion = rawItem['promotion'];
 
         if (productAdId == null || quantity == null) {
           print("Item inválido no carrinho: $rawItem");
@@ -585,7 +586,7 @@ class AuthNotifier extends ChangeNotifier {
         }
 
         productsQty.add(
-          ProductRegist(productAdId: productAdId, quantity: quantity),
+          ProductRegist(productAdId: productAdId, quantity: quantity, promotion: promotion ?? 0),
         );
       }
     }

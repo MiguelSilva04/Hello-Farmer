@@ -95,6 +95,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     if (cart != null && cart!.productsQty != null) {
       for (var product in cart!.productsQty!) {
         final productAd = finder.findProductAdById(product.productAdId);
+        cart!.productsQty!.forEach((p) => print(p.promotion));
         final productStore = finder.findStoreByAdId(product.productAdId);
 
         if (productAd != null && productStore != null) {
@@ -122,6 +123,29 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     }
 
     setState(() {});
+  }
+
+  double _calculateTotal(Store store) {
+    double total = 0;
+
+    storeProductAdQuantities[store]?.forEach((ad, qty) {
+      final promotion =
+          cart?.productsQty
+              ?.firstWhere(
+                (regist) => regist.productAdId == ad.id,
+                orElse:
+                    () => ProductRegist(
+                      productAdId: ad.id,
+                      quantity: qty,
+                      promotion: 0,
+                    ),
+              )
+              .promotion;
+
+      total += PriceUtils.calculateDiscountedPrice(ad, qty, promotion);
+    });
+
+    return total;
   }
 
   void _changeQuantity(Store store, ProductAd productAd, int delta) async {
@@ -166,14 +190,6 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
         storeProductAdQuantities.remove(store);
       }
     });
-  }
-
-  double _calculateTotal(Store store) {
-    double total = 0;
-    storeProductAdQuantities[store]?.forEach((ad, qty) {
-      total += ad.product.price * qty;
-    });
-    return total;
   }
 
   void _submitCheckoutForm(Store store) async {
@@ -395,8 +411,17 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                 final productAd = productEntry.key;
                 final qty = productEntry.value;
                 final product = productAd.product;
-                final pricePerProduct = product.price;
-                final totalPrice = pricePerProduct * qty;
+                final promotion =
+                    cart?.productsQty
+                        ?.where((p) => p.productAdId == productAd.id)
+                        .first
+                        .promotion ??
+                    0;
+                final totalPrice = PriceUtils.calculateDiscountedPrice(
+                  productAd,
+                  qty,
+                  promotion,
+                );
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -636,5 +661,38 @@ class ProductAdFinder {
       }
     }
     return null;
+  }
+}
+
+class PriceUtils {
+  static double calculateDiscountedPrice(
+    ProductAd ad,
+    double quantity,
+    int? promotion,
+  ) {
+    final pricePerUnit = ad.product.price;
+    final discount = promotion ?? 0;
+
+    if (discount > 0) {
+      final discountFactor = 1 - (discount / 100);
+      return quantity * pricePerUnit * discountFactor;
+    }
+
+    return quantity * pricePerUnit;
+  }
+
+  static double unitPriceWithDiscount(ProductAd ad, int? promotion) {
+    final pricePerUnit = ad.product.price;
+    final discount = promotion ?? 0;
+
+    if (discount > 0) {
+      return pricePerUnit * (1 - (discount / 100));
+    }
+
+    return pricePerUnit;
+  }
+
+  static String formatPrice(double price) {
+    return "${price.toStringAsFixed(2)} €";
   }
 }

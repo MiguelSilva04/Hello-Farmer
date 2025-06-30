@@ -68,26 +68,55 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return RefreshIndicator(
               color: Theme.of(context).colorScheme.secondary,
               onRefresh: () async {
-                final store = StoreService.instance
-                    .getStoresByOwner(authNotifier.currentUser!.id)
-                    .firstWhere((s) => s.id == storeId);
-                StoreService.instance.listenToOrdersForStore(store);
+              final store = StoreService.instance
+                .getStoresByOwner(authNotifier.currentUser!.id)
+                .firstWhere((s) => s.id == storeId);
+              StoreService.instance.listenToOrdersForStore(store);
               },
               child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(
-                    height: 300,
-                    child: Center(child: Text("Sem encomendas ainda.")),
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                height: 300,
+                child: Center(
+                  child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                    Icons.inbox,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                    "Sem encomendas ainda.",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                    "Aguarde por novas encomendas dos seus clientes.",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                    textAlign: TextAlign.center,
+                    ),
+                  ],
                   ),
-                ],
+                ),
+                ),
+              ],
               ),
             );
-          }
+            }
 
           final orders = snapshot.data!;
           final filteredOrders =

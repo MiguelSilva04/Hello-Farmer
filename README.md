@@ -1,19 +1,19 @@
-# Hello Farmer
+# 🌾 Hello Farmer
 
-Hello Farmer é uma aplicação inovadora que aproxima produtores e consumidores, facilitando a compra e venda direta de produtos agrícolas frescos e locais. Com uma interface intuitiva e funcionalidades avançadas, a plataforma promove a valorização da agricultura local, a transparência e a confiança entre utilizadores.
+**Hello Farmer** é uma plataforma inovadora que aproxima **produtores locais** e **consumidores**, promovendo a compra direta de produtos agrícolas frescos, sustentáveis e regionais. Com uma experiência de utilizador fluida e funcionalidades completas, a aplicação valoriza a agricultura local e fortalece relações de confiança.
 
 ---
 
-## Índice
+## 📌 Índice
 
-- [Funcionalidades Principais](#funcionalidades-principais)
-- [Instalação](#instalação)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Segurança e Privacidade](#segurança-e-privacidade)
-- [Contribuição](#contribuição)
-- [Licença](#licença)
-- [Autores](#autores)
+- [✨ Funcionalidades](#-funcionalidades)
+- [🚀 Instalação](#-instalação)
+- [📁 Estrutura do Projeto](#-estrutura-do-projeto)
+- [🧪 Tecnologias Utilizadas](#-tecnologias-utilizadas)
+- [🔒 Segurança e Privacidade](#-segurança-e-privacidade)
+- [🤝 Contribuições](#-contribuições)
+- [📜 Licença](#-licença)
+- [👥 Autores](#-autores)
 
 ---
 

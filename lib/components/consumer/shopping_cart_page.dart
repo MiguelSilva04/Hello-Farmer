@@ -410,6 +410,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                         .first
                         .promotion ??
                     0;
+                final oldPrice = product.price * qty;
                 final totalPrice = PriceUtils.calculateDiscountedPrice(
                   productAd,
                   qty,
@@ -489,19 +490,37 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                         ),
                       ),
                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           IconButton(
                             icon: Icon(Icons.delete_outline),
                             onPressed: () => _removeProduct(store, productAd),
                           ),
-                          Text(
-                            "${totalPrice.toStringAsFixed(2)}€",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Theme.of(context).colorScheme.surface,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                "${oldPrice.toStringAsFixed(2)}€",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.secondaryFixed,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                "${totalPrice.toStringAsFixed(2)}€",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Theme.of(context).colorScheme.surface,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

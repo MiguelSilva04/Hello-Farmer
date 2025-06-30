@@ -9,8 +9,10 @@ import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/models/notification.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
+import '../core/models/consumer_user.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../utils/user_store_helper.dart';
+import 'package:collection/collection.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -48,12 +50,20 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
           final order = store.orders!.firstWhere((o) => o.id == orderId);
 
+          final consumer = authNotifier.allUsers.firstWhereOrNull(
+            (u) => u.id == order.consumerId,
+          );
+
           if (!mounted) return;
 
           Navigator.of(context).push(
             MaterialPageRoute(
               builder:
-                  (_) => OrderDetailsPage(order: order, producer: producer),
+                  (_) => OrderDetailsPage(
+                    order: order,
+                    producer: producer,
+                    consumer: (consumer as ConsumerUser),
+                  ),
             ),
           );
         }
@@ -91,6 +101,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       case NotificationType.newMessage:
         final senderId = data['sender'];
         if (senderId != null) {
+          Navigator.of(context).pop();
           final chatListNotifier = Provider.of<ChatListNotifier>(
             context,
             listen: false,
@@ -111,8 +122,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
             context,
             listen: false,
           ).setIndex(3);
-
-          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
         }
         break;
     }
@@ -243,8 +252,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Future<String> _getDynamicName(NotificationItem notification) async {
     final data = notification.data;
     switch (notification.type) {
-      case NotificationType.orderPlaced:
       case NotificationType.newMessage:
+        final senderId = data['sender'];
+        if (senderId != null)
+          return await UserStoreHelper.getUserName(senderId);
+        break;
+      case NotificationType.orderPlaced:
       case NotificationType.newReview:
         final consumerId = data['consumer'];
         if (consumerId != null)

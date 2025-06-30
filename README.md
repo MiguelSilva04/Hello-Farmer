@@ -44,10 +44,9 @@
 
 ### 🔁 Funcionalidades Gerais
 - Sistema de mensagens seguro (com encriptação)
-- Notificações push e por email
+- Notificações push
 - Gestão de preferências (tema, idioma, notificações, etc.)
-- Políticas de devolução por loja
-- Suporte multilingue e interface responsiva
+- Interface responsiva
 
 ---
 
@@ -116,7 +115,7 @@ functions/             # Cloud Functions (Firebase backend)
 
 ## 🔒 Segurança e Privacidade
 
-- Autenticação segura com email ou biometria
+- Autenticação segura com email
 - Encriptação de mensagens entre utilizadores
 - Gestão de permissões de localização, notificações, ficheiros
 - Sessões seguras com possibilidade de logout remoto

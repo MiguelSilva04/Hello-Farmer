@@ -64,7 +64,7 @@ Hello Farmer é uma aplicação inovadora que aproxima produtores e consumidores
 
 1. **Clona o repositório:**
    ```bash
-   git clone [https://github.com/seu-utilizador/hello-farmer.git](https://github.com/MiguelSilva202200034/ProjetoCM.git)
+   git clone https://github.com/MiguelSilva202200034/ProjetoCM.git
    ```
 2. **Acede à pasta do projeto:**
    ```bash

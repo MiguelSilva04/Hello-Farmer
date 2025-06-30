@@ -15,139 +15,128 @@
 - [📜 Licença](#-licença)
 - [👥 Autores](#-autores)
 
----
+## ✨ Funcionalidades
 
-## Funcionalidades Principais
+### 👤 Autenticação & Perfil
+- Registo e login com validação por email
+- Recuperação de password e autenticação segura
+- Gestão do perfil com imagem, dados pessoais e localização
+- Autenticação por biometria ou PIN (opcional)
 
-### Ecrã de Boas-vindas & Autenticação
+### 🛒 Para Consumidores
+- Explorar produtos por **categorias**, **novidades**, **promoções** e **favoritos**
+- Carrinho de compras inteligente com múltiplos produtores
+- Avaliações e comentários após compra
+- Histórico de encomendas e faturas em PDF
+- **Mapa interativo** com bancas e produtores próximos
+- Chat direto com produtores
+- Notificações em tempo real (estado da encomenda, promoções, etc.)
 
-- Ecrã de boas-vindas com apresentação das vantagens da plataforma.
-- Autenticação segura com registo de consumidores e produtores.
-- Validação de dados, recuperação de password e autenticação por email.
-- Personalização do perfil com imagem, dados pessoais e localização.
+### 🧑‍🌾 Para Produtores
+- Gestão de banca (perfil, descrição, localização, foto)
+- Publicação e edição de anúncios com imagens e promoções
+- Gestão de encomendas com atualização de estados
+- Envio de notificações e mensagens a clientes
+- Análise de vendas, produtos, e estatísticas gráficas
+- Gestão de cabazes personalizados
+- Histórico de clientes e interação por chat
+- Faturação e geração de PDFs automáticos
 
-### Para Consumidores
-
-- **Exploração de Produtos:** Pesquisa por categorias, produtos recomendados, promoções e favoritos.
-- **Carrinho e Encomendas:** Adiciona produtos ao carrinho, faz encomendas rápidas e acompanha o histórico.
-- **Avaliações:** Avalia produtos e produtores após cada compra.
-- **Notificações em Tempo Real:** Recebe alertas sobre promoções, novidades e o estado das tuas encomendas.
-- **Chat Direto:** Comunica facilmente com produtores para esclarecer dúvidas ou combinar detalhes.
-- **Mapa Interativo:** Descobre bancas e produtores próximos de ti.
-- **Gestão de Perfil:** Edita dados pessoais, métodos de pagamento e preferências.
-- **Faturas e Histórico:** Consulta faturas em PDF e histórico detalhado de compras.
-
-### Para Produtores
-
-- **Gestão de Banca:** Cria e personaliza a tua banca, adiciona produtos com fotos, descrições e preços.
-- **Gestão de Anúncios:** Publica, edita, destaca e remove anúncios de forma simples.
-- **Gestão de Encomendas:** Acompanha todas as encomendas recebidas e atualiza o seu estado.
-- **Promoções Personalizadas:** Envia ofertas e promoções diretamente aos teus clientes.
-- **Estatísticas e Relatórios:** Consulta dados de vendas, inventário, análise de produtos e desempenho da tua banca.
-- **Avaliações e Feedback:** Recebe avaliações dos clientes para melhorar continuamente.
-- **Notificações em Tempo Real:** Mantém-te sempre informado sobre novas encomendas e mensagens.
-- **Gestão de Cabazes:** Cria e gere cabazes personalizados para venda.
-- **Faturação e Pagamentos:** Gera faturas automáticas e gere dados de faturação.
-- **Gestão de Clientes:** Consulta e contacta clientes recorrentes.
-
-### Funcionalidades Gerais
-
-- **Sistema de Mensagens:** Chat seguro e encriptado entre utilizadores.
-- **Notificações Push e Email:** Recebe notificações importantes mesmo fora da app.
-- **Gestão de Preferências:** Personaliza temas, idioma, notificações e privacidade.
-- **Política de Devoluções:** Definição de políticas de devolução por loja.
-- **Gestão de Sessões:** Logout remoto e autenticação biométrica/PIN.
-- **Acessibilidade:** Interface adaptada a diferentes dispositivos e tamanhos de ecrã.
+### 🔁 Funcionalidades Gerais
+- Sistema de mensagens seguro (com encriptação)
+- Notificações push e por email
+- Gestão de preferências (tema, idioma, notificações, etc.)
+- Políticas de devolução por loja
+- Suporte multilingue e interface responsiva
 
 ---
 
-## Instalação
+## 🚀 Instalação
 
-1. **Clona o repositório:**
+1. Clona o repositório:
    ```bash
    git clone https://github.com/MiguelSilva202200034/ProjetoCM.git
    ```
-2. **Acede à pasta do projeto:**
+
+2. Acede à pasta do projeto:
    ```bash
    cd hello-farmer
    ```
-3. **Instala as dependências:**
+
+3. Instala as dependências:
    ```bash
    flutter pub get
    ```
-4. **Configura as variáveis de ambiente:**
-   - Cria um ficheiro `.env` com as tuas chaves Firebase e APIs necessárias.
-5. **Executa a aplicação:**
+
+4. Cria o ficheiro `.env` na raiz com as tuas variáveis:
+   ```env
+   OPENWEATHER_API_KEY=xxxxxxx
+   ```
+
+5. Executa a aplicação:
    ```bash
    flutter run
    ```
 
 ---
 
-## Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 lib/
-  components/        # Widgets e componentes reutilizáveis
-  core/              # Modelos, serviços, lógica de negócio
-  encryption/        # Serviços de encriptação de mensagens
-  pages/             # Páginas principais da aplicação
-  utils/             # Utilitários, helpers e constantes
-  l10n/              # Internacionalização
-functions/           # Cloud Functions para lógica backend
+├── components/        # Widgets reutilizáveis (UI e lógica)
+├── core/              # Modelos, serviços e lógica de negócio
+├── encryption/        # Lógica de encriptação de mensagens
+├── pages/             # Páginas principais (home, carrinho, detalhes, etc.)
+├── utils/             # Funções auxiliares e constantes globais
+├── l10n/              # Internacionalização e traduções
+
+functions/             # Cloud Functions (Firebase backend)
 ```
 
 ---
 
-## Tecnologias Utilizadas
+## 🧪 Tecnologias Utilizadas
 
-- **Flutter** (Dart)
-- **Firebase**: Firestore, Auth, Storage, Cloud Functions, Realtime Database, Firebase Messaging
+- **Flutter** & Dart
+- **Firebase**: Auth, Firestore, Storage, Realtime DB, Cloud Functions, Messaging
 - **Provider** (gestão de estado)
 - **RxDart**
-- **Google Maps** (`google_maps_flutter`)
-- **Geolocator** e **permission_handler** (localização)
-- **intl** (formatação de datas e moedas)
-- **image_picker** (seleção de imagens)
-- **encrypt** e **crypto** (encriptação de mensagens)
-- **pdf** e **printing** (geração e partilha de faturas em PDF)
-- **fl_chart** e **percent_indicator** (gráficos e estatísticas)
-- **font_awesome_flutter** (ícones)
-- **shared_preferences** (preferências locais)
-- **timelines_plus** (timelines de encomendas)
-- **flutter_local_notifications** (notificações locais)
-- **cloud_functions** (funções serverless)
-- **country_picker** e **intl_phone_number_input** (formulários internacionais)
+- **Google Maps API** (`google_maps_flutter`)
+- **Geolocator**, **permission_handler**
+- **encrypt** & **crypto** (mensagens privadas)
+- **intl** (datas e moeda)
+- **pdf** & **printing**
+- **flutter_local_notifications**
+- **cloud_functions**
+- **shared_preferences**
+- **timelines_plus**, **fl_chart**, **percent_indicator**
 
 ---
 
-## Segurança e Privacidade
+## 🔒 Segurança e Privacidade
 
-- **Autenticação segura** com validação de email e autenticação biométrica/PIN.
-- **Encriptação de mensagens** para garantir privacidade nas conversas.
-- **Gestão de permissões** para localização, notificações e acesso a ficheiros.
-- **Política de privacidade** clara e disponível na aplicação.
-- **Gestão de sessões** e possibilidade de logout remoto.
+- Autenticação segura com email ou biometria
+- Encriptação de mensagens entre utilizadores
+- Gestão de permissões de localização, notificações, ficheiros
+- Sessões seguras com possibilidade de logout remoto
+- Política de privacidade clara e disponível na app
 
 ---
 
-## Contribuição
+## 🤝 Contribuições
 
 Contribuições são bem-vindas!  
-Sente-te à vontade para abrir issues ou pull requests com sugestões, melhorias ou correções.
+Podes abrir uma [issue](https://github.com/MiguelSilva202200034/ProjetoCM/issues) ou um [pull request](https://github.com/MiguelSilva202200034/ProjetoCM/pulls) com sugestões ou melhorias.
 
 ---
 
-## Licença
+## 📜 Licença
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+Distribuído sob a licença MIT.  
+Consulta o ficheiro [`LICENSE`](LICENSE) para mais informações.
 
 ---
-
-Descobre já a Hello Farmer e faz parte desta comunidade que valoriza o melhor da agricultura local!
-
-
-link repositorio git: https://github.com/MiguelSilva202200034/ProjetoCM.git
 
 ## 👥 Autores
 

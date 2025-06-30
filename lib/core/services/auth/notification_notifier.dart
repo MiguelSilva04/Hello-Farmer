@@ -187,8 +187,6 @@ class NotificationNotifier extends ChangeNotifier {
     required bool isProducer,
     required String id,
   }) async {
-    print("Id da notificação: ${notification.id}");
-    print("Id da store: ${id}");
     final docRef = FirebaseFirestore.instance
         .collection(isProducer ? 'stores' : 'users')
         .doc(id)
@@ -213,15 +211,13 @@ class NotificationNotifier extends ChangeNotifier {
       'sendNotification',
     );
     for (final token in tokens) {
-      print("Token a enviar notificacao: $token");
       try {
-        final response = await callable.call({
+        await callable.call({
           'token': token,
           'title': title,
           'body': body,
           'data': data ?? {},
         });
-        print('Push enviada para $token com sucesso: ${response.data}');
       } catch (e) {
         print('Erro ao enviar push para $token: $e');
       }

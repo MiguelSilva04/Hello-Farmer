@@ -57,7 +57,6 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
             context,
             listen: false,
           );
-          print("Id do consumidor para enviar a notificacao: $consumerId");
           await notificationNotifier.addAbandonedOrderNotification(
             storeId,
             orderId,

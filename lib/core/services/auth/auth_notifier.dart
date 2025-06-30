@@ -270,19 +270,50 @@ class AuthNotifier extends ChangeNotifier {
         );
   }
 
-  Stream<List<Order>> storeOrdersStream(String storeId) {
+  Stream<List<Order>> storeOrdersStream(
+    String storeId,
+    Future<void> Function(String orderId, String consumerId) sendNotifications,
+  ) {
     return fireStore
         .collection('orders')
         .where('storeId', isEqualTo: storeId)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) {
-                final data = doc.data();
-                data['id'] = doc.id;
-                return Order.fromJson(data);
-              }).toList(),
-        );
+        .asyncMap((snapshot) async {
+          final now = DateTime.now();
+          final List<Order> orders = [];
+
+          for (final doc in snapshot.docs) {
+            final data = doc.data();
+            data['id'] = doc.id;
+
+            if (data['status'] == 'Enviada' && data['deliveryDate'] != null) {
+              DateTime deliveryDate;
+              if (data['deliveryDate'] is cf.Timestamp) {
+                deliveryDate = (data['deliveryDate'] as cf.Timestamp).toDate();
+              } else if (data['deliveryDate'] is DateTime) {
+                deliveryDate = data['deliveryDate'];
+              } else {
+                orders.add(Order.fromJson(data));
+                continue;
+              }
+
+              if (now.difference(deliveryDate).inDays >= 10) {
+                await fireStore.collection('orders').doc(doc.id).update({
+                  'status': 'Abandonada',
+                });
+
+                final consumerId = data['consumerId'];
+                await sendNotifications(doc.id, consumerId);
+
+                data['status'] = 'Abandonada';
+              }
+            }
+
+            orders.add(Order.fromJson(data));
+          }
+
+          return orders;
+        });
   }
 
   ProductRegist? getExistingProduct(ShoppingCart? cart, String productId) {
@@ -567,12 +598,35 @@ class AuthNotifier extends ChangeNotifier {
     for (final doc in orderSnapshot.docs) {
       final data = doc.data();
       final consumerId = data['consumerId'];
-      final order = Order.fromJson({...data, 'id': doc.id});
+      final orderId = doc.id;
+      if (data['status'] == 'Enviada' && data['deliveryDate'] != null) {
+        DateTime deliveryDate;
+        if (data['deliveryDate'] is cf.Timestamp) {
+          deliveryDate = (data['deliveryDate'] as cf.Timestamp).toDate();
+        } else if (data['deliveryDate'] is DateTime) {
+          deliveryDate = data['deliveryDate'];
+        } else {
+          continue;
+        }
+        final now = DateTime.now();
+        if (now.difference(deliveryDate).inDays >= 10) {
+          print(deliveryDate.toIso8601String());
+          await fireStore.collection('orders').doc(orderId).update({
+            'status': 'Abandonada',
+          });
 
+          // TODO: Add notification logic here to notify user about abandoned order
+          // Example: showNotification("Você tem uma encomenda abandonada!");
+
+          data['status'] = 'Abandonada';
+        }
+      }
+
+      final order = Order.fromJson({...data, 'id': orderId});
       final consumer = getConsumerUserById(consumerId);
 
       if (consumer != null) {
-        consumer.orders = [];
+        consumer.orders ??= [];
         consumer.orders!.add(order);
       }
     }

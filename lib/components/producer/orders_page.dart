@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/models/order.dart';
 import '../../core/services/auth/auth_notifier.dart';
+import '../../core/services/auth/notification_notifier.dart';
 import '../../core/services/auth/store_service.dart';
 
 class OrdersProducerPage extends StatefulWidget {
@@ -48,7 +49,20 @@ class _OrdersProducerPageState extends State<OrdersProducerPage>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: StreamBuilder<List<Order>>(
-        stream: authNotifier.storeOrdersStream(storeId),
+        stream: authNotifier.storeOrdersStream(storeId, (String orderId, String consumerId) async {
+          final notificationNotifier = Provider.of<NotificationNotifier>(
+            context,
+            listen: false,
+          );
+          await notificationNotifier.addAbandonedOrderNotification(
+            storeId,
+            orderId,
+          );
+          await notificationNotifier.addAbandonedOrderNotification(
+            consumerId,
+            orderId,
+          );
+        }),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

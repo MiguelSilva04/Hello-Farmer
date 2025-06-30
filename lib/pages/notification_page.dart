@@ -28,7 +28,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
         elevation: 2,
       ),
       body: Container(
-        color: Colors.grey[100],
         child: StreamBuilder<List<NotificationItem>>(
           stream:
               (user.isProducer)

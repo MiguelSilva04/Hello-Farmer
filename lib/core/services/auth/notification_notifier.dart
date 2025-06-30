@@ -321,12 +321,12 @@ class NotificationNotifier extends ChangeNotifier {
     body: 'Recebeste uma nova mensagem.',
   );
 
-  Future<void> addAbandonedOrderNotification(String storeId, String orderId) =>
+  Future<void> addAbandonedOrderNotification(String id, String orderId, bool isProducer) =>
       _createAndSendNotification(
-        userId: storeId,
+        userId: id,
         type: NotificationType.abandonedOrder,
         data: {'order': orderId},
-        isProducer: true,
+        isProducer: isProducer,
         title: 'Encomenda abandonada',
         body: 'Uma encomenda foi abandonada.',
       );

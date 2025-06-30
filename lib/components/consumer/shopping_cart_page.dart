@@ -70,7 +70,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     required DeliveryMethod deliveryMethod,
   }) async {
     setState(() => _isLoading = true);
-    await authNotifier.createOrder(
+    final orderId = await authNotifier.createOrder(
       consumerId: consumerId,
       storeId: store.id,
       address: address,
@@ -84,7 +84,7 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
     await Provider.of<NotificationNotifier>(
       context,
       listen: false,
-    ).addOrderPlacedNotification(currentUser, store.id);
+    ).addOrderPlacedNotification(currentUser, store.id, orderId);
     setState(() => _isLoading = false);
     _loadCartProducts();
   }

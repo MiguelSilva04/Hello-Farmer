@@ -586,7 +586,11 @@ class AuthNotifier extends ChangeNotifier {
         }
 
         productsQty.add(
-          ProductRegist(productAdId: productAdId, quantity: quantity, promotion: promotion ?? 0),
+          ProductRegist(
+            productAdId: productAdId,
+            quantity: quantity,
+            promotion: promotion ?? 0,
+          ),
         );
       }
     }
@@ -793,7 +797,7 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> createOrder({
+  Future<String> createOrder({
     required String consumerId,
     required String storeId,
     required String address,
@@ -910,6 +914,7 @@ class AuthNotifier extends ChangeNotifier {
     }
 
     notifyListeners();
+    return docRef.id;
   }
 
   void changeStoreIndex(int index) async {

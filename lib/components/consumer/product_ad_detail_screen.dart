@@ -290,6 +290,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
         await notificationNotifier.addNewReviewNotification(
           curStore.id,
           authNotifier.currentUser!.id,
+          widget.ad.id
         );
       } catch (e) {
         print("Erro $e");

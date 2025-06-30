@@ -658,6 +658,7 @@ class _OrderTimelineState extends State<OrderTimeline> {
         await notificationNotifier.addOrderSentNotification(
           store,
           widget.order.consumerId,
+          widget.order.id
         );
       }
     }

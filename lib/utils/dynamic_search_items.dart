@@ -32,6 +32,17 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
         onTap: () => navNotifier.setIndex(4),
       ),
       SearchResultItem(
+        title: 'Metereologia',
+        section: 'Gestão',
+        onTap: () {
+          navNotifier.setIndex(4);
+          Provider.of<ManageSectionNotifier>(
+            context,
+            listen: false,
+          ).setIndex(14);
+        },
+      ),
+      SearchResultItem(
         title: 'Pagina principal',
         section: 'Gestão',
         onTap: () => navNotifier.setIndex(0),

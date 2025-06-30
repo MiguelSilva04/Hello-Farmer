@@ -52,7 +52,6 @@ class _MainMenuState extends State<MainMenu>
   String _searchQuery = "";
   Timer? _debounce;
   bool _isLoading = false;
-  bool _showLogo = true;
 
   @override
   void initState() {
@@ -161,19 +160,8 @@ class _MainMenuState extends State<MainMenu>
       setState(() {
         _isSearching = !_isSearching;
 
-        if (_isSearching) {
-          _showLogo = false;
-        } else {
-          Future.delayed(const Duration(milliseconds: 350), () {
-            if (mounted) {
-              setState(() {
-                _showLogo = true;
-              });
-            }
-          });
-          context.read<SearchNotifier>().clear();
-          _searchQuery = "";
-        }
+        context.read<SearchNotifier>().clear();
+        _searchQuery = "";
       });
     }
   }
@@ -225,14 +213,13 @@ class _MainMenuState extends State<MainMenu>
             centerTitle: false,
             title: Row(
               children: [
-                if (!_isSearching && _showLogo)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Image.asset(
-                      "assets/images/logo_android2.png",
-                      height: 50,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Image.asset(
+                    "assets/images/logo_android2.png",
+                    height: 50,
                   ),
+                ),
               ],
             ),
             actions: [
@@ -563,6 +550,8 @@ class _MainMenuState extends State<MainMenu>
                               _isSearching = false;
                             });
                             Future.microtask(() {
+                              context.read<SearchNotifier>().clear();
+                              _searchQuery = "";
                               item.onTap();
                             });
                           },

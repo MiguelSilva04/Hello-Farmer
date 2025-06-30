@@ -83,7 +83,9 @@ class _ProducerHomePageState extends State<ProducerHomePage> {
     final totalPages = (recomendationsList.length / 3).ceil();
     return RefreshIndicator(
       color: Theme.of(context).colorScheme.secondary,
-      onRefresh: () => widget.initializeApp(true),
+      onRefresh: () async {
+        await widget.initializeApp(true);
+      },
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(

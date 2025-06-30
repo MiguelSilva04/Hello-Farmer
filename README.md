@@ -149,10 +149,12 @@ Descobre já a Hello Farmer e faz parte desta comunidade que valoriza o melhor d
 
 link repositorio git: https://github.com/MiguelSilva202200034/ProjetoCM.git
 
-## Autores
+## 👥 Autores
 
-- Miguel Silva - 202200034
-- Rúben Alves - 202200028
-- Ricardo Oliveira - 2023000157
-- Henrique Franco - 202101006
+- Miguel Silva - 202200034  
+- Rúben Alves - 202200028  
+- Ricardo Oliveira - 2023000157  
+- Henrique Franco - 202101006  
+
+🔗 Repositório oficial: [github.com/MiguelSilva202200034/ProjetoCM](https://github.com/MiguelSilva202200034/ProjetoCM)
 

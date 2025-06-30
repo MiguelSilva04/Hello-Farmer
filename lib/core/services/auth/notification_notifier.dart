@@ -328,6 +328,6 @@ class NotificationNotifier extends ChangeNotifier {
         data: {'order': orderId},
         isProducer: true,
         title: 'Encomenda abandonada',
-        body: 'Uma encomenda foi abandonada no carrinho.',
+        body: 'Uma encomenda foi abandonada.',
       );
 }

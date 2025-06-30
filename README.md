@@ -13,6 +13,7 @@ Hello Farmer é uma aplicação inovadora que aproxima produtores e consumidores
 - [Segurança e Privacidade](#segurança-e-privacidade)
 - [Contribuição](#contribuição)
 - [Licença](#licença)
+- [Autores](#autores)
 
 ---
 
@@ -148,7 +149,8 @@ Descobre já a Hello Farmer e faz parte desta comunidade que valoriza o melhor d
 
 link repositorio git: https://github.com/MiguelSilva202200034/ProjetoCM.git
 
-Autores:
+## Autores
+
 - Miguel Silva - 202200034
 - Rúben Alves - 202200028
 - Ricardo Oliveira - 2023000157

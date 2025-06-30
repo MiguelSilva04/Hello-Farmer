@@ -32,6 +32,11 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
         onTap: () => navNotifier.setIndex(4),
       ),
       SearchResultItem(
+        title: 'Pagina principal',
+        section: 'Gestão',
+        onTap: () => navNotifier.setIndex(0),
+      ),
+      SearchResultItem(
         title: 'Ver Vendas',
         section: 'Gestão',
         onTap: () => navNotifier.setIndex(1),
@@ -244,6 +249,11 @@ List<SearchResultItem> getDynamicSearchItems(BuildContext context) {
     }
   } else {
     items.addAll([
+      SearchResultItem(
+        title: 'Pagina principal',
+        section: 'Gestão',
+        onTap: () => navNotifier.setIndex(0),
+      ),
       SearchResultItem(
         title: 'Mensagens',
         section: 'Geral',

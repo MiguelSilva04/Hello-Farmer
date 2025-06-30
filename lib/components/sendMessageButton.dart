@@ -187,22 +187,19 @@ class SendMessageButton extends StatelessWidget {
     NotificationNotifier notificationNotifier,
     BuildContext context,
   ) async {
-    print("Cheguei aqui!");
     if (result != null && result.isNotEmpty) {
       final newChat = await chatService.createChat(
         currentUser.isProducer ? otherUser.id : currentUser.id,
         currentUser.isProducer ? currentUser.id : otherUser.id,
       );
       final id = (store != null) ? store!.id : otherUser.id;
-      print("Id a mandar notificações: $id");
       await chatService.save(result, currentUser, newChat.id);
       await notificationNotifier
           .addNewMessageNotification(
             id,
             currentUser.id,
             isProducer: store != null,
-          )
-          .then((_) => print("enviei a notificação"));
+          );
 
       Provider.of<ChatListNotifier>(context, listen: false).addChat(newChat);
 

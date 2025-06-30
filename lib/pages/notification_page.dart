@@ -207,8 +207,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     child: ListTile(
                       onTap: () => redirect(notification),
                       leading: CircleAvatar(
-                        backgroundColor: notification.type.color.withOpacity(
-                          .85,
+                        backgroundColor: notification.type.color.withValues(
+                          alpha: .85,
                         ),
                         child: Icon(
                           notification.type.icon,

@@ -49,11 +49,22 @@ Hello Farmer é uma aplicação inovadora que aproxima produtores e consumidores
 ## Tecnologias Utilizadas
 
 - **Flutter** (Dart)
-- **Firebase Auth & Firestore**
-- **Firebase Storage**
-- **Google Maps**
-- **Provider / State Management**
+- **Firebase**: Firestore, Auth, Storage, Cloud Functions, Realtime Database, Firebase Messaging
+- **Provider** (gestão de estado)
 - **RxDart**
+- **Google Maps** (`google_maps_flutter`)
+- **Geolocator** e **permission_handler** (localização)
+- **intl** (formatação de datas e moedas)
+- **image_picker** (seleção de imagens)
+- **encrypt** e **crypto** (encriptação de mensagens)
+- **pdf** e **printing** (geração e partilha de faturas em PDF)
+- **fl_chart** e **percent_indicator** (gráficos e estatísticas)
+- **font_awesome_flutter** (ícones)
+- **shared_preferences** (preferências locais)
+- **timelines_plus** (timelines de encomendas)
+- **flutter_local_notifications** (notificações locais)
+- **cloud_functions** (funções serverless)
+- **country_picker** e **intl_phone_number_input** (formulários internacionais)
 
 ## Licença
 

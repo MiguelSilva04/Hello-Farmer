@@ -108,6 +108,7 @@ class OrderDetailsPage extends StatelessWidget {
                   SendMessageButton(
                     otherUser: displayedUser,
                     isIconButton: true,
+                    store: store,
                   ),
                 ],
               ),

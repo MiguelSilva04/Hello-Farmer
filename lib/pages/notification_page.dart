@@ -19,7 +19,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
     final user = authNotifier.currentUser!;
-    final userId = user.id;
+    final id =
+        user.isProducer
+            ? (user as ProducerUser).stores[authNotifier.selectedStoreIndex!].id
+            : user.id;
 
     return Scaffold(
       appBar: AppBar(
@@ -94,7 +97,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         ).removeNotification(
                           notification: notification,
                           isProducer: user.isProducer,
-                          id: userId,
+                          id: id,
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

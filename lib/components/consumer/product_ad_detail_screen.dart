@@ -615,7 +615,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                               ),
                             ],
                           ),
-                          SendMessageButton(otherUser: otherUser, isIconButton: true,)
+                          SendMessageButton(otherUser: otherUser, isIconButton: true,store: store,)
                         ],
                       ),
                     ),

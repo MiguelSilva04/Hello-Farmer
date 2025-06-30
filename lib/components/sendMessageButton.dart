@@ -3,6 +3,7 @@ import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:provider/provider.dart';
 
 import '../core/models/app_user.dart';
+import '../core/models/store.dart';
 import '../core/services/auth/notification_notifier.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../core/services/chat/chat_service.dart';
@@ -10,12 +11,14 @@ import '../utils/app_routes.dart';
 
 class SendMessageButton extends StatelessWidget {
   final AppUser otherUser;
+  final Store? store;
   final bool isIconButton;
 
-  SendMessageButton({
+  const SendMessageButton({
     super.key,
     required this.otherUser,
     required this.isIconButton,
+    this.store,
   });
 
   @override
@@ -194,7 +197,9 @@ class SendMessageButton extends StatelessWidget {
       await chatService.save(result, currentUser, newChat.id);
       await notificationNotifier
           .addNewMessageNotification(
-            otherUser.id,
+            (store != null && currentUser.isProducer)
+                ? store!.id
+                : otherUser.id,
             currentUser.id,
             isProducer: currentUser.isProducer,
           )

@@ -187,6 +187,8 @@ class NotificationNotifier extends ChangeNotifier {
     required bool isProducer,
     required String id,
   }) async {
+    print("Id da notificação: ${notification.id}");
+    print("Id da store: ${id}");
     final docRef = FirebaseFirestore.instance
         .collection(isProducer ? 'stores' : 'users')
         .doc(id)

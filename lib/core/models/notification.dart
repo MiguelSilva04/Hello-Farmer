@@ -26,8 +26,6 @@ class NotificationItem {
         return "Nova avaliação";
       case NotificationType.abandonedOrder:
         return "Encomenda abandonada";
-      case NotificationType.lowStock:
-        return "Stock baixo";
     }
   }
 
@@ -43,8 +41,6 @@ class NotificationItem {
         return "Nova avaliação de ${data["consumer"]}";
       case NotificationType.abandonedOrder:
         return "Encomenda abandonada (${data["order"]})";
-      case NotificationType.lowStock:
-        return "Stock baixo de (${data['ad']})";
     }
   }
 
@@ -72,7 +68,6 @@ enum NotificationType {
   newReview,
   newMessage,
   abandonedOrder,
-  lowStock,
 }
 
 extension NotificationTypeIcon on NotificationType {
@@ -88,8 +83,6 @@ extension NotificationTypeIcon on NotificationType {
         return Icons.markunread_rounded;
       case NotificationType.abandonedOrder:
         return Icons.shopping_bag_outlined;
-      case NotificationType.lowStock:
-        return Icons.warning_amber_rounded;
     }
   }
 
@@ -105,8 +98,6 @@ extension NotificationTypeIcon on NotificationType {
         return Colors.blue.shade400;
       case NotificationType.abandonedOrder:
         return Colors.grey.shade700;
-      case NotificationType.lowStock:
-        return Colors.red.shade700;
     }
   }
 }

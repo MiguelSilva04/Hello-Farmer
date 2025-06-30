@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvestly/components/consumer/order_details_page.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,46 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+  void redirect(NotificationItem notification) {
+    switch (notification.type) {
+      case NotificationType.orderPlaced:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (ctx) => OrderDetailsPage(order: order, producer: producer),
+          ),
+        );
+      case NotificationType.orderSent:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (ctx) => OrderDetailsPage(order: order, producer: producer),
+          ),
+        );
+      case NotificationType.newReview:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (ctx) => OrderDetailsPage(order: order, producer: producer),
+          ),
+        );
+      case NotificationType.newMessage:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (ctx) => OrderDetailsPage(order: order, producer: producer),
+          ),
+        );
+      case NotificationType.abandonedOrder:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (ctx) => OrderDetailsPage(order: order, producer: producer),
+          ),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
@@ -109,6 +150,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         );
                       },
                       child: ListTile(
+                        onTap: () => redirect(notification),
                         leading: CircleAvatar(
                           backgroundColor: notification.type.color.withValues(
                             alpha: .85,

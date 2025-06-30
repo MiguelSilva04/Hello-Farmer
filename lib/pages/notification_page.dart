@@ -9,7 +9,6 @@ import 'package:harvestly/core/services/auth/notification_notifier.dart';
 import 'package:harvestly/core/models/notification.dart';
 import 'package:harvestly/core/models/producer_user.dart';
 import 'package:harvestly/core/services/chat/chat_service.dart';
-import '../core/models/consumer_user.dart';
 import '../core/services/chat/chat_list_notifier.dart';
 import '../utils/user_store_helper.dart';
 
@@ -24,8 +23,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Future<void> redirect(NotificationItem notification) async {
     final data = notification.data;
     final authNotifier = Provider.of<AuthNotifier>(context, listen: false);
-    final user = authNotifier.currentUser!;
-    final producer = user is ProducerUser ? user : null;
 
     switch (notification.type) {
       case NotificationType.orderPlaced:

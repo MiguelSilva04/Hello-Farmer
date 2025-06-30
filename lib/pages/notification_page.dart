@@ -109,14 +109,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
           final chatService = Provider.of<ChatService>(context, listen: false);
           final currentUserId = authNotifier.currentUser!.id;
 
-          final chat = chatListNotifier.chats.firstWhere(
+          final chat = chatListNotifier.chats.firstWhereOrNull(
             (c) =>
                 (c.consumerId == currentUserId && c.producerId == senderId) ||
                 (c.producerId == currentUserId && c.consumerId == senderId),
-            orElse: () => throw Exception('Chat não encontrado'),
           );
-
-          chatService.updateCurrentChat(chat);
+          if (chat != null) chatService.updateCurrentChat(chat);
 
           Provider.of<BottomNavigationNotifier>(
             context,

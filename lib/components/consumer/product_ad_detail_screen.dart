@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:harvestly/components/producer/store_page.dart';
@@ -968,17 +969,21 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                               Icons.person,
                                                               size: 20,
                                                             ),
-                                                            FittedBox(
-                                                              fit:
-                                                                  BoxFit
-                                                                      .scaleDown,
-                                                              child: Text(
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            Expanded(
+                                                              child: AutoSizeText(
                                                                 "Produtor",
                                                                 style:
-                                                                    TextStyle(
+                                                                    const TextStyle(
                                                                       fontSize:
                                                                           12,
                                                                     ),
+                                                                maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
                                                               ),
                                                             ),
                                                           ],

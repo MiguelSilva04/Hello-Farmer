@@ -1,3 +1,4 @@
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/store_service.dart';
@@ -30,13 +31,12 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/services/other/preferences_notifier.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('pt_PT', null);
   await Firebase.initializeApp();
-  await dotenv.load(fileName: "api.env");
+  await FirebaseRemoteConfig.instance.fetchAndActivate();
 
   runApp(
     MultiProvider(

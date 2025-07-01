@@ -108,7 +108,10 @@ class OrderDetailsPage extends StatelessWidget {
                   SendMessageButton(
                     otherUser: displayedUser,
                     isIconButton: true,
-                    store: authNotifier.currentUser!.id != producer.id ? store : null,
+                    store:
+                        authNotifier.currentUser!.id != producer.id
+                            ? store
+                            : null,
                   ),
                 ],
               ),
@@ -363,7 +366,39 @@ class OrderDetailsPage extends StatelessWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 5),
-                  OrderTimeline(order: curOrder),
+
+                  curOrder.state == OrderState.Abandoned
+                      ? Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.red.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.red[400],
+                              size: 32,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                "Esta encomenda foi abandonada pelo comprador ou não foi concluída a tempo.",
+                                style: TextStyle(
+                                  color: Colors.red[600],
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                      : OrderTimeline(order: curOrder),
 
                   const Divider(),
                   const Text(
@@ -658,7 +693,7 @@ class _OrderTimelineState extends State<OrderTimeline> {
         await notificationNotifier.addOrderSentNotification(
           store,
           widget.order.consumerId,
-          widget.order.id
+          widget.order.id,
         );
       }
     }

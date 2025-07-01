@@ -80,11 +80,6 @@
    flutter pub get
    ```
 
-4. Cria o ficheiro `.env` na raiz com as tuas variáveis:
-   ```env
-   OPENWEATHER_API_KEY=xxxxxxx
-   ```
-
 5. Executa a aplicação:
    ```bash
    flutter run
@@ -111,7 +106,7 @@ functions/             # Cloud Functions (Firebase backend)
 ## 🧪 Tecnologias Utilizadas
 
 - **Flutter** & Dart
-- **Firebase**: Auth, Firestore, Storage, Realtime DB, Cloud Functions, Messaging
+- **Firebase**: Auth, Firestore, Storage, Realtime DB, Cloud Functions, Messaging, Remote Config
 - **Provider** (gestão de estado)
 - **RxDart**
 - **Google Maps API** (`google_maps_flutter`)
@@ -123,6 +118,7 @@ functions/             # Cloud Functions (Firebase backend)
 - **cloud_functions**
 - **shared_preferences**
 - **timelines_plus**, **fl_chart**, **percent_indicator**
+- Codemagic
 
 ---
 

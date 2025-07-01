@@ -499,19 +499,21 @@ class _ShoppingCartPageState extends State<ShoppingCartPage> {
                           ),
                           Row(
                             children: [
-                              Text(
-                                "${oldPrice.toStringAsFixed(2)}€",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.secondaryFixed,
-                                  decoration: TextDecoration.lineThrough,
+                              if (oldPrice != totalPrice) ...[
+                                Text(
+                                  "${oldPrice.toStringAsFixed(2)}€",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.secondaryFixed,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 5),
+                                const SizedBox(width: 5),
+                              ],
                               Text(
                                 "${totalPrice.toStringAsFixed(2)}€",
                                 style: TextStyle(

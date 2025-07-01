@@ -32,7 +32,7 @@ class AbandonedOrdersPage extends StatelessWidget {
             )
             .toList();
 
-    final users = AuthService().users;
+    final users = Provider.of<AuthNotifier>(context, listen: false).allUsers;
 
     String getUserName(String id) {
       final user = users.firstWhere((u) => u.id == id);
@@ -177,7 +177,7 @@ class AbandonedOrdersPage extends StatelessWidget {
                                           Container(
                                             height: imageSize,
                                             width: imageSize,
-                                            child: Image.asset(
+                                            child: Image.network(
                                               productAd.product.imageUrls.first,
                                               fit: BoxFit.cover,
                                             ),

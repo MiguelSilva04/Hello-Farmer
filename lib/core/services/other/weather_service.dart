@@ -25,7 +25,7 @@ class WeatherService {
     final apiKey = _remoteConfig.getString('OPEN_WEATHER_API_KEY');
 
     if (apiKey.isEmpty) {
-      throw Exception("API Key não está definida no Remote Config");
+      throw Exception("API Key está inválida");
     }
 
     final url = Uri.parse(

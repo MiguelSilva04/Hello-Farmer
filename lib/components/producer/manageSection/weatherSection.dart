@@ -48,7 +48,7 @@ class _WeatherForecastSectionState extends State<WeatherForecastSection> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              "Previsão 6 dias ($city)",
+              "Previsão 5 dias ($city)",
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),

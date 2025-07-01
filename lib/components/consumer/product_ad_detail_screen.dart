@@ -290,7 +290,7 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
         await notificationNotifier.addNewReviewNotification(
           curStore.id,
           authNotifier.currentUser!.id,
-          widget.ad.id
+          widget.ad.id,
         );
       } catch (e) {
         print("Erro $e");
@@ -957,38 +957,19 @@ class _ProductAdDetailScreenState extends State<ProductAdDetailScreen> {
                                                     ),
                                                   ),
                                                   const SizedBox(width: 5),
-                                                  Flexible(
-                                                    child: Card(
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets.all(
-                                                              5,
-                                                            ),
-                                                        child: Row(
-                                                          children: [
-                                                            Icon(
-                                                              Icons.person,
-                                                              size: 20,
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 4,
-                                                            ),
-                                                            Expanded(
-                                                              child: AutoSizeText(
-                                                                "Produtor",
-                                                                style:
-                                                                    const TextStyle(
-                                                                      fontSize:
-                                                                          12,
-                                                                    ),
-                                                                maxLines: 1,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
+                                                  Card(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                            5,
+                                                          ),
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(
+                                                            Icons.person,
+                                                            size: 20,
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),

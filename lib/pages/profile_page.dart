@@ -656,29 +656,37 @@ class _ProfilePageState extends State<ProfilePage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Sobre mim',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    user!.aboutMe == null || user!.aboutMe!.isEmpty
-                        ? 'Ainda sem descrição...'
-                        : user!.aboutMe!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context).colorScheme.secondaryFixed,
+              Expanded(
+                // ou Flexible(flex: 1)
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Sobre mim',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Text(
+                      user!.aboutMe == null || user!.aboutMe!.isEmpty
+                          ? 'Ainda sem descrição...'
+                          : user!.aboutMe!,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.secondaryFixed,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
+
         const SizedBox(height: 50),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -686,7 +694,6 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (user != null && user!.isProducer) ...[
-                // Mostrar produtos em destaque para produtores
                 Text(
                   "Produtos em destaque",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

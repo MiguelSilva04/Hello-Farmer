@@ -668,7 +668,6 @@ class _OrderTimelineState extends State<OrderTimeline> {
     setState(() => _isLoading = true);
     final newOrderState = steps[currentStep];
 
-    // Enviar notificação se o novo estado for OrderState.Sent
     if (newOrderState == OrderState.Sent) {
       final authNotifierInstance = Provider.of<AuthNotifier>(
         context,

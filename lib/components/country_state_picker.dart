@@ -67,7 +67,7 @@ class _SelectStateState extends State<SelectState> {
     PhoneNumber info = await PhoneNumber.getRegionInfoFromPhoneNumber(
       userPhone,
     );
-    final isoCode = info.isoCode; // por exemplo: PT
+    final isoCode = info.isoCode;
 
     var countryList = await getResponse() as List;
 

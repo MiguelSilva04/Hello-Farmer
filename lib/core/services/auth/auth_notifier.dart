@@ -633,9 +633,6 @@ class AuthNotifier extends ChangeNotifier {
             'status': 'Abandonada',
           });
 
-          // TODO: Add notification logic here to notify user about abandoned order
-          // Example: showNotification("Você tem uma encomenda abandonada!");
-
           data['status'] = 'Abandonada';
         }
       }

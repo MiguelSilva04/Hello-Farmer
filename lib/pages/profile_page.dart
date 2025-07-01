@@ -659,7 +659,6 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                // ou Flexible(flex: 1)
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

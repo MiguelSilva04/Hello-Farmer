@@ -180,7 +180,7 @@ class _ClientsSectionState extends State<ClientsSection> {
               ? bDates.reduce((a, b) => a.isAfter(b) ? a : b)
               : DateTime.fromMillisecondsSinceEpoch(0);
 
-      return bLast.compareTo(aLast); // Mais recente primeiro
+      return bLast.compareTo(aLast);
     });
 
     return SingleChildScrollView(

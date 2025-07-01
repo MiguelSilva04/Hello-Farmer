@@ -232,7 +232,6 @@ class Store {
     String? city,
     double? averageRating,
     List<ProductAd>? productsAds,
-    // add other fields as needed
   }) {
     return Store(
       id: id ?? this.id,
@@ -243,7 +242,6 @@ class Store {
       city: city ?? this.city,
       averageRating: averageRating ?? this.averageRating,
       productsAds: productsAds ?? this.productsAds,
-      // add other fields as needed
     );
   }
 }

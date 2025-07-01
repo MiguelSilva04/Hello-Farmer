@@ -672,7 +672,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: TextStyle(
                       fontSize: 16,
                       color: Theme.of(context).colorScheme.secondaryFixed,
-                      height: 1.4,
                     ),
                   ),
                 ],

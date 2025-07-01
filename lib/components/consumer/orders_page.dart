@@ -129,15 +129,18 @@ class _OrdersPageState extends State<OrdersPage>
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       alignment: Alignment.centerLeft,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: EdgeInsets.zero,
         child: TabBar(
+          controller: _tabController,
           isScrollable: true,
+          padding: EdgeInsets.zero,
+          indicatorPadding: EdgeInsets.zero,
+          labelPadding: EdgeInsets.symmetric(horizontal: 16),
           labelStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
-          controller: _tabController,
           labelColor: Theme.of(context).colorScheme.tertiaryFixed,
           unselectedLabelColor: Theme.of(context).colorScheme.secondaryFixed,
           indicatorColor: Theme.of(context).colorScheme.tertiaryFixed,
@@ -165,13 +168,14 @@ class _OrdersPageState extends State<OrdersPage>
       itemCount: sortedOrders.length,
       itemBuilder: (context, index) {
         final order = sortedOrders[index];
-        final ordersAds = order.ordersItems
-            .map(
-              (orderItem) => allAds.firstWhereOrNull(
-                (ad) => ad.id == orderItem.productAdId,
-              ),
-            )
-            .toList();
+        final ordersAds =
+            order.ordersItems
+                .map(
+                  (orderItem) => allAds.firstWhereOrNull(
+                    (ad) => ad.id == orderItem.productAdId,
+                  ),
+                )
+                .toList();
 
         return OrderCard(order: order, ads: ordersAds);
       },

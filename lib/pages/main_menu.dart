@@ -213,19 +213,22 @@ class _MainMenuState extends State<MainMenu>
             centerTitle: false,
             title: Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Image.asset(
-                    "assets/images/logo_android2.png",
-                    height: 50,
+                if (!_isSearching)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Image.asset(
+                      "assets/images/logo_android2.png",
+                      height: 50,
+                    ),
                   ),
-                ),
               ],
             ),
             actions: [
               if ((user.isProducer) || (!user.isProducer)) ...[
                 ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 200),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width - 120,
+                  ),
                   child: AnimatedSwitcher(
                     duration: Duration(milliseconds: 300),
                     child:
@@ -234,7 +237,7 @@ class _MainMenuState extends State<MainMenu>
                               key: const ValueKey('searchBar'),
                               padding: const EdgeInsets.all(8),
                               child: SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.5,
+                                width: MediaQuery.of(context).size.width,
                                 child: TextField(
                                   autofocus: true,
                                   decoration: InputDecoration(

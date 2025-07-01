@@ -1,23 +1,35 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 class WeatherService {
-  final String _apiKey =
-      const String.fromEnvironment('OPENWEATHER_API_KEY').isNotEmpty
-          ? const String.fromEnvironment('OPENWEATHER_API_KEY')
-          : dotenv.env['OPEN_WEATHER_API_KEY']!;
+  late final FirebaseRemoteConfig _remoteConfig;
+
+  WeatherService() {
+    _remoteConfig = FirebaseRemoteConfig.instance;
+  }
+
+  Future<void> _initRemoteConfig() async {
+    await _remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: const Duration(seconds: 10),
+      minimumFetchInterval: const Duration(hours: 1),
+    ));
+    await _remoteConfig.fetchAndActivate();
+  }
 
   Future<List<Map<String, dynamic>>> get5DayForecast({
     required double lat,
     required double lon,
   }) async {
-    if (_apiKey.isEmpty) {
-      throw Exception("API Key não está definida");
+    await _initRemoteConfig();
+    final apiKey = _remoteConfig.getString('OPEN_WEATHER_API_KEY');
+
+    if (apiKey.isEmpty) {
+      throw Exception("API Key não está definida no Remote Config");
     }
 
     final url = Uri.parse(
-      'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&units=metric&lang=pt&appid=$_apiKey',
+      'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&units=metric&lang=pt&appid=$apiKey',
     );
 
     try {
@@ -59,10 +71,9 @@ class WeatherService {
                 item['weather'] != null &&
                 item['weather'].isNotEmpty) {
               var rawIcon = item['weather'][0]['icon'] as String? ?? '';
-              icon =
-                  rawIcon.isNotEmpty
-                      ? rawIcon.substring(0, rawIcon.length - 1) + 'd'
-                      : '';
+              icon = rawIcon.isNotEmpty
+                  ? rawIcon.substring(0, rawIcon.length - 1) + 'd'
+                  : '';
               description = item['weather'][0]['description'] ?? '';
             }
           }

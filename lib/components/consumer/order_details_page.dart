@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/invoice_page.dart';
+import 'package:harvestly/components/consumer/map_page.dart';
 import 'package:harvestly/components/producer/store_page.dart';
 import 'package:harvestly/components/sendMessageButton.dart';
 import 'package:harvestly/core/models/order.dart';
@@ -154,6 +155,9 @@ class OrderDetailsPage extends StatelessWidget {
                 return ad?.product == null;
               });
               final deliveryMethod = curOrder.deliveryMethod!.toDisplayString();
+              final isPickup = order.deliveryMethod == DeliveryMethod.PICKUP;
+              final store =
+                  producer.stores.where((s) => s.id == order.storeId).first;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -279,12 +283,14 @@ class OrderDetailsPage extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              "Morada de entrega: ",
+                              isPickup
+                                  ? "Morada de recolha:"
+                                  : "Morada de entrega: ",
                               style: TextStyle(fontSize: 15),
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              curOrder.address,
+                              isPickup ? store.address! : order.address,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 15,
@@ -295,6 +301,19 @@ class OrderDetailsPage extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (isPickup)
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => MapPage(initialStore: store),
+                              ),
+                            );
+                          },
+                          label: Text("Abrir no mapa"),
+                          icon: Icon(Icons.pin_drop),
+                        ),
                     ],
                   ),
                   Column(

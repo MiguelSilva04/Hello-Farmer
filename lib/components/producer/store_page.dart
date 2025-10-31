@@ -361,7 +361,7 @@ class _StorePageState extends State<StorePage> {
                                     Icons.keyboard_arrow_down_rounded,
                                     size: 40,
                                   ),
-                                  value: store,
+                                  initialValue: store,
                                   isExpanded: true,
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,

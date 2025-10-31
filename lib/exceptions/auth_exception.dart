@@ -17,7 +17,7 @@ class AuthException implements Exception {
     "requires-recent-login":
         "Esta operação é sensível e requere uma autenticação recente. Volte a autenticar-se para realizar esta ação.",
     "network-request-failed":
-        "Por favor verifique que a sua conexão à internet é estável para proceder à autenticação!",
+        "Por favor verifique que a sua conexão à internet é estável para que possa proceder à autenticação!",
   };
 
   final String key;

@@ -125,7 +125,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
           centerTitle: true,
         ),
-        bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white),
+        bottomAppBarTheme: const BottomAppBarThemeData(color: Colors.white),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           foregroundColor: Colors.white,
         ),
@@ -171,7 +171,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
           centerTitle: true,
         ),
-        bottomAppBarTheme: const BottomAppBarTheme(color: Colors.white),
+        bottomAppBarTheme: const BottomAppBarThemeData(color: Colors.white),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           foregroundColor: Colors.white,
         ),

@@ -1,15 +1,45 @@
 {
   "project_info": {
     "project_number": "1077460064172",
+    "firebase_url": "https://harvestly-3ccb6-default-rtdb.firebaseio.com",
     "project_id": "harvestly-3ccb6",
     "storage_bucket": "harvestly-3ccb6.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1077460064172:android:4456100702ca14f6804c09",
+        "android_client_info": {
+          "package_name": "pt.com.hellofarmer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1077460064172-631f0fdijpbn6cuvh7n169va572gr9km.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBskQvbJKYbj3RL-DBCAVMOjmmU9bBe_nM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1077460064172-631f0fdijpbn6cuvh7n169va572gr9km.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1077460064172:android:e2e1af55d354d60b804c09",
         "android_client_info": {
-          "package_name": "pt.com.ms.harvestly"
+          "package_name": "pt.com.hellofarmer"
         }
       },
       "oauth_client": [
@@ -17,7 +47,7 @@
           "client_id": "1077460064172-hgr6579je0us026s9b3cag846b0eiv9h.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "pt.com.ms.harvestly",
+            "package_name": "pt.com.hellofarmer",
             "certificate_hash": "dd1c58baa1d7a78a2b3616bdfdb090e0e9049bdb"
           }
         },

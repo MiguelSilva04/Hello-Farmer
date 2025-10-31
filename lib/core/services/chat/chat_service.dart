@@ -488,6 +488,11 @@ class ChatService with ChangeNotifier {
         );
 
     return userChatsStream.switchMap((chats) {
+      if (chats.isEmpty) {
+        // se não há chats, devolve uma stream com lista vazia
+        return Stream.value(<Chat>[]);
+      }
+
       final chatStreams = chats.map((chat) {
         final messagesRef = chatsCollection.doc(chat.id).collection('messages');
 

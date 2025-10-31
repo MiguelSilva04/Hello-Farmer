@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:harvestly/components/consumer/offers_page.dart';
 import 'package:harvestly/components/consumer/shopping_cart_page.dart';
+import 'package:harvestly/components/create_store.dart';
 import 'package:harvestly/core/models/app_user.dart';
 import 'package:harvestly/core/models/consumer_user.dart';
 import 'package:harvestly/core/models/producer_user.dart';
@@ -52,6 +53,7 @@ class _MainMenuState extends State<MainMenu>
   String _searchQuery = "";
   Timer? _debounce;
   bool _isLoading = false;
+  bool _redirectToCreateStore = false;
 
   @override
   void initState() {
@@ -77,17 +79,15 @@ class _MainMenuState extends State<MainMenu>
   }
 
   Future<AppUser> _initializeApp(bool isRefreshing) async {
-    if (!isRefreshing)
+    if (!isRefreshing) {
       setState(() {
         _isLoading = true;
       });
+    }
+
     user = await authNotifier.loadUser();
     final presenceService = PresenceService(user.id);
     presenceService.initializePresence();
-
-    if (user.isProducer) {
-      await authNotifier.updateSelectedStoreIndex();
-    }
 
     final storeService = Provider.of<StoreService>(context, listen: false);
     await storeService.loadStores();
@@ -99,11 +99,27 @@ class _MainMenuState extends State<MainMenu>
       listen: false,
     );
 
+    // 🔹 CASO 1: PRODUTOR
     if (user.isProducer) {
-      final selectedStoreId =
-          (authNotifier.currentUser as ProducerUser)
-              .stores[authNotifier.selectedStoreIndex!]
-              .id;
+      // Atualiza o índice da store selecionada (pode ser null)
+      await authNotifier.updateSelectedStoreIndex();
+
+      final producerUser = authNotifier.currentUser as ProducerUser?;
+
+      // Se ainda não tem lojas -> vai para CreateStorePage
+      if (producerUser == null || producerUser.stores.isEmpty) {
+        if (!isRefreshing) {
+          setState(() {
+            _isLoading = false;
+            _redirectToCreateStore = true;
+          });
+        }
+        return user;
+      }
+
+      // 🔹 Se já tem lojas, continua a configuração normal
+      final selectedIndex = authNotifier.selectedStoreIndex ?? 0;
+      final selectedStoreId = producerUser.stores[selectedIndex].id;
 
       await notificationNotifier.setupFCM(
         id: selectedStoreId,
@@ -114,7 +130,9 @@ class _MainMenuState extends State<MainMenu>
         id: selectedStoreId,
         isProducer: true,
       );
-    } else {
+    }
+    // 🔹 CASO 2: CONSUMIDOR
+    else {
       await notificationNotifier.setupFCM(
         id: authNotifier.currentUser!.id,
         isProducer: false,
@@ -125,10 +143,14 @@ class _MainMenuState extends State<MainMenu>
         isProducer: false,
       );
     }
+
+    // 🔹 Serviços de chat
     final chatService = Provider.of<ChatService>(context, listen: false);
     final chatNotifier = Provider.of<ChatListNotifier>(context, listen: false);
     final currentChat = chatService.currentChat;
+
     chatNotifier.listenToChats();
+
     if (currentChat != null) {
       chatService.listenToCurrentChatMessages((messages) {
         if (messages.isNotEmpty) {
@@ -142,10 +164,12 @@ class _MainMenuState extends State<MainMenu>
       });
     }
 
-    if (!isRefreshing)
+    if (!isRefreshing) {
       setState(() {
         _isLoading = false;
       });
+    }
+
     return user;
   }
 
@@ -190,6 +214,16 @@ class _MainMenuState extends State<MainMenu>
 
   @override
   Widget build(BuildContext context) {
+    if (_redirectToCreateStore) {
+      // 🔹 Redireciona imediatamente sem renderizar o resto
+      Future.microtask(() {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => CreateStore(isFirstTime: true,)),
+        );
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final List<Widget> _producerPages = [
       ProducerHomePage(initializeApp: _initializeApp),
       OrdersProducerPage(),

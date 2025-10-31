@@ -10,7 +10,7 @@
 
 
     <application
-        android:label="Hello Farmer"
+        android:label="HelloFarmer"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
 

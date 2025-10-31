@@ -19,6 +19,7 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget build(BuildContext context) {
     final currentUser = AuthService().currentUser;
     if (currentUser == null) {
+      print("Esta a acontecer isto");
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -36,6 +37,7 @@ class _ChatListPageState extends State<ChatListPage> {
         ).streamAllChatsWithMessages(currentUser),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
+            print("Esta a acontecer isto");
             return const Center(child: CircularProgressIndicator());
           }
 

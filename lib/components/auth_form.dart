@@ -250,8 +250,10 @@ class _AuthFormState extends State<AuthForm> {
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
+      // final errorMessage =
+      //     AuthException.errors[e.code] ?? 'Ocorreu um erro inesperado!';
       final errorMessage =
-          AuthException.errors[e.code] ?? 'Ocorreu um erro inesperado!';
+          AuthException.errors[e.code] ?? 'Erro > ${e.code}';
       final emailAlreadyExists = e.code == "email-already-in-use";
 
       hasError = true;
@@ -597,6 +599,7 @@ class _AuthFormState extends State<AuthForm> {
                           cityValue = value;
                         });
                       },
+                      isSignup: true,
                     ),
                   ],
                   if (_formData.isLogin && !_isRecovery ||

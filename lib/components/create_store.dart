@@ -7,6 +7,7 @@ import 'package:harvestly/core/models/store.dart';
 import 'package:harvestly/core/services/auth/auth_notifier.dart';
 import 'package:harvestly/core/services/auth/auth_service.dart';
 import 'package:harvestly/core/services/auth/notification_notifier.dart';
+import 'package:harvestly/pages/main_menu.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:geocoding/geocoding.dart';
@@ -146,7 +147,12 @@ class _CreateStoreState extends State<CreateStore> {
         authNotifier.setLocalSelectedStoreIndex(newIndex);
       });
       await notificationNotifier.setupFCM(id: store.id, isProducer: true);
-      if (widget.isFirstTime != true) {
+      if (widget.isFirstTime == true) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => MainMenu()),
+        );
+      } else {
         Navigator.pop(context);
       }
     } catch (e) {
@@ -156,6 +162,12 @@ class _CreateStoreState extends State<CreateStore> {
         _isLoading = false;
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    print(widget.isFirstTime);
   }
 
   @override

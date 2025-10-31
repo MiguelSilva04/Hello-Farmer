@@ -464,6 +464,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   cityValue = value;
                 });
               },
+              isSignup: false,
             ),
           ),
 
